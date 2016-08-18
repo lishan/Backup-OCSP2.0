@@ -75,7 +75,7 @@ class SiteLabel extends Label {
 
             if (!lac_cell.equals(latestLacCell)) {
               // Add the latest path to path cache
-              labelMap.update(fullPathKey, "222")
+              labelMap.update(fullPathKey, "true")
             }
 
             labelMap.update("latestTimestamp", cacheTime_str)
@@ -84,7 +84,7 @@ class SiteLabel extends Label {
             if (cacheTimeMs - currentTimeMs < thresholdValue) {
               // 如果信令时间戳小与最新的位置时间戳,将次信令输出到Kafka中,记录轨迹
               // Add the latest path to path cache
-              labelMap.update(fullPathKey, "333")
+              labelMap.update(fullPathKey, "true")
             }
             labelMap.update("latestTimestamp", cacheTime_str)
           }

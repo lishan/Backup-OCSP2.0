@@ -52,7 +52,7 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
     // 全量字段: baseItems + udfItems 
     val allItemsSchema = conf.getAllItemsSchema
     //2 流数据处理
-    val transFormRDD = inputStream.foreach(rdd => {
+    val transFormRDD = inputStream.foreachRDD(rdd => {
 
       val t0 = System.currentTimeMillis()
       //2.1 流数据转换

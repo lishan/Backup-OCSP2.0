@@ -6,7 +6,6 @@ extendJars="../ShaanxiyidongFeature/target/ShaanxiyidongFeature-1.0-SNAPSHOT.jar
 rm -f OCDP_Stream.tar.gz
 
 mvn clean package;
-#mvn clean package assembly:single
 
 mkdir OCDP_Stream;
 cd OCDP_Stream;
