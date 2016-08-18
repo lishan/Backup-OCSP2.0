@@ -1,2 +1,2 @@
-# StreamPlantform
-new stream plantform
+# Stream Platform
+New stream platform
