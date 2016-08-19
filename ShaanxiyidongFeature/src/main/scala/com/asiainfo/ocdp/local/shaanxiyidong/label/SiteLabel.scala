@@ -54,13 +54,7 @@ class SiteLabel extends Label {
           cacheMutableMap += (normal_imsi -> cacheSiteLabelsMap)
           //enhance label to add latest timestamp
           labelMap.update("latestTimestamp", currentTimestamp_str)
-          labelMap.update(fullPathKey, "111")
-          if (cache == null){
-
-            labelMap.update("latestTimestamp", "time")
-            labelMap.update(fullPathKey, "000")
-
-          }
+          labelMap.update(fullPathKey, "true")
         }
         case Some(cacheSiteLabelsMap) => {
           val latestLacCell = cacheSiteLabelsMap.get("lac_cell").get
