@@ -1,25 +1,42 @@
 #!/usr/bin/env bash
-extendJars="../ShaanxiyidongFeature/target/ShaanxiyidongFeature-1.0-SNAPSHOT.jar"
-#mysqlJar="../mysql-connector-java-5.1.34.jar"
-0.
 
-rm -f OCDP_Stream.tar.gz
+HOME_PATH=$(cd `dirname $0`; pwd)
 
-mvn clean package;
+PROJECT=$1
 
-mkdir OCDP_Stream;
-cd OCDP_Stream;
-cp -r ../bin .;
-cp -r . ./conf .;
+cd ${HOME_PATH}
 
-mkdir lib;
-cp ../core/target/core-1.0-SNAPSHOT.jar lib;
-cp ${extendJars} lib;
-cp ${mysqlJar} lib;
+mvn clean package
 
-mkdir logs;
+if [ $? -ne 0 ]; then
+   echo "Build failed..."
+   exit 1
+fi
 
-cd ..;
-tar zcvf OCDP_Stream.tar.gz OCDP_Stream;
-rm -r OCDP_Stream;
 
+rm -fr build
+
+mkdir -p build/OCDP_Stream/lib
+mkdir -p build/OCDP_Stream/logs
+
+cp -r bin build/OCDP_Stream
+cp -r conf build/OCDP_Stream
+
+cp core/target/core-1.0-SNAPSHOT.jar build/OCDP_Stream/lib
+cp core/target/core-1.0-SNAPSHOT-dist/lib/jedis-2.6.1.jar build/OCDP_Stream/lib
+cp core/target/core-1.0-SNAPSHOT-dist/lib/commons-pool2-2.0.jar build/OCDP_Stream/lib
+cp core/target/core-1.0-SNAPSHOT-dist/lib/mysql-connector-java-5.1.34.jar build/OCDP_Stream/lib
+cp core/target/core-1.0-SNAPSHOT-dist/lib/spark-streaming-kafka-assembly_2.10-1.6.0.jar build/OCDP_Stream/lib
+cp core/target/core-1.0-SNAPSHOT-dist/lib/scala-library-2.10.4.jar build/OCDP_Stream/lib
+
+if [ -d "$PROJECT" ]; then
+  cp ${PROJECT}/target/"$PROJECT"*.jar build/OCDP_Stream/lib
+else
+  echo "WARN: Can not find '$PROJECT' project."
+fi
+
+cd build
+
+tar czf OCDP_Stream.tar.gz OCDP_Stream
+
+exit 0
