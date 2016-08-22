@@ -8,7 +8,7 @@ JAVA_OPTS="-XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$FWDIR/logs/gc.log
 
 SPARK_HOME=
 
-SPARK_ASSEMBLY_JAR=`ls $SPARK_HOME/lib/*assembly*jar`
+SPARK_ASSEMBLY_JAR=`ls $SPARK_HOME/lib/*spark-assembly*jar`
 for jarFile in `ls $FWDIR/lib/*jar`
 do
   CLASSPATH=$CLASSPATH:$jarFile
