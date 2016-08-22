@@ -288,8 +288,6 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
         // 从cache中取出本条记录的中间计算结果值
         var rule_caches = cachemap_old.get(key) match {
           case Some(cache) =>
-            println("111111")
-
             cache.asInstanceOf[immutable.Map[String, StreamingCache]]
 
           case None =>
@@ -303,7 +301,6 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
           // 从cache中取出本条记录所关联的所有标签所用到的用户资料表［静态表］
           val old_cache = rule_caches.get(label.conf.getId) match {
             case Some(cache) =>
-              println("22222")
               cache
             case None =>
               println("old cache null, key:" + label.conf.getId)
