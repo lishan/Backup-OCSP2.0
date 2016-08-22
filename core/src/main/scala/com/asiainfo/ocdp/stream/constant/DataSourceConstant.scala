@@ -10,6 +10,7 @@ object DataSourceConstant {
 
   val KAFKA_TYPE = "kafka"
   val JDBC_TYPE = "jdbc"
+  val CODIS_TYPE = "codis"
 
   //For kafka
   val ZK_CONNECT_KEY = "zookeeper.connect"

@@ -11,6 +11,7 @@ object StreamWriterFactory {
     diConf.dsConf.dsType match {
       case DataSourceConstant.KAFKA_TYPE => new StreamKafkaWriter(diConf)
       case DataSourceConstant.JDBC_TYPE => new StreamJDBCWriter(diConf)
+      case DataSourceConstant.CODIS_TYPE => new StreamCodisWriter(diConf)
       case _ => throw new Exception("DataSource type " + diConf.dsConf.dsType + " is not supported !")
     }
   }

@@ -21,7 +21,7 @@ class SiteLabel extends Label {
   override def attachLabel(line: Map[String, String], cache: StreamingCache, labelQryData: mutable.Map[String, mutable.Map[String, String]]): (Map[String, String], StreamingCache) = {
     //2更新标签
     //2.1 根据标签缓存和当前日志信息更新标签
-    //a. 获取locationStayRule的cacheßß
+    //a. 获取locationStayRule的cache
 
    // val cacheInstance = if (cache == null) new LabelProps else cache.asInstanceOf[LabelProps]
 
