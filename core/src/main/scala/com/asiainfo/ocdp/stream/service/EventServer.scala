@@ -77,15 +77,25 @@ class EventServer extends Logging with Serializable {
           // codis 中存储的上次营销时间的二进制
           val cache = jsonCache._2
           // 往次营销时间
-          val cache_time = if (cache != null) new String(cache) else "0"
           val current_time = System.currentTimeMillis
-          // 满足营销
-          if (current_time >= (cache_time.toLong + interval * 1000)) {
-            // 放入更新codis list等待更新
+          if (cache != null) {
+            val cache_time = new String(cache)
+            // 若cache中有上次营销事件,且满足 营销时间>(上次营销事件+营销周期)
+            if (current_time >= (cache_time.toLong + interval * 1000)) {
+              // 放入更新codis list等待更新
+              updateArrayBuffer.append((key, eventId, String.valueOf(current_time)))
+              // 放入输入map等待输出
+              outPutJsonMap += (key -> json)
+            }
+          }
+          else {
+            //若cache中没有上次营销时间,则输出事件并将当前时间更新到codis
+            val cache_time = "0"
             updateArrayBuffer.append((key, eventId, String.valueOf(current_time)))
-            // 放入输入map等待输出
             outPutJsonMap += (key -> json)
           }
+
+
         })
         // 一个batch的数据完成后，更新codis营销时间
         if (updateArrayBuffer.size > 0) cacheEventData(updateArrayBuffer.toArray)
