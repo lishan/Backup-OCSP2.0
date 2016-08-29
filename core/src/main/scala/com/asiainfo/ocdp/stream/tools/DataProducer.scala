@@ -68,11 +68,11 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           // start lac, cell, end lac, cell
           msg.append(rand.nextInt(LAC_MAX) + 31250)
           msg.append(",")
-          msg.append(rand.nextInt(CI_MAX) + 5125)
+          msg.append(5125)
           msg.append(",")
           msg.append(rand.nextInt(LAC_MAX) + 31250)
           msg.append(",")
-          msg.append(rand.nextInt(CI_MAX) + 5125)
+          msg.append(5125)
           msg.append(",")
           msg.append(",")
           msg.append("0")
