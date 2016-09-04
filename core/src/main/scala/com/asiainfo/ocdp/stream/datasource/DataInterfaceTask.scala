@@ -56,12 +56,13 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
 
       val t0 = System.currentTimeMillis()
       //2.1 流数据转换
-      val rowRDD = rdd.map(inputArr => transform(inputArr, schema)).collect { case Some(row) => row }
+      val rowRDD = rdd.map(inputArr =>
+        transform(inputArr, schema)).collect { case Some(row) => row }
 
       if (rowRDD.partitions.size > 0) {
 
-        logError("==========================rdd length:"+ rdd.count())
-        logError("==========================rowRDD length:"+ rowRDD.count())
+       logError("==========================rdd length:"+ rdd.count())
+       logError("==========================rowRDD length:"+ rowRDD.count())
 
         val t1 = System.currentTimeMillis()
         println("1.kafka RDD 转换成 rowRDD 耗时 (millis):" + (t1 - t0))
@@ -79,6 +80,7 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
           val t4 = System.currentTimeMillis
           println("4.dataframe 转成rdd打标签耗时(millis):" + (t4 - t3))
 
+          labelRDD.persist()
           // read.json为spark sql 动作类提交job
           val enhancedDF = sqlc.read.json(labelRDD)
 
@@ -86,6 +88,9 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
           println("5.RDD 转换成 DataFrame 耗时(millis):" + (t5 - t4))
 
           makeEvents(enhancedDF, conf.get("uniqKeys"))
+
+          labelRDD.unpersist()
+
           println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t5))
         }
 
@@ -242,6 +247,7 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
    * 字段增强：根据uk从codis中取出相关关联数据，进行打标签操作
    */
   def execLabels(df: DataFrame): RDD[String] = {
+
     df.toJSON.mapPartitions(iter => {
       val qryCacheService = new ExecutorCompletionService[List[(String, Array[Byte])]](CacheQryThreadPool.threadPool)
       val hgetAllService = new ExecutorCompletionService[Seq[(String, java.util.Map[String, String])]](CacheQryThreadPool.threadPool)
@@ -269,7 +275,6 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
       println("本批次记录条数：" + batchSize)
       try {
         cachemap_old = CacheFactory.getManager.getMultiCacheByKeys(keyList, qryCacheService).toMap
-        println("cache map size:" + cachemap_old.size)
       } catch {
         case ex: Exception =>
           logError("= = " * 15 + " got exception in EventSource while get cache")
@@ -281,6 +286,7 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
       val f3 = System.currentTimeMillis()
       println(" 2. 查取此批数据缓存中的用户相关信息表 cost time : " + (f3 - f2) + " millis ! ")
       // 遍历整个批次的数据，逐条记录打标签
+
       val jsonList = busnessKeyList.map(enum => {
         // 格式 【"Label:" + uk】
         val key = enum._1
@@ -299,6 +305,7 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
         // 遍历所有所打标签，从cache中取出本条记录对应本标签的中间缓存值，并打标签操作
         labels.foreach(label => {
           // 从cache中取出本条记录所关联的所有标签所用到的用户资料表［静态表］
+
           val old_cache = rule_caches.get(label.conf.getId) match {
             case Some(cache) =>
               cache
@@ -308,12 +315,15 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
           }
           // 传入本记录、往期中间记算结果cache、相关的用户资料表，进行打标签操作
           val resultTuple = label.attachLabel(value, old_cache, labelQryData)
+
           // 增强记录信息，加标签字段
           value = resultTuple._1
+
           // 更新往期中间记算结果cache
           val newcache = resultTuple._2
           rule_caches = rule_caches.updated(label.conf.getId, newcache)
         })
+
         // 更新往期中间记算结果cache【"Label:" + uk-> {labelId->rule_caches}】
         cachemap_new += (key -> rule_caches.asInstanceOf[Any])
         cachemap_old += (key -> rule_caches.asInstanceOf[Any])
@@ -325,7 +335,9 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
       //update caches to CacheManager
       CacheFactory.getManager.setMultiCache(cachemap_new)
       println(" 4. 更新这批数据的缓存中的交互状态信息 cost time : " + (System.currentTimeMillis() - f4) + " millis ! ")
+
       jsonList.iterator
+
     })
   }
 
@@ -334,8 +346,8 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
    */
   final def makeEvents(df: DataFrame, uniqKeys: String) = {
     println(" Begin exec evets : " + System.currentTimeMillis())
-    df.persist
+   // df.persist
     events.map(event => event.buildEvent(df, uniqKeys))
-    df.unpersist
+   // df.unpersist
   }
 }

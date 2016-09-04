@@ -32,7 +32,7 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
 
   def run(): Unit = {
     val rand = new Random()
-    var eventId = 0
+    var msgId = 1
     var imsi = 1019400
     while (true) {
       val msgNum = rand.nextInt(MSGNUM_MAX)
@@ -44,9 +44,12 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           //msg.append(":")
 
           //begin time & end time
+
+
           val beginTime = System.currentTimeMillis()
-          val msg = new StringBuilder(beginTime.toString)
-         // msg.append(beginTime.toString)
+          val msg = new StringBuilder(msgId.toString)
+          msg.append(",")
+          msg.append(beginTime.toString)
           msg.append(",")
           val endTime = beginTime + 1000 * 60
           msg.append(endTime.toString)
@@ -93,6 +96,7 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           println(msg.toString())
           //send the generated message to broker
           sendMessage(msg.toString(), long_imsi)
+          msgId = msgId + 1
         }
       } catch {
         case e: Exception => println(e)
