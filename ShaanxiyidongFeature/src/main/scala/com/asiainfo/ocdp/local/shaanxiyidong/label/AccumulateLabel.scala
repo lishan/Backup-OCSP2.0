@@ -34,13 +34,13 @@ class AccumulateLabel extends Label {
     val cacheMutableMap = transformCacheMap2mutableMap(cacheImmutableMap)
     // mcsource 打标签用[初始化标签值]
     val labelMap = fieldsMap()
-    println("timestamp" + line("timestamp"))
     val currentTime = line("timestamp").toLong
-    println("currentTime" + currentTime)
-
+    //由于业务需求统计周期为自然日,因此应将currentTime对应的当日时间00:00写入cache
+    //currentTime为1970-01-01 08:00:00.000到当前的毫秒数,因此+8个小时的毫秒数(28800000L)得出1970-01-01 00:00:00.000 到当前的毫秒数
+    //(currentTime + 28800000L) % (86400000L) 为当日超过00:00的毫秒数,
+    val currentTime_byDay = (currentTime + 28800000L) - (currentTime + 28800000L) % (86400000L)
     val tour_area  = line("tour_area")
     val security_area = line("security_area")
-    val normal_imsi = line("imsi")
     val tour_cache_key = "@tour@" + tour_area
     val security_cache_key = "@security@" + security_area
     labelMap.update(isSecurityAccuKey, "false")
@@ -50,20 +50,18 @@ class AccumulateLabel extends Label {
     cacheMutableMap.get(tour_cache_key)
     match{
       case None => {
-        labelMap.update(isTourAccuKey, "falsenonetour")
         val cacheAccuLabelsMap = mutable.Map[String, String]()
-        cacheAccuLabelsMap += ("timestamp" -> currentTime.toString)
+        cacheAccuLabelsMap += ("timestamp" -> currentTime_byDay.toString)
         cacheMutableMap += (tour_cache_key -> cacheAccuLabelsMap)
         //若缓存中不存在该 imsi@旅游区域,则将isTourAccuKey设为true,指需要将其加入累计人数的计数中
-        labelMap.update(isTourAccuKey, "truenonetour" + "tourchachekey:" + tour_cache_key)
+        labelMap.update(isTourAccuKey, "true")
       }
       case Some(cacheAccuLabelsMap) => {
 
         val cacheTime = cacheAccuLabelsMap.get("timestamp").get.toLong
-        labelMap.update(isTourAccuKey, "falsesometour"+"cachetime" + cacheTime + "currenttime" + currentTime + "tourchachekey:" + tour_cache_key)
         if (currentTime >= ((interval * 1000) + cacheTime)) {
-          //Update the latest time to the site cache
-          cacheAccuLabelsMap += ("timestamp" -> currentTime.toString)
+          //更新本次记录时间到cache
+          cacheAccuLabelsMap += ("timestamp" -> currentTime_byDay.toString)
           cacheMutableMap += (tour_cache_key -> cacheAccuLabelsMap)
           labelMap.update(isTourAccuKey, "true")
         }
@@ -73,19 +71,18 @@ class AccumulateLabel extends Label {
     match{
       case None => {
         val cacheAccuLabelsMap = mutable.Map[String, String]()
-        cacheAccuLabelsMap += ("timestamp" -> currentTime.toString)
+        cacheAccuLabelsMap += ("timestamp" -> currentTime_byDay.toString)
         cacheMutableMap += (security_cache_key -> cacheAccuLabelsMap)
         //若缓存中不存在该 imsi@安防区域,则将isSecurityAccuKey设为true,指需要将其加入累计人数的计数中
-        labelMap.update(isSecurityAccuKey, "truenonesec")
+        labelMap.update(isSecurityAccuKey, "true")
       }
       case Some(cacheAccuLabelsMap) => {
         val cacheTime = cacheAccuLabelsMap.get("timestamp").get.toLong
-
         if (currentTime >= ((interval * 1000) + cacheTime)) {
-          //
-          cacheAccuLabelsMap += ("timestamp" -> currentTime.toString)
+          //更新本次记录时间到cache
+          cacheAccuLabelsMap += ("timestamp" -> currentTime_byDay.toString)
           cacheMutableMap += (security_cache_key -> cacheAccuLabelsMap)
-          labelMap.update(isSecurityAccuKey, "truesomesec")
+          labelMap.update(isSecurityAccuKey, "true")
         }
       }
     }
