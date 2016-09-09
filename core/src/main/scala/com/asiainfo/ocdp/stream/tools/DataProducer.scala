@@ -21,7 +21,7 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
   private val producer = new Producer[String, String](this.config)
 
   private val MSGNUM_MAX = 3
-  private val IMSI_MAX = 5
+  private val IMSI_MAX = 10
   private val IMEI_MAX = 4
   private val LAC_MAX = 3
   private val CI_MAX = 4
@@ -45,7 +45,6 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
 
           //begin time & end time
 
-
           val beginTime = System.currentTimeMillis()
           val msg = new StringBuilder(msgId.toString)
           msg.append(",")
@@ -60,8 +59,8 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           val phoneNum2 = rand.nextInt(PHONE_MAX) + 2000
           msg.append("139" + phoneNum1.toString() + phoneNum2.toString)
           msg.append(",")
-          //val long_imsi = "460009269" + (imsi + rand.nextInt(IMSI_MAX)).toString
-          val long_imsi = "4600092691019400"
+          val long_imsi = "460009269" + (imsi + rand.nextInt(IMSI_MAX)).toString
+          //val long_imsi = "4600092691019400"
           msg.append(long_imsi)
           msg.append(",")
 
@@ -103,7 +102,7 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
       }
       try {
         //sleep for 10 seconds after send a micro batch of message
-        Thread.sleep(100)
+        Thread.sleep(1)
       } catch {
         case e: Exception => println(e)
       }

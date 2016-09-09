@@ -18,7 +18,7 @@ class DataInterfaceServer extends Logging with Serializable {
     val conf = new DataInterfaceConf()
     // modify by surq at 2015.11.09 start
     //    val sql = "select id, name, dsid, type, status, properties " +
-    val sql = "select id, filter_expr,name, dsid, type, status, properties " +
+    val sql = "select id, filter_expr,name, dsid, type, delim, status, properties " +
       // modify by surq at 2015.11.09 end
       "from " + TableInfoConstant.DataInterfaceTableName +
       " where id='" + id + "' and status = 1"
@@ -32,6 +32,7 @@ class DataInterfaceServer extends Logging with Serializable {
       conf.setDiType(interface.get("type").get.toInt)
       // add by surq at 2015.11.09 start
       conf.set("filter_expr", interface.get("filter_expr").get)
+      conf.set("delim", interface.get("delim").get)
       // add by surq at 2015.11.09 end
       val dsconf = getDataSourceInfoById(interface.get("dsid").get)
       conf.setDsConf(dsconf)

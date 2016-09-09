@@ -15,6 +15,7 @@ class SiteLabel extends Label {
 
   val logger = LoggerFactory.getLogger(this.getClass)
   val fullPathKey = "full_path"
+  val isLatestSite = "isLatestSite"
 
   lazy val thresholdValue = conf.getLong(LabelConstant.STAY_TIMEOUT, LabelConstant.DEFAULT_TIMEOUT_VALUE)
 
@@ -41,7 +42,8 @@ class SiteLabel extends Label {
     val normal_imsi = line("imsi")
 
     labelMap.update(fullPathKey, "false")
-    labelMap.update("timestampstr", currentTimestamp_str)
+    //labelMap.update("timestampstr", currentTimestamp_str)
+    labelMap.update(isLatestSite, "false")
 
 
       cacheMutableMap.get(normal_imsi)
@@ -53,8 +55,9 @@ class SiteLabel extends Label {
 
           cacheMutableMap += (normal_imsi -> cacheSiteLabelsMap)
           //enhance label to add latest timestamp
-          labelMap.update("latestTimestamp", currentTimestamp_str)
+          //labelMap.update("latestTimestamp", currentTimestamp_str)
           labelMap.update(fullPathKey, "true")
+          labelMap.update(isLatestSite, "true")
         }
         case Some(cacheSiteLabelsMap) => {
           val latestLacCell = cacheSiteLabelsMap.get("lac_cell").get
@@ -70,9 +73,10 @@ class SiteLabel extends Label {
             if (!lac_cell.equals(latestLacCell)) {
               // Add the latest path to path cache
               labelMap.update(fullPathKey, "true")
+              labelMap.update(isLatestSite, "true")
             }
 
-            labelMap.update("latestTimestamp", cacheTime_str)
+            //labelMap.update("latestTimestamp", cacheTime_str)
           }
           else {
             if (cacheTimeMs - currentTimeMs < thresholdValue) {
@@ -80,7 +84,7 @@ class SiteLabel extends Label {
               // Add the latest path to path cache
               labelMap.update(fullPathKey, "true")
             }
-            labelMap.update("latestTimestamp", cacheTime_str)
+            //labelMap.update("latestTimestamp", cacheTime_str)
           }
 
         }

@@ -23,7 +23,7 @@ class StreamCodisWriter(diConf: DataInterfaceConf) extends StreamWriter{
   val dateFormat = "yyyyMMdd HH:mm:ss.SSS"
   val sdf =  new SimpleDateFormat(dateFormat)
   /**
-    * 向kafka发送数据
+    * 向Codis发送数据
     */
 
   def setMessage(jsonRDD: RDD[String], conf: EventConf, uniqKeys: String) = {
