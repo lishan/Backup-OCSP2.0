@@ -26,7 +26,8 @@ object LabelConstant {
   val LABEL_TRACK = "ext_usertrack"
 
   val LABEL_TOUR_AREA = "tour_area"
-  val LABEL_SECURITY_TYPE = "security_area"
+  val LABEL_SECURITY_AREA = "security_area"
+  val LABEL_CITY = "city_name"
 
 
   /**------------------- 标签属性 -----------------------*/

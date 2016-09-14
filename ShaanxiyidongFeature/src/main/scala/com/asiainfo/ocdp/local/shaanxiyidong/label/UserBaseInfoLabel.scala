@@ -12,9 +12,9 @@ import scala.collection.mutable
   */
 class UserBaseInfoLabel  extends Label{
   val logger = LoggerFactory.getLogger(this.getClass)
-  //区域标签前缀
-  val tour_type_sine = "tour_area"
-  val security_type_sine = "security_area"
+  //城市,省标签前缀
+  val city_sine = "city_name"
+  val province_sine = "province"
   val areaPathKey = "area_path"
 
   override def attachLabel(line: Map[String, String], cache: StreamingCache, labelQryData: mutable.Map[String, mutable.Map[String, String]]): (Map[String, String], StreamingCache) = {
@@ -31,12 +31,21 @@ class UserBaseInfoLabel  extends Label{
       info_cols.foreach(labelName => {
         labelMap +=  (labelName -> "")
       })
+      //如果查询不到user imsi, 则查询city_info信息,得到imsi码段的归属城市
+      val cachedCity = labelQryData.getOrElse(getCityKeys(line).head,Map[String, String]())
+      if (cachedCity.contains(city_sine)){
+        val city = cachedCity(city_sine)
+        labelMap += (LabelConstant.LABEL_CITY -> city)
+      }
+
     }
     else{
       info_cols.foreach(labelName => {
         val labelValue = cachedUser(labelName)
         labelMap += (labelName -> labelValue)
       })
+      //如果能查到user imsi,则将归属地设为陕西省
+      labelMap += (LabelConstant.LABEL_CITY -> "Shaanxi")
     }
 
     labelMap ++= line
@@ -46,5 +55,7 @@ class UserBaseInfoLabel  extends Label{
   }
 
   override def getQryKeys(line: Map[String, String]): Set[String] = Set[String]("user_base_info:" + line("imsi"))
+
+  private def getCityKeys(line: Map[String, String]): Set[String] = Set[String]("city_info:" + line("imsi").substring(0,10))
 
 }

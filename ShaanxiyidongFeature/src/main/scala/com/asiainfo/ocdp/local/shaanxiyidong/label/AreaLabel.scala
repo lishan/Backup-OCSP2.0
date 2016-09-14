@@ -23,7 +23,7 @@ class AreaLabel extends Label {
     val cachedArea = labelQryData.getOrElse(getQryKeys(line).head, Map[String, String]())
 
     labelMap += (LabelConstant.LABEL_TOUR_AREA -> "")
-    labelMap += (LabelConstant.LABEL_SECURITY_TYPE -> "")
+    labelMap += (LabelConstant.LABEL_SECURITY_AREA -> "")
 
     // 标记业务区域标签： 如果codis中，存在item为areas的字段，则取其相关区域
 
@@ -41,7 +41,7 @@ class AreaLabel extends Label {
       // 从codis中取区域
       val area = cachedArea(security_type_sine).trim()
       if (area != null && area != "") {
-        labelMap += (LabelConstant.LABEL_SECURITY_TYPE -> area)
+        labelMap += (LabelConstant.LABEL_SECURITY_AREA -> area)
       }
     }
 
