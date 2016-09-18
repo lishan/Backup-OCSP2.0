@@ -88,7 +88,7 @@ class Insert(value: Map[String, Any]) extends Callable[String] {
         //            pipeline.sync()
       }
       pipeline.sync()
-      println("Insert " + value.size + " key cost " + (System.currentTimeMillis() - t1) + " Millis")
+      //println("Insert " + value.size + " key cost " + (System.currentTimeMillis() - t1) + " Millis")
     } catch {
       case ex: Exception =>
         logger.error("= = " * 15 + "found error in Insert.call()")

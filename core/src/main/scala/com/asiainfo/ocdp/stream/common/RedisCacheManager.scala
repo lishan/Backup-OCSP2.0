@@ -416,7 +416,7 @@ abstract class RedisCacheManager extends CacheManager {
       for (index <- 0 until keySplit.size) {
         // 把查询的结果集放入multimap
         val result = qryCacheService.take().get
-        println("codis result size:" + result.size)
+        //println("codis result size:" + result.size)
         if (result != null) {
           result.foreach(rs => 
             if (rs._2 != null && rs._2.length > 0) resultMap += (rs._1 -> getKryoTool.deserialize[Any](ByteBuffer.wrap(rs._2))))
