@@ -77,6 +77,6 @@ class AreaLabel extends Label {
     * @param line:MC信令对像
     * @return codis数据库的key
     */
-  override def getQryKeys(line: Map[String, String]): Set[String] = Set[String]("area_info_:" + line("lac") + "_" + line("cell"))
+  override def getQryKeys(line: Map[String, String]): Set[String] = Set[String]("area_info:" + line("lac") + "_" + line("cell"))
 
 }
