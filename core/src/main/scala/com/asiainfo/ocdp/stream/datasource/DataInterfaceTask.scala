@@ -297,7 +297,7 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
             cache.asInstanceOf[immutable.Map[String, StreamingCache]]
 
           case None =>
-            println("rule caches null, key:" + key)
+            //println("rule caches null, key:" + key)
             val cachemap = mutable.Map[String, StreamingCache]()
             labels.foreach(label => cachemap += (label.conf.getId -> null))
             cachemap.toMap
@@ -310,7 +310,7 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
             case Some(cache) =>
               cache
             case None =>
-              println("old cache null, key:" + label.conf.getId)
+             // println("old cache null, key:" + label.conf.getId)
               null
           }
           // 传入本记录、往期中间记算结果cache、相关的用户资料表，进行打标签操作
