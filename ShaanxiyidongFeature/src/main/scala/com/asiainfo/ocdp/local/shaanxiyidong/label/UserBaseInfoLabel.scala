@@ -37,6 +37,9 @@ class UserBaseInfoLabel  extends Label{
         val city = cachedCity(city_sine)
         labelMap += (LabelConstant.LABEL_CITY -> city)
       }
+      else {
+        labelMap += (LabelConstant.LABEL_CITY -> "")
+      }
 
     }
     else{
