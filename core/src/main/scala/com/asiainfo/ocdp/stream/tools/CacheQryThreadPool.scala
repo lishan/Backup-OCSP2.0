@@ -2,7 +2,7 @@ package com.asiainfo.ocdp.stream.tools
 
 import java.util.concurrent.Callable
 import java.util.{ List => JList, Map => JMap }
-import com.asiainfo.ocdp.stream.common.CodisCacheManager
+import com.asiainfo.ocdp.stream.common.{RedisCacheManager, CodisCacheManager}
 import com.asiainfo.ocdp.stream.config.MainFrameConf
 import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
@@ -30,7 +30,7 @@ class Qry(keyList: List[String]) extends Callable[List[(String, Array[Byte])]] {
   override def call() = {
     val t1 = System.currentTimeMillis()
     val keys = keyList.map(x => x.getBytes).toSeq
-    val conn = CacheFactory.getManager.asInstanceOf[CodisCacheManager].getResource
+    val conn = CacheFactory.getManager.asInstanceOf[RedisCacheManager].getResource
     var result: JList[Array[Byte]] = null
     try {
       val pipeline = conn.pipelined()
@@ -43,7 +43,7 @@ class Qry(keyList: List[String]) extends Callable[List[(String, Array[Byte])]] {
         logger.error("= = " * 15 + "found error in Qry.call()" + "surq:" + ex.getStackTraceString)
         throw ex
     } finally {
-      conn.close()
+     conn.close()
     }
     if (result != null) keyList.zip(result) else null
   }
@@ -54,7 +54,7 @@ class QryHashall(keys: Seq[String]) extends Callable[Seq[(String, java.util.Map[
 
   override def call() = {
     val t1 = System.currentTimeMillis()
-    val conn = CacheFactory.getManager.asInstanceOf[CodisCacheManager].getResource
+    val conn = CacheFactory.getManager.asInstanceOf[RedisCacheManager].getResource
     var result: JList[JMap[String, String]] = null
     try {
       val pgl = conn.pipelined()

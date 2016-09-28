@@ -281,7 +281,7 @@ class DataInterfaceTask(id: String, interval: Int) extends StreamTask {
           throw ex
       }
       val f2 = System.currentTimeMillis()
-      println(" 1. 查取一批数据缓存中      val labelQryData = CacheFactory.getManager.hgetall(labelQryKeysSet.toList, hgetAllService)的交互状态信息 cost time : " + (f2 - f1) + " millis ! ")
+      println(" 1. 查取一批数据缓存中的交互状态信息 cost time : " + (f2 - f1) + " millis ! ")
       val labelQryData = CacheFactory.getManager.hgetall(labelQryKeysSet.toList, hgetAllService)
       val f3 = System.currentTimeMillis()
       println(" 2. 查取此批数据缓存中的用户相关信息表 cost time : " + (f3 - f2) + " millis ! ")

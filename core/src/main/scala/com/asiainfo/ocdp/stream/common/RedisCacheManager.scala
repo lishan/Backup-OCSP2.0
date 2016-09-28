@@ -442,19 +442,20 @@ abstract class RedisCacheManager extends CacheManager {
     val resultMap = Map[String, Map[String, String]]()
     // 把原数据划分小批次多线程查询
     val keySplit = keys.sliding(miniBatch, miniBatch).toList
-    keySplit.map(keyList => hgetAllService.submit(new QryHashall(keyList)))
-
-    for (index <- 0 until keySplit.size) {
-      try {
+    try {
+      keySplit.map(keyList => hgetAllService.submit(new QryHashall(keyList)))
+      for (index <- 0 until keySplit.size) {
         // 把查询的结果集放入multimap
         val result = hgetAllService.take().get()
         if (result != null) result.foreach(rs => resultMap += (rs._1 -> rs._2))
-      } catch {
-        case e: InterruptedException => logger.error("RedisCacheManager.hgetall－线程中断！", e.getStackTrace())
-        case e1: ExecutionException => logger.error("RedisCacheManager.hgetall－Execution异常！", e1.getStackTrace())
-        case e2: Exception => logger.error("RedisCacheManager.hgetall－Exception异常！", e2.getStackTrace())
       }
     }
+    catch {
+      case e: InterruptedException => logger.error("RedisCacheManager.hgetall－线程中断！", e.getStackTrace())
+      case e1: ExecutionException => logger.error("RedisCacheManager.hgetall－Execution异常！", e1.getStackTrace())
+      case e2: Exception => logger.error("RedisCacheManager.hgetall－Exception异常！", e2.getStackTrace())
+    }
+
     resultMap
   }
 
