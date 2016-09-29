@@ -424,7 +424,13 @@ abstract class RedisCacheManager extends CacheManager {
       }
     } catch {
       case e: InterruptedException => logger.error("RedisCacheManager.getMultiCacheByKeys－线程中断！", e.getStackTrace())
-      case e1: ExecutionException => logger.error("RedisCacheManager.getMultiCacheByKeys－Execution异常！", e1.getStackTrace())
+      case e1: ExecutionException =>{ logger.error("RedisCacheManager.getMultiCacheByKeys－Execution异常！", e1.getStackTrace())
+        println("exception message:"+ e1.getMessage)
+        val sb = new StringBuffer()
+        val stackArray = e1.getStackTrace()
+        stackArray.foreach( stack => sb.append(stack.toString + "\n"))
+        println("exception:" + sb.toString)
+      }
       case e2: Exception =>{logger.error("RedisCacheManager.getMultiCacheByKeys－Exception异常！", e2.getStackTrace())
         println("exception message:"+ e2.getMessage)
         val sb = new StringBuffer()

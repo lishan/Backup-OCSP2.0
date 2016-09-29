@@ -1,7 +1,7 @@
 package com.asiainfo.ocdp.stream.common
 
 import com.asiainfo.ocdp.stream.config.MainFrameConf
-import com.wandoulabs.jodis.{JedisResourcePool, RoundRobinJedisPool}
+import io.codis.jodis.{JedisResourcePool, RoundRobinJedisPool}
 import redis.clients.jedis.JedisPoolConfig
 
 /**
@@ -18,9 +18,15 @@ class JodisCacheManager extends RedisCacheManager {
     JedisConfig.setMaxTotal(MainFrameConf.systemProps.getInt("JedisMaxTotal"))
     JedisConfig.setMinEvictableIdleTimeMillis(MainFrameConf.systemProps.getInt("JedisMEM"))
     JedisConfig.setTestOnBorrow(true)
-    new RoundRobinJedisPool(MainFrameConf.systemProps.get("zk"),
+   /* new RoundRobinJedisPool(MainFrameConf.systemProps.get("zk"),
       MainFrameConf.systemProps.getInt("zkSessionTimeoutMs"),
       MainFrameConf.systemProps.get("zkpath"),
       JedisConfig)
+      */
+    RoundRobinJedisPool.create().curatorClient(MainFrameConf.systemProps.get("zk"),
+                                                MainFrameConf.systemProps.getInt("zkSessionTimeoutMs")
+                                              ).zkProxyDir(MainFrameConf.systemProps.get("zkpath"))
+                                               //.poolConfig(JedisConfig)
+                                               .build()
   }
 }
