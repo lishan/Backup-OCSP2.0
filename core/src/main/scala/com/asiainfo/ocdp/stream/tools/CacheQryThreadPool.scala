@@ -2,7 +2,7 @@ package com.asiainfo.ocdp.stream.tools
 
 import java.util.concurrent.Callable
 import java.util.{ List => JList, Map => JMap }
-import com.asiainfo.ocdp.stream.common.{RedisCacheManager, CodisCacheManager}
+import com.asiainfo.ocdp.stream.common.{RedisCacheManager, CodisCacheManager, JodisCacheManager}
 import com.asiainfo.ocdp.stream.config.MainFrameConf
 import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
@@ -76,7 +76,7 @@ class Insert(value: Map[String, Any]) extends Callable[String] {
 
   override def call() = {
     val t1 = System.currentTimeMillis()
-    val conn = CacheFactory.getManager.asInstanceOf[CodisCacheManager].getResource
+    val conn = CacheFactory.getManager.asInstanceOf[JodisCacheManager].getResource
     try {
       val pipeline = conn.pipelined()
       val ite = value.iterator
@@ -104,7 +104,7 @@ class InsertHash(value: Map[String, Map[String, String]]) extends Callable[Strin
 
   override def call() = {
     val t1 = System.currentTimeMillis()
-    val conn = CacheFactory.getManager.asInstanceOf[CodisCacheManager].getResource
+    val conn = CacheFactory.getManager.asInstanceOf[JodisCacheManager].getResource
 
     try {
       val pgl = conn.pipelined()
@@ -170,7 +170,7 @@ class InsertEventRows(value: Array[(String, String, String)]) extends Runnable {
 
   override def run() = {
     val t1 = System.currentTimeMillis()
-    val conn = CacheFactory.getManager.asInstanceOf[CodisCacheManager].getResource
+    val conn = CacheFactory.getManager.asInstanceOf[JodisCacheManager].getResource
     try {
       val pgl = conn.pipelined()
       value.foreach(elem => pgl.hset(elem._1.getBytes, elem._2.getBytes, elem._3.getBytes))
@@ -238,7 +238,7 @@ class QryEventCache(value: Array[(String, String)], eventId: String) extends Cal
   val logger = LoggerFactory.getLogger(this.getClass)
 //  import scala.collection.JavaConverters._
   override def call() = {
-    val conn = CacheFactory.getManager.asInstanceOf[CodisCacheManager].getResource
+    val conn = CacheFactory.getManager.asInstanceOf[JodisCacheManager].getResource
 
     // 营销业务ID
     val event_id = eventId
