@@ -11,13 +11,13 @@ import com.asiainfo.ocdp.stream.subject.SubjectTask
 object StreamTaskFactory {
 
   def getStreamTask(taskConf: TaskConf): StreamTask = {
-    val tid = taskConf.getTid
+    val id = taskConf.getId
     val interval = taskConf.getReceive_interval
     val taskType = taskConf.getTask_type
     if (TaskConstant.TYPE_DATAINTERFACE == taskType)
-      new DataInterfaceTask(tid, interval)
+      new DataInterfaceTask(id, interval)
     else if (TaskConstant.TYPE_SUTJECT == taskType)
-      new SubjectTask(tid, interval)
+      new SubjectTask(id, interval)
     else throw new Exception("Task type " + taskType + " is not supported !")
   }
 

@@ -170,10 +170,12 @@ object MainFrameManager extends Logging {
     } else if (master.contains("yarn")) {
       val num_executors = " --num-executors " + conf.getNum_executors
       var queue = " --queue "
-      if (conf.getQueue != None) {
+      if (conf.getQueue != None && !conf.getQueue.isEmpty) {
         queue += conf.getQueue
       } else {
-        queue += MainFrameConf.systemProps.get("queue")
+        //如果获取不到queue的配置那么就不添加--queue参数，yarn会自动分配任务到默认队列中
+        logInfo("The value of queue is invalid, remove --queue parameter")
+        queue = ""
       }
       // modify by surq at 2015.10.22 start
       //cmd += streamClass + master + deploy_mode + executor_memory + num_executors + queue + jars + " " + appJars + " " + tid

@@ -27,8 +27,6 @@ class TaskServer extends Logging {
 
   def getAllTaskInfos(): Array[TaskConf] = {
 
-//    val a = new Array[TaskConf]()
-
     val sql = "select id,type,status,num_executors,executor_memory,total_executor_cores,queue from " + TableInfoConstant.TaskTableName
     val data = JDBCUtil.query(sql)
     data.map(x => {
@@ -45,13 +43,12 @@ class TaskServer extends Logging {
   }
 
   def getTaskInfoById(id: String): TaskConf = {
-    val sql = "select id,type,tid,tname,receive_interval from " + TableInfoConstant.TaskTableName + " where id= '" + id +"'"
+    val sql = "select id,type,name,receive_interval from " + TableInfoConstant.TaskTableName + " where id= '" + id +"'"
     val data = JDBCUtil.query(sql).head
     val taskConf = new TaskConf()
     taskConf.setId(data.get("id").get)
     taskConf.setTask_type(data.get("type").get.toInt)
-    taskConf.setTid(data.get("tid").get)
-    taskConf.setName(data.get("tname").get)
+    taskConf.setName(data.get("name").get)
     taskConf.setReceive_interval(data.get("receive_interval").get.toInt)
     taskConf
   }

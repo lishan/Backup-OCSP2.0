@@ -8,7 +8,6 @@ import scala.beans.BeanProperty
 class TaskConf() {
   @BeanProperty var id: String = ""
   @BeanProperty var task_type: Int = 0
-  @BeanProperty var tid: String = ""
   @BeanProperty var name: String = ""
   @BeanProperty var receive_interval: Int = 0
   @BeanProperty var num_executors: String = ""
