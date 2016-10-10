@@ -14,21 +14,21 @@ class JodisCacheManager extends RedisCacheManager {
   private val jedisPool:JedisResourcePool = {
 
     val JedisConfig = new JedisPoolConfig()
-    JedisConfig.setMaxIdle(MainFrameConf.systemProps.getInt("jedisMaxIdle"))
-    JedisConfig.setMaxTotal(MainFrameConf.systemProps.getInt("jedisMaxTotal"))
-    JedisConfig.setMinEvictableIdleTimeMillis(MainFrameConf.systemProps.getInt("jedisMEM"))
-    JedisConfig.setMinIdle(MainFrameConf.systemProps.getInt("jedisMinIdle"))
+    JedisConfig.setMaxIdle(MainFrameConf.codisProps.getInt("jedisMaxIdle"))
+    JedisConfig.setMaxTotal(MainFrameConf.codisProps.getInt("jedisMaxTotal"))
+    JedisConfig.setMinEvictableIdleTimeMillis(MainFrameConf.codisProps.getInt("jedisMEM"))
+    JedisConfig.setMinIdle(MainFrameConf.codisProps.getInt("jedisMinIdle"))
     JedisConfig.setTestOnBorrow(true)
 
-    println("jedisMaxTotal = " + MainFrameConf.systemProps.getInt("jedisMaxTotal") +
-      ", jedisMaxIdle = " + MainFrameConf.systemProps.getInt("jedisMaxIdle") +
-      ", jedisMinIdle = " + MainFrameConf.systemProps.getInt("jedisMinIdle") +
-      ", jedisMEM = " + MainFrameConf.systemProps.getInt("jedisMEM")
+    println("jedisMaxTotal = " + MainFrameConf.codisProps.getInt("jedisMaxTotal") +
+      ", jedisMaxIdle = " + MainFrameConf.codisProps.getInt("jedisMaxIdle") +
+      ", jedisMinIdle = " + MainFrameConf.codisProps.getInt("jedisMinIdle") +
+      ", jedisMEM = " + MainFrameConf.codisProps.getInt("jedisMEM")
     )
 
-    RoundRobinJedisPool.create().curatorClient(MainFrameConf.systemProps.get("zk"),
-                                                MainFrameConf.systemProps.getInt("zkSessionTimeoutMs")
-                                              ).zkProxyDir(MainFrameConf.systemProps.get("zkpath"))
+    RoundRobinJedisPool.create().curatorClient(MainFrameConf.codisProps.get("zk"),
+                                                MainFrameConf.codisProps.getInt("zkSessionTimeoutMs")
+                                              ).zkProxyDir(MainFrameConf.codisProps.get("zkpath"))
                                                .poolConfig(JedisConfig)
                                                .build()
   }
