@@ -14,19 +14,22 @@ class JodisCacheManager extends RedisCacheManager {
   private val jedisPool:JedisResourcePool = {
 
     val JedisConfig = new JedisPoolConfig()
-    JedisConfig.setMaxIdle(MainFrameConf.systemProps.getInt("JedisMaxIdle"))
-    JedisConfig.setMaxTotal(MainFrameConf.systemProps.getInt("JedisMaxTotal"))
-    JedisConfig.setMinEvictableIdleTimeMillis(MainFrameConf.systemProps.getInt("JedisMEM"))
+    JedisConfig.setMaxIdle(MainFrameConf.systemProps.getInt("jedisMaxIdle"))
+    JedisConfig.setMaxTotal(MainFrameConf.systemProps.getInt("jedisMaxTotal"))
+    JedisConfig.setMinEvictableIdleTimeMillis(MainFrameConf.systemProps.getInt("jedisMEM"))
+    JedisConfig.setMinIdle(MainFrameConf.systemProps.getInt("jedisMinIdle"))
     JedisConfig.setTestOnBorrow(true)
-   /* new RoundRobinJedisPool(MainFrameConf.systemProps.get("zk"),
-      MainFrameConf.systemProps.getInt("zkSessionTimeoutMs"),
-      MainFrameConf.systemProps.get("zkpath"),
-      JedisConfig)
-      */
+
+    println("jedisMaxTotal = " + MainFrameConf.systemProps.getInt("jedisMaxTotal") +
+      ", jedisMaxIdle = " + MainFrameConf.systemProps.getInt("jedisMaxIdle") +
+      ", jedisMinIdle = " + MainFrameConf.systemProps.getInt("jedisMinIdle") +
+      ", jedisMEM = " + MainFrameConf.systemProps.getInt("jedisMEM")
+    )
+
     RoundRobinJedisPool.create().curatorClient(MainFrameConf.systemProps.get("zk"),
                                                 MainFrameConf.systemProps.getInt("zkSessionTimeoutMs")
                                               ).zkProxyDir(MainFrameConf.systemProps.get("zkpath"))
-                                               //.poolConfig(JedisConfig)
+                                               .poolConfig(JedisConfig)
                                                .build()
   }
 }
