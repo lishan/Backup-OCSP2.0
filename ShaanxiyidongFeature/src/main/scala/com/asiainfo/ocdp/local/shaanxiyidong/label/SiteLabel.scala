@@ -36,7 +36,7 @@ class SiteLabel extends Label {
     val labelMap = fieldsMap()
 
     val currentTimestamp = line("timestamp")
-    val currentTimestamp_str = DateFormatUtils.dateMs2Str(currentTimestamp.toLong)
+    //val currentTimestamp_str = DateFormatUtils.dateMs2Str(currentTimestamp.toLong)
 
     val lac_cell  = line("lac") + "_" + line("cell")
     val normal_imsi = line("imsi")
@@ -50,7 +50,8 @@ class SiteLabel extends Label {
       match{
         case None => {
           val cacheSiteLabelsMap = mutable.Map[String, String]()
-          cacheSiteLabelsMap += ("timestamp" -> currentTimestamp_str)
+          //cacheSiteLabelsMap += ("timestamp" -> currentTimestamp_str)
+          cacheSiteLabelsMap += ("timestamp" -> currentTimestamp)
           cacheSiteLabelsMap += ("lac_cell" -> lac_cell)
 
           cacheMutableMap += (normal_imsi -> cacheSiteLabelsMap)
@@ -61,13 +62,14 @@ class SiteLabel extends Label {
         }
         case Some(cacheSiteLabelsMap) => {
           val latestLacCell = cacheSiteLabelsMap.get("lac_cell").get
-          val cacheTime_str = cacheSiteLabelsMap.get("timestamp").get
-          val cacheTimeMs = DateFormatUtils.dateStr2Ms(cacheTime_str)
+          val cacheTime = cacheSiteLabelsMap.get("timestamp").get
+          //val cacheTimeMs = DateFormatUtils.dateStr2Ms(cacheTime_str)
+          val cacheTimeMs = cacheTime.toLong
           val currentTimeMs = currentTimestamp.toLong
 
           if (cacheTimeMs <= currentTimeMs) {
             //Update the latest time to the site cache
-            cacheSiteLabelsMap += ("timestamp" -> currentTimestamp_str)
+            cacheSiteLabelsMap += ("timestamp" -> currentTimestamp)
             cacheSiteLabelsMap += ("lac_cell" -> lac_cell)
 
             if (!lac_cell.equals(latestLacCell)) {

@@ -23,14 +23,13 @@ class UserBaseInfoLabel  extends Label{
 
     val info_cols = conf.get("user_info_cols").split(",")
 
+    // add label with empty string if the user does not exist
+    info_cols.foreach(labelName => {
+      labelMap +=  (labelName -> "")
+    })
 
     val cachedUser = labelQryData.getOrElse(getQryKeys(line).head, Map[String, String]())
-
     if (cachedUser.isEmpty){
-      // add label with empty string if the user does not exist
-      info_cols.foreach(labelName => {
-        labelMap +=  (labelName -> "")
-      })
       //如果查询不到user imsi, 则查询city_info信息,得到imsi码段的归属城市
       val cachedCity = labelQryData.getOrElse(getCityKeys(line).head,Map[String, String]())
       if (cachedCity.contains(city_sine)){
@@ -44,8 +43,10 @@ class UserBaseInfoLabel  extends Label{
     }
     else{
       info_cols.foreach(labelName => {
-        val labelValue = cachedUser(labelName)
-        labelMap += (labelName -> labelValue)
+        val labelValue = cachedUser.getOrElse(labelName, "")
+        if (!labelValue.isEmpty){
+          labelMap += (labelName -> labelValue)
+        }
       })
       //如果能查到user imsi,则将归属地设为陕西省
       labelMap += (LabelConstant.LABEL_CITY -> "Shaanxi")
