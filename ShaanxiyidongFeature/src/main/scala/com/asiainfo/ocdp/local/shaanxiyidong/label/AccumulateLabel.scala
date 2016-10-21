@@ -4,6 +4,7 @@ import com.asiainfo.ocdp.stream.common.{LabelProps, StreamingCache}
 import com.asiainfo.ocdp.stream.constant.LabelConstant
 import com.asiainfo.ocdp.stream.label.Label
 import com.asiainfo.ocdp.stream.tools.DateFormatUtils
+import com.google.protobuf.TextFormat.ParseException
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -34,8 +35,9 @@ class AccumulateLabel extends Label {
     val cacheMutableMap = transformCacheMap2mutableMap(cacheImmutableMap)
     // mcsource 打标签用[初始化标签值]
     val labelMap = fieldsMap()
-    //由于陕西移动信令格式时间戳为日期而非毫秒数,因此将日期转为毫秒数进行处理
-    val currentTime = DateFormatUtils.dateStr2Ms(line("timestamp"),"yyyyMMddhhmmssSSS")
+    //由于陕西移动信令格式时间戳为日期而非毫秒数,因此将日期末位补0,转为毫秒数进行处理
+    val currentTime = DateFormatUtils.dateStr2Ms(line("timestamp")+"0","yyyyMMddhhmmssSSS")
+
     //由于业务需求统计周期为自然日,因此应将currentTime对应的当日时间00:00写入cache
     //currentTime为1970-01-01 08:00:00.000到当前的毫秒数,因此+8个小时的毫秒数(28800000L)得出1970-01-01 00:00:00.000 到当前的毫秒数
     //(currentTime + 28800000L) % (86400000L) 为当日超过00:00的毫秒数,

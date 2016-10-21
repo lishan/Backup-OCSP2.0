@@ -27,6 +27,8 @@ object LabelConstant {
 
   val LABEL_TOUR_AREA = "tour_area"
   val LABEL_SECURITY_AREA = "security_area"
+  val LABEL_LONGITUDE = "longitude"
+  val LABEL_LATITUDE = "latitude"
   val LABEL_CITY = "city_name"
 
 

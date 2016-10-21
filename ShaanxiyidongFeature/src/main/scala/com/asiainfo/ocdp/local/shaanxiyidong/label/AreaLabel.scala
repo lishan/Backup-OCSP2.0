@@ -15,7 +15,9 @@ class AreaLabel extends Label {
   //区域标签前缀
   val tour_type_sine = "tour_area"
   val security_type_sine = "security_area"
-
+  //经纬度标签前缀
+  val longitude_sine = "longitude"
+  val latitude_sine = "latitude"
   override def attachLabel(line: Map[String, String], cache: StreamingCache, labelQryData: mutable.Map[String, mutable.Map[String, String]]): (Map[String, String], StreamingCache) = {
 
     val labelMap = fieldsMap()
@@ -24,10 +26,28 @@ class AreaLabel extends Label {
 
     labelMap += (LabelConstant.LABEL_TOUR_AREA -> "")
     labelMap += (LabelConstant.LABEL_SECURITY_AREA -> "")
-
-    // 标记业务区域标签： 如果codis中，存在item为areas的字段，则取其相关区域
-
-   if (cachedArea.contains(tour_type_sine)) {
+    labelMap += (LabelConstant.LABEL_LONGITUDE -> "")
+    labelMap += (LabelConstant.LABEL_LATITUDE -> "")
+    //标记经度
+    if (cachedArea.contains(longitude_sine)) {
+      // 从codis中取区域
+      val longitude = cachedArea(longitude_sine).trim()
+      if (longitude != null && longitude != "") {
+        // 信令所在区域列表
+        labelMap += (LabelConstant.LABEL_LONGITUDE -> longitude)
+      }
+    }
+    //标记纬度
+    if (cachedArea.contains(latitude_sine)) {
+      // 从codis中取区域
+      val latitude = cachedArea(latitude_sine).trim()
+      if (latitude != null && latitude != "") {
+        // 信令所在区域列表
+        labelMap += (LabelConstant.LABEL_LATITUDE -> latitude)
+      }
+    }
+    // 标记旅游区域标签
+    if (cachedArea.contains(tour_type_sine)) {
       // 从codis中取区域
       val area = cachedArea(tour_type_sine).trim()
       if (area != null && area != "") {
