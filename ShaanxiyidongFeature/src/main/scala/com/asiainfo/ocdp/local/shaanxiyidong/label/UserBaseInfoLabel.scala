@@ -28,10 +28,10 @@ class UserBaseInfoLabel  extends Label{
       labelMap +=  (labelName -> "")
     })
 
-    val cachedUser = labelQryData.getOrElse(getQryKeys(line).head, Map[String, String]())
+    val cachedUser = labelQryData.getOrElse("user_base_info:" + line("imsi"), Map[String, String]())
     if (cachedUser.isEmpty){
       //如果查询不到user imsi, 则查询city_info信息,得到imsi码段的归属城市
-      val cachedCity = labelQryData.getOrElse(getCityKeys(line).head,Map[String, String]())
+      val cachedCity = labelQryData.getOrElse("city_info:" + line("imsi").substring(0,10),Map[String, String]())
       if (cachedCity.contains(city_sine)){
         val city = cachedCity(city_sine)
         labelMap += (LabelConstant.LABEL_CITY -> city)
@@ -58,8 +58,10 @@ class UserBaseInfoLabel  extends Label{
 
   }
 
-  override def getQryKeys(line: Map[String, String]): Set[String] = Set[String]("user_base_info:" + line("imsi"))
+  override def getQryKeys(line: Map[String, String]): Set[String] = {
 
-  private def getCityKeys(line: Map[String, String]): Set[String] = Set[String]("city_info:" + line("imsi").substring(0,10))
+    Set[String]("user_base_info:" + line("imsi"), "city_info:" + line("imsi").substring(0,10))
+
+  }
 
 }
