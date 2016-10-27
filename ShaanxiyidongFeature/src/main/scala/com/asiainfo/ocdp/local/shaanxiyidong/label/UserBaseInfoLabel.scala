@@ -29,17 +29,24 @@ class UserBaseInfoLabel  extends Label{
     })
 
     val cachedUser = labelQryData.getOrElse("user_base_info:" + line("imsi"), Map[String, String]())
-    if (cachedUser.isEmpty){
+    if (cachedUser.isEmpty) {
       //如果查询不到user imsi, 则查询city_info信息,得到imsi码段的归属城市
-      val cachedCity = labelQryData.getOrElse("city_info:" + line("imsi").substring(0,10),Map[String, String]())
-      if (cachedCity.contains(city_sine)){
+      var cachedCity : mutable.Map[String,String] = null
+      //若imsi前三位为"460",则查询imsi的号段为前10位,否则为前3位
+      if (line("imsi").substring(0,3).equals("460")){
+        cachedCity = labelQryData.getOrElse("city_info:" + line("imsi").substring(0, 10), mutable.Map[String, String]())
+      }
+      else{
+        cachedCity = labelQryData.getOrElse("city_info:" + line("imsi").substring(0, 3), mutable.Map[String, String]())
+      }
+      if (cachedCity.contains(city_sine)) {
         val city = cachedCity(city_sine)
         labelMap += (LabelConstant.LABEL_CITY -> city)
       }
-      else {
+      else{
         labelMap += (LabelConstant.LABEL_CITY -> "")
-      }
 
+      }
     }
     else{
       info_cols.foreach(labelName => {
@@ -59,9 +66,14 @@ class UserBaseInfoLabel  extends Label{
   }
 
   override def getQryKeys(line: Map[String, String]): Set[String] = {
-
-    Set[String]("user_base_info:" + line("imsi"), "city_info:" + line("imsi").substring(0,10))
-
+    //检查imsi前三位,若为'460'表示为国内imsi,则查询city_info时使用imsi前10位作为号段,
+    //若为国外imsi,则查询city_info时使用imsi前3位作为号段
+    if (line("imsi").substring(0,3).equals("460")){
+      Set[String]("user_base_info:" + line("imsi"), "city_info:" + line("imsi").substring(0,10))
+    }
+    else {
+      Set[String]("user_base_info:" + line("imsi"), "city_info:" + line("imsi").substring(0,3))
+    }
   }
 
 }
