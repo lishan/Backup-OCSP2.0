@@ -81,7 +81,7 @@ class EventServer extends Logging with Serializable {
           if (cache != null) {
             val cache_time = new String(cache)
             // 若cache中有上次营销事件,且满足 营销时间>(上次营销事件+营销周期)
-            if (current_time >= (cache_time.toLong + interval * 1000)) {
+            if (current_time >= (cache_time.toLong + interval * 1000L)) {
               // 放入更新codis list等待更新
               updateArrayBuffer.append((key, eventId, String.valueOf(current_time)))
               // 放入输入map等待输出
