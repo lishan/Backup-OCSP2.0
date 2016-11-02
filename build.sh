@@ -28,7 +28,7 @@ cp core/target/core-1.0-SNAPSHOT-dist/lib/commons-pool2-2.0.jar build/OCDP_Strea
 cp core/target/core-1.0-SNAPSHOT-dist/lib/mysql-connector-java-5.1.34.jar build/OCDP_Stream/lib
 cp core/target/core-1.0-SNAPSHOT-dist/lib/spark-streaming-kafka-assembly_2.10-1.6.0.jar build/OCDP_Stream/lib
 cp core/target/core-1.0-SNAPSHOT-dist/lib/scala-library-2.10.4.jar build/OCDP_Stream/lib
-
+cp conf/common.xml build/OCDP_Stream/lib
 if [ -d "$PROJECT" ]; then
   cp ${PROJECT}/target/"$PROJECT"*.jar build/OCDP_Stream/lib
 else
