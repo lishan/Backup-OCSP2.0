@@ -53,6 +53,7 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
 
     val numPartitionsCustom = conf.get("numPartitions", "null")
 
+
     if (NumberUtils.isDigits(numPartitionsCustom)){
       numPartitions = numPartitionsCustom.toInt
     }
@@ -63,6 +64,7 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
         numPartitions = 1
       }
     }
+
 
     logInfo(s"The number of partitions is $numPartitions")
 
