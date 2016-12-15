@@ -193,12 +193,8 @@ ul[dnd-list] li.selected {
   color: #3c763d;
 }
 
-input.ng-invalid {
+.redBlock {
   border: 1px solid red;
-}
-
-span.invalid-span {
-  color: red;
 }
 
 .wizard-card-container {
