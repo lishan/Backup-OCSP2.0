@@ -10,7 +10,7 @@
   <includeBaseDirectory>false</includeBaseDirectory>
   <fileSets>
     <fileSet>
-      <directory>server</directory>
+      <directory>build-server</directory>
       <outputDirectory>/server</outputDirectory>
     </fileSet>
     <fileSet>

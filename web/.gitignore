@@ -1,5 +1,6 @@
 /node_modules
 /dist
+/build-server
 /.sass-cache
 /app/bower_components
 /.idea
@@ -8,4 +9,5 @@ npm-debug.log
 nohup.out
 /etc/
 /node/
+/app/build-scripts
 /target/

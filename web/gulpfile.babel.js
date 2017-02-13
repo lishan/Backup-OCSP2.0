@@ -16,6 +16,9 @@ var yeoman = {
 
 var paths = {
   scripts: [yeoman.app + '/scripts/**/*.js'],
+  buildScriptsDest: yeoman.app + '/build-scripts',
+  buildScripts : [yeoman.app + '/build-scripts/**/*.js'],
+  serverScripts: ['server/**/*.js'],
   styles: [yeoman.app + '/sass/**/*.scss'],
   test: ['test/spec/**/*.js'],
   testRequire: [
@@ -51,6 +54,18 @@ var styles = lazypipe()
   .pipe($.autoprefixer, 'last 1 version')
   .pipe(gulp.dest, 'app/styles');
 
+var es6ClientScript = lazypipe()
+  .pipe($.babel, {
+    presets: ['es2015']
+  })
+  .pipe(gulp.dest, paths.buildScriptsDest);
+
+var es6ServerScript = lazypipe()
+  .pipe($.babel, {
+    presets: ['es2015']
+  })
+  .pipe(gulp.dest, 'build-server');
+
 ///////////
 // Tasks //
 ///////////
@@ -71,8 +86,8 @@ gulp.task('start:client', ['start:server', 'styles'], function () {
 
 gulp.task('start:server', function() {
   $.nodemon({
-    script: 'server/app.js',
-    ignore: ["app","dist","upload","node","node-v6.9.1"]
+    script: 'build-server/app.js',
+    ignore: ["app","dist","upload","node","node-v6.9.1","build-server"]
   });
 });
 
@@ -90,7 +105,13 @@ gulp.task('watch', function () {
   $.watch(paths.scripts)
     .pipe($.plumber())
     .pipe(lintScripts())
+    .pipe(es6ClientScript())
     .pipe($.livereload());
+
+  $.watch(paths.serverScripts)
+    .pipe($.plumber())
+    .pipe(lintScripts())
+    .pipe(es6ServerScript());
 
   $.watch(paths.test)
     .pipe($.plumber())
@@ -110,8 +131,8 @@ gulp.task('serve', function (cb) {
 //TODO: test should be changed that karma config is wrong
 gulp.task('start:server:test', function() {
   $.nodemon({
-    script: 'server/app.js',
-    ignore: ["app","dist","upload","node","node-v6.9.1"]
+    script: 'build-server/app.js',
+    ignore: ["app","dist","upload","node","node-v6.9.1","build-server"]
   });
 });
 
@@ -143,7 +164,25 @@ gulp.task('clean:dist', function (cb) {
   rimraf('./dist', cb);
 });
 
-gulp.task('client:build', ['html', 'styles'], function () {
+gulp.task('clean:server', function(cb) {
+  rimraf('./build-server', cb);
+});
+
+gulp.task('clean:client', function(cb) {
+  rimraf('./app/build-scripts', cb);
+});
+
+gulp.task('es6:frontend', () => {
+  return gulp.src(paths.scripts)
+    .pipe(es6ClientScript());
+});
+
+gulp.task('es6:server', () => {
+  return gulp.src(paths.serverScripts)
+    .pipe(es6ServerScript());
+});
+
+gulp.task('client:build', ['html', 'styles', 'es6:frontend', 'es6:server'], function () {
   var jsFilter = $.filter('**/*.js');
   var cssFilter = $.filter('**/*.css');
 
@@ -210,7 +249,7 @@ gulp.task('copy:fonts', function () {
     .pipe(gulp.dest(yeoman.dist + '/fonts'));
 });
 
-gulp.task('build', ['clean:dist'], function () {
+gulp.task('build', ['clean:dist', 'clean:server', 'clean:client'], function () {
   runSequence(['images', 'favicon', 'copy:extras', 'copy:fonts', 'client:rename', 'pageNotFound']);
 });
 
