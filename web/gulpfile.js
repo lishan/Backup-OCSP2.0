@@ -70,29 +70,31 @@ gulp.task('start:client', ['start:server', 'styles'], function () {
 });
 
 gulp.task('start:server', function() {
-  $.express.run([
-    'server/app.js'
-  ]);
+  $.nodemon({
+    script: 'server/app.js',
+    ignore: ["app","dist","upload","node","node-v6.9.1"]
+  });
 });
 
 gulp.task('watch', function () {
+  $.livereload.listen();
   $.watch(paths.styles)
     .pipe($.plumber())
     .pipe(styles())
-    .pipe($.express.notify());
+    .pipe($.livereload());
 
   $.watch(paths.views.files)
     .pipe($.plumber())
-    .pipe($.express.notify());
+    .pipe($.livereload());
 
   $.watch(paths.scripts)
     .pipe($.plumber())
     .pipe(lintScripts())
-    .pipe($.express.notify());
+    .pipe($.livereload());
 
   $.watch(paths.test)
     .pipe($.plumber())
-    .pipe(lintScripts());
+    .pipe($.livereload());
 
   gulp.watch('bower.json', ['bower']);
 });
@@ -105,17 +107,12 @@ gulp.task('serve', function (cb) {
     'watch', cb);
 });
 
-gulp.task('serve:prod', function() {
-  $.express.run([
-    'server/app.js'
-  ]);
-});
-
 //TODO: test should be changed that karma config is wrong
 gulp.task('start:server:test', function() {
-  $.express.run([
-    'server/app.js'
-  ]);
+  $.nodemon({
+    script: 'server/app.js',
+    ignore: ["app","dist","upload","node","node-v6.9.1"]
+  });
 });
 
 gulp.task('test', ['start:server:test'], function () {
