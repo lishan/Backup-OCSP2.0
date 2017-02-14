@@ -245,6 +245,11 @@ gulp.task('pageNotFound', function(){
     .pipe(gulp.dest(yeoman.dist));
 });
 
+gulp.task('config', () => {
+  return gulp.src("server/config.js.template")
+    .pipe(gulp.dest("build-server"))
+});
+
 gulp.task('copy:extras', function () {
   return gulp.src(yeoman.app + '/*/.*', { dot: true })
     .pipe(gulp.dest(yeoman.dist));
@@ -256,7 +261,7 @@ gulp.task('copy:fonts', function () {
 });
 
 gulp.task('build', ['clean:dist', 'clean:server', 'clean:client'], function () {
-  runSequence(['images', 'favicon', 'copy:extras', 'copy:fonts', 'client:rename', 'pageNotFound']);
+  runSequence(['config', 'images', 'favicon', 'copy:extras', 'copy:fonts', 'client:rename', 'pageNotFound']);
 });
 
 gulp.task('default', ['build']);
