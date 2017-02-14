@@ -75,8 +75,13 @@ gulp.task('styles', function () {
     .pipe(styles());
 });
 
-gulp.task('lint:scripts', function () {
+gulp.task('lint:clientScripts', function () {
   return gulp.src(paths.scripts)
+    .pipe(lintScripts());
+});
+
+gulp.task('lint:serverScripts', function () {
+  return gulp.src(paths.serverScripts)
     .pipe(lintScripts());
 });
 
@@ -122,7 +127,8 @@ gulp.task('watch', function () {
 
 gulp.task('serve', function (cb) {
   runSequence(
-    ['lint:scripts'],
+    ['lint:clientScripts'],
+    ['lint:serverScripts'],
     ['start:client'],
 	  ['bower'],
     'watch', cb);

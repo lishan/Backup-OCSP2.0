@@ -1,3 +1,4 @@
+"use strict";
 var express = require('express');
 var sequelize = require('../sequelize');
 var Sequelize = require('sequelize');
@@ -18,7 +19,7 @@ router.post('/login/:name', function (req, res) {
     }
   }, function () {
     res.status(500).send(trans.databaseError);
-  })
+  });
 });
 
 router.post('/change', function(req, res){
@@ -31,13 +32,13 @@ router.post('/change', function(req, res){
         res.send({status: true});
       }, function(){
         res.send({status: false});
-      })
+      });
     }else{
       res.send({status: false});
     }
   }, function(){
     res.status(500).send(trans.databaseError);
-  })
+  });
 });
 
 router.get('/md5/:str', function(req,res){
