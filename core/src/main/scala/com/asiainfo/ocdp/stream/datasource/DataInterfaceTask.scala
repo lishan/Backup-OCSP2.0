@@ -3,7 +3,7 @@ package com.asiainfo.ocdp.stream.datasource
 import java.text.SimpleDateFormat
 import java.util.concurrent._
 
-import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, StreamingCache}
+import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, StreamingCache,EventCycleLife}
 import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, MainFrameConf, TaskConf}
 import com.asiainfo.ocdp.stream.constant.DataSourceConstant
 import com.asiainfo.ocdp.stream.constant.LabelConstant
@@ -12,7 +12,6 @@ import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.service.DataInterfaceServer
 import com.asiainfo.ocdp.stream.tools.{CacheFactory, CacheQryThreadPool, Json4sUtils}
 import org.apache.commons.lang.StringUtils
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -310,15 +309,25 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
     val eventService = new ExecutorCompletionService[String](threadPool)
 
-    events.map(event => eventService.submit(new BuildEvent(event, df, uniqKeys)))
+    val now = new java.util.Date()
+    val validEvents = events.filter(event => {
 
-    for (index <- 0 until events.size) {
+      val period = event.conf.get("period", "")
+
+      if (period.isEmpty) true
+      else new EventCycleLife(period).contains(now)
+    })
+
+    validEvents.map(event => eventService.submit(new BuildEvent(event, df, uniqKeys)))
+
+    for (index <- 0 until validEvents.size) {
       eventService.take.get()
     }
 
     threadPool.shutdown()
 
   }
+
 }
 
 class BuildEvent(event: Event, df: DataFrame, uniqKeys: String) extends Callable[String] {
