@@ -11,3 +11,4 @@ nohup.out
 /node/
 /app/build-scripts
 /target/
+ocsp.war

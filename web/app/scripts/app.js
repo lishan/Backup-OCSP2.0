@@ -72,6 +72,9 @@ angular
   .config(['usSpinnerConfigProvider', function (usSpinnerConfigProvider) {
     usSpinnerConfigProvider.setDefaults({color: 'orange', radius: 20});
   }])
+  .config(['$httpProvider', function($httpProvider){
+    $httpProvider.interceptors.push('UrlRewriteInterceptor');
+  }])
   .config(['$translateProvider', '$windowProvider', function($translateProvider, $windowProvider){
     var window = $windowProvider.$get();
     var lang = window.navigator.userLanguage || window.navigator.language;

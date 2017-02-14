@@ -85,14 +85,20 @@ gulp.task('lint:serverScripts', function () {
     .pipe(lintScripts());
 });
 
-gulp.task('start:client', ['start:server', 'styles'], function () {
-  openURL("http://localhost:9000","Chrome");
+gulp.task('start:client', ['start:server', 'styles', 'es6:frontend', 'es6:server'], function () {
+  openURL("http://localhost:9000","firefox");
 });
 
-gulp.task('start:server', function() {
-  $.nodemon({
+gulp.task('start:server', function(cb) {
+  let started = false;
+  return $.nodemon({
     script: 'build-server/app.js',
     ignore: ["app","dist","upload","node","node-v6.9.1","build-server"]
+  }).on('start', function () {
+    if (!started) {
+      cb();
+      started = true;
+    }
   });
 });
 
@@ -134,6 +140,21 @@ gulp.task('serve', function (cb) {
     'watch', cb);
 });
 
+// inject bower components
+gulp.task('bower', function () {
+  return gulp.src(paths.views.main)
+    .pipe(wiredep({
+      directory: yeoman.app + '/bower_components',
+      ignorePath: '..',
+      exclude: ['bower_components/mermaid/dist/mermaid.slim.js']
+    }))
+  .pipe(gulp.dest(yeoman.app));
+});
+
+///////////
+// Tests //
+///////////
+
 //TODO: test should be changed that karma config is wrong
 gulp.task('start:server:test', function() {
   $.nodemon({
@@ -149,17 +170,6 @@ gulp.task('test', ['start:server:test'], function () {
       configFile: paths.karma,
       action: 'watch'
     }));
-});
-
-// inject bower components
-gulp.task('bower', function () {
-  return gulp.src(paths.views.main)
-    .pipe(wiredep({
-      directory: yeoman.app + '/bower_components',
-      ignorePath: '..',
-      exclude: ['bower_components/mermaid/dist/mermaid.slim.js']
-    }))
-  .pipe(gulp.dest(yeoman.app));
 });
 
 ///////////
@@ -216,6 +226,7 @@ gulp.task('client:build', ['html', 'styles', 'es6:frontend', 'es6:server'], func
 
 gulp.task('client:rename', ['client:build'], function(){
   return gulp.src(yeoman.dist + "/index*.html")
+    .pipe($.rimraf({force: true}))
     .pipe($.rename("index.html"))
     .pipe(gulp.dest(yeoman.dist))
 });
@@ -256,12 +267,22 @@ gulp.task('copy:extras', function () {
 });
 
 gulp.task('copy:fonts', function () {
-  return gulp.src(yeoman.app + '/fonts/**/*')
+  return gulp.src(yeoman.app + '/bower_components/bootstrap/fonts/**/*')
     .pipe(gulp.dest(yeoman.dist + '/fonts'));
 });
 
-gulp.task('build', ['clean:dist', 'clean:server', 'clean:client'], function () {
-  runSequence(['config', 'images', 'favicon', 'copy:extras', 'copy:fonts', 'client:rename', 'pageNotFound']);
+gulp.task('build', ['clean:dist', 'clean:server', 'clean:client'], function (cb) {
+  runSequence(['config', 'images', 'favicon', 'copy:extras', 'copy:fonts', 'client:rename', 'pageNotFound'], cb);
+});
+
+gulp.task('war', ['build'], () => {
+  return gulp.src([yeoman.dist + "/**"])
+    .pipe($.war({
+      welcome: 'index.html',
+      displayName: 'OCSP'
+    }))
+    .pipe($.zip('ocsp.war'))
+    .pipe(gulp.dest("."));
 });
 
 gulp.task('default', ['build']);

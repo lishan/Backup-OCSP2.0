@@ -10,14 +10,20 @@ var favicon = require('serve-favicon');
 
 if(env === 'dev') {
   app.use(require('connect-livereload')());
+  app.use("/fonts",express.static("app/bower_components/bootstrap/fonts"));
 }
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
 
 app.use(express.static(config[env].dist));
-app.use("/fonts",express.static("app/bower_components/bootstrap/fonts"));
 app.use(favicon(path.join(__dirname,'../',config[env].dist,'/favicon.ico')));
 
 // rest api
