@@ -34,7 +34,7 @@ class TaskServer extends Logging {
 
   def getAllTaskInfos(): Array[TaskConf] = {
 
-    val sql = "select id,type,status,num_executors,executor_memory,total_executor_cores,queue,diid from " + TableInfoConstant.TaskTableName
+    val sql = "select id,type,status,num_executors,executor_memory,total_executor_cores,queue,diid,owner from " + TableInfoConstant.TaskTableName
     val data = JDBCUtil.query(sql)
     data.map(x => {
       val taskConf = new TaskConf()
@@ -46,12 +46,13 @@ class TaskServer extends Logging {
       taskConf.setTotal_executor_cores(x.get("total_executor_cores").get)
       taskConf.setQueue(x.get("queue").get)
       taskConf.setDiid(x.get("diid").get)
+      taskConf.setOwner(x.getOrElse("owner", ""))
       taskConf
     })
   }
 
   def getTaskInfoById(id: String): TaskConf = {
-    val sql = "select id,type,name,receive_interval,diid from " + TableInfoConstant.TaskTableName + " where id= '" + id +"'"
+    val sql = "select id,type,name,receive_interval,diid,owner from " + TableInfoConstant.TaskTableName + " where id= '" + id +"'"
     val data = JDBCUtil.query(sql).head
     val taskConf = new TaskConf()
     taskConf.setId(data.get("id").get)
@@ -59,6 +60,7 @@ class TaskServer extends Logging {
     taskConf.setName(data.get("name").get)
     taskConf.setReceive_interval(data.get("receive_interval").get.toInt)
     taskConf.setDiid(data.get("diid").get)
+    taskConf.setOwner(data.getOrElse("owner", ""))
     taskConf
   }
 

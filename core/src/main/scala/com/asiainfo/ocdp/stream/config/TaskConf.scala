@@ -16,5 +16,6 @@ class TaskConf() extends BaseConf{
   @BeanProperty var queue: String = ""
   @BeanProperty var status: Int = 0
   @BeanProperty var diid: String = ""
+  @BeanProperty var owner: String = ""
 
 }

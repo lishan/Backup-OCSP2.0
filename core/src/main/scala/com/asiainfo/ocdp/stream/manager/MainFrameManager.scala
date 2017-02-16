@@ -128,8 +128,13 @@ object MainFrameManager extends Logging {
   }
 
   def makeCMD(conf: TaskConf): (String, String) = {
+    val owner = conf.owner
     val spark_home = MainFrameConf.systemProps.get("SPARK_HOME")
     var cmd = spark_home + "/bin/spark-submit "
+    if (StringUtils.isNotEmpty(owner)){
+      cmd = s"sudo -u ${owner} ${spark_home}/bin/spark-submit "
+    }
+
     val deploy_mode = " --deploy-mode client"
     val master = " --master " + MainFrameConf.systemProps.get("master")
 
