@@ -92,63 +92,68 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     //2 流数据处理
     inputStream.foreachRDD(rdd => {
 
-      val t0 = System.currentTimeMillis()
-      //2.1 流数据转换
-      val broadDiConf = BroadcastManager.getBroadDiConf()
-      val rowRDD = rdd.map(inputArr => {
-        val diConf = broadDiConf.value
-        transform(inputArr, schema, diConf)}).collect { case Some(row) => row }
+      if (StringUtils.endsWith(rdd.dependencies(0).rdd.getClass.toString, "KafkaRDD") &&
+        rdd.dependencies(0).rdd.count() == 0){
+        println("当前时间片内Kafka输入的流数据为空, 不做任何处理.")
+      }
+      else{
+        val t0 = System.currentTimeMillis()
+        //2.1 流数据转换
+        val broadDiConf = BroadcastManager.getBroadDiConf()
+        val rowRDD = rdd.map(inputArr => {
+          val diConf = broadDiConf.value
+          transform(inputArr, schema, diConf)}).collect { case Some(row) => row }
 
-      if (rowRDD.partitions.size > 0) {
+        if (rowRDD.partitions.size > 0) {
 
-        val t1 = System.currentTimeMillis()
-        println("1.kafka RDD 转换成 rowRDD 耗时 (millis):" + (t1 - t0))
-        val dataFrame = sqlc.createDataFrame(rowRDD, schema)
-        val t2 = System.currentTimeMillis
-        println("2.rowRDD 转换成 DataFrame 耗时 (millis):" + (t2 - t1))
-        val filter_expr = conf.get("filter_expr")
-        val mixDF = if (filter_expr != null && filter_expr.trim != "") dataFrame.selectExpr(allItemsSchema.fieldNames: _*).filter(filter_expr)
-        else dataFrame.selectExpr(allItemsSchema.fieldNames: _*)
-        if (labels.size > 0) {
-          val t3 = System.currentTimeMillis
-          println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
-          val labelRDD = execLabels(mixDF)
-          val t4 = System.currentTimeMillis
-          println("4.dataframe 转成rdd打标签耗时(millis):" + (t4 - t3))
+          val t1 = System.currentTimeMillis()
+          println("1.kafka RDD 转换成 rowRDD 耗时 (millis):" + (t1 - t0))
+          val dataFrame = sqlc.createDataFrame(rowRDD, schema)
+          val t2 = System.currentTimeMillis
+          println("2.rowRDD 转换成 DataFrame 耗时 (millis):" + (t2 - t1))
+          val filter_expr = conf.get("filter_expr")
+          val mixDF = if (filter_expr != null && filter_expr.trim != "") dataFrame.selectExpr(allItemsSchema.fieldNames: _*).filter(filter_expr)
+          else dataFrame.selectExpr(allItemsSchema.fieldNames: _*)
+          if (labels.size > 0) {
+            val t3 = System.currentTimeMillis
+            println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
+            val labelRDD = execLabels(mixDF)
+            val t4 = System.currentTimeMillis
+            println("4.dataframe 转成rdd打标签耗时(millis):" + (t4 - t3))
 
-          labelRDD.persist()
-          // read.json为spark sql 动作类提交job
-          val enhancedDF = sqlc.read.json(labelRDD)
+            labelRDD.persist()
+            // read.json为spark sql 动作类提交job
+            val enhancedDF = sqlc.read.json(labelRDD)
 
-          val t5 = System.currentTimeMillis
-          println("5.RDD 转换成 DataFrame 耗时(millis):" + (t5 - t4))
+            val t5 = System.currentTimeMillis
+            println("5.RDD 转换成 DataFrame 耗时(millis):" + (t5 - t4))
 
-          makeEvents(enhancedDF, conf.get("uniqKeys"))
+            makeEvents(enhancedDF, conf.get("uniqKeys"))
 
-          labelRDD.unpersist()
+            labelRDD.unpersist()
 
-          println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t5))
+            println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t5))
+          }
+          else {
+
+            val t3 = System.currentTimeMillis
+            println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
+
+            mixDF.persist()
+            mixDF.count()
+            val t4 = System.currentTimeMillis
+            println("4.mixDF count耗时(millis):" + (t4 - t3))
+
+            makeEvents(mixDF, conf.get("uniqKeys"))
+            mixDF.unpersist()
+            println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t4))
+
+          }
         }
         else {
-
-          val t3 = System.currentTimeMillis
-          println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
-
-          mixDF.persist()
-          mixDF.count()
-          val t4 = System.currentTimeMillis
-          println("4.mixDF count耗时(millis):" + (t4 - t3))
-
-          makeEvents(mixDF, conf.get("uniqKeys"))
-          mixDF.unpersist()
-          println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t4))
-
+          println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
         }
       }
-      else {
-        println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
-      }
-
     })
   }
 
