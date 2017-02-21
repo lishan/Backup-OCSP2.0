@@ -129,6 +129,7 @@ object MainFrameManager extends Logging {
 
   def makeCMD(conf: TaskConf): (String, String) = {
     val owner = conf.owner
+    MainFrameConf.flushSystemProps
     val spark_home = MainFrameConf.systemProps.get("SPARK_HOME")
     var cmd = spark_home + "/bin/spark-submit "
     if (StringUtils.isNotEmpty(owner)){
