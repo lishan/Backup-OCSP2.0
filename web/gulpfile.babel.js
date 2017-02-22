@@ -152,27 +152,6 @@ gulp.task('bower', function () {
 });
 
 ///////////
-// Tests //
-///////////
-
-//TODO: test should be changed that karma config is wrong
-gulp.task('start:server:test', function() {
-  $.nodemon({
-    script: 'build-server/app.js',
-    ignore: ["app","dist","upload","node","node-v6.9.1","build-server"]
-  });
-});
-
-gulp.task('test', ['start:server:test'], function () {
-  var testToFiles = paths.testRequire.concat(paths.scripts, paths.test);
-  return gulp.src(testToFiles)
-    .pipe($.karma({
-      configFile: paths.karma,
-      action: 'watch'
-    }));
-});
-
-///////////
 // Build //
 ///////////
 

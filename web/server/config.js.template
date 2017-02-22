@@ -9,6 +9,11 @@ module.exports = {
     dist: 'dist',
     port: 9527
   },
+  express_only: {
+    mysql: '',
+    dist: 'app',
+    port: 9527
+  },
   quickLinks : [
     {name: "Spark Streaming", value: "@RM_ADDR@"},
     {name: "Codis Dashboard", value: "@CODIS_ADDR@"}
