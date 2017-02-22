@@ -160,9 +160,6 @@ function createEvents(events, i, diid, status) {
   if(events[i].select_expr !== undefined && events[i].select_expr !== "") {
     events[i].select_expr = events[i].select_expr.replace(/\s/g, '');
   }
-  if(events[i].delim !== undefined && events[i].delim === "|"){
-    events[i].delim = "\\|";
-  }
   if(events[i].delim === undefined){
     events[i].delim = "";
   }
