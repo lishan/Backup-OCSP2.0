@@ -175,6 +175,7 @@ CREATE TABLE `STREAM_TASK` (
   `start_time` varchar(500) DEFAULT NULL,
   `stop_time` varchar(500) DEFAULT NULL,
   `description` varchar(500) DEFAULT NULL,
+  `retry` int(11) NOT NULL DEFAULT '0',
   `diid` int(16) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `STREAM_TASK_ibfk_1` (`diid`),

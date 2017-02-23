@@ -121,6 +121,18 @@ object MainFrameManager extends Logging {
           }
         }
 
+        case TaskConstant.RETRY => {
+          val cur_retry = taskServer.checkTaskRetry(taskId)
+          if (cur_retry < taskServer.checkMaxRetry(taskId)) {
+            taskServer.RestartTask(taskId)
+            logInfo("Retry task " + taskId + " for " + cur_retry + " time!")
+            taskServer.updateRetry(taskId, cur_retry + 1)
+          } else {
+            taskServer.stopTask(taskId)
+            logInfo("task " + taskId + " retry for " + cur_retry + " times! Stop now!")
+          }
+        }
+
         case _ => logInfo("No task is need operate !")
       }
 

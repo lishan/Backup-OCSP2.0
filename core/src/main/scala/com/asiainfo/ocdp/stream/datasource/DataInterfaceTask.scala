@@ -1,6 +1,7 @@
 package com.asiainfo.ocdp.stream.datasource
 
 import java.text.SimpleDateFormat
+import java.util.NoSuchElementException
 import java.util.concurrent._
 
 import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, StreamingCache}
@@ -21,7 +22,7 @@ import org.apache.spark.streaming.dstream.DStream
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{immutable, mutable}
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 /**
  * Created by surq on 12/09/15
@@ -64,6 +65,20 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
     if (StringUtils.isEmpty(uniqKeys))
       throw new Exception("uniqueKeys is not set!!!")
+
+    val dsconf = conf.getDsConf
+    val groupID = {
+      try {
+        dsconf.get(DataSourceConstant.GROUP_ID_KEY)
+      } catch {
+        case ex: NoSuchElementException => ""
+      }
+    }
+
+    if (StringUtils.isEmpty(groupID)) {
+      logWarning("no group_id , use default : " + DataSourceConstant.GROUP_ID_DEF)
+      dsconf.set(DataSourceConstant.GROUP_ID_KEY, DataSourceConstant.GROUP_ID_DEF)
+    }
   }
 
   final def process(ssc: StreamingContext) = {
@@ -76,7 +91,9 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     registFunction(sqlc)
 
     //1 根据输入数据接口配置，生成数据流 DStream
-    val inputStream = readSource(ssc)
+    val dataSource = StreamingSourceFactory.createDataSource(ssc, conf)
+    val inputStream = dataSource.createStream()
+    //val inputStream = readSource(ssc)
 
     //1.2 根据输入数据接口配置，生成构造 sparkSQL DataFrame 的 structType
     val schema = conf.getBaseSchema
@@ -91,14 +108,16 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     BroadcastManager.broadcastTaskConf(taskConf)
 
     //2 流数据处理
-    inputStream.foreachRDD(rdd => {
+    inputStream.foreachRDD(foreachFunc = rdd => {
 
       val t0 = System.currentTimeMillis()
       //2.1 流数据转换
       val broadDiConf = BroadcastManager.getBroadDiConf()
+      val recover_mode = DataSourceConstant.AT_MOST_ONCE
       val rowRDD = rdd.map(inputArr => {
         val diConf = broadDiConf.value
-        transform(inputArr, schema, diConf)}).collect { case Some(row) => row }
+        transform(inputArr, schema, diConf)
+      }).collect { case Some(row) => row }
 
       if (rowRDD.partitions.size > 0) {
 
@@ -110,6 +129,13 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         val filter_expr = conf.get("filter_expr")
         val mixDF = if (filter_expr != null && filter_expr.trim != "") dataFrame.selectExpr(allItemsSchema.fieldNames: _*).filter(filter_expr)
         else dataFrame.selectExpr(allItemsSchema.fieldNames: _*)
+
+        /**
+          * update offset BEFORE output the result for AT MOST ONCE
+          */
+        if (recover_mode == DataSourceConstant.AT_MOST_ONCE)
+          StreamingSourceFactory.updateDataSource(broadDiConf.value, rdd)
+
         if (labels.size > 0) {
           val t3 = System.currentTimeMillis
           println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
@@ -129,8 +155,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
           labelRDD.unpersist()
 
           println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t5))
-        }
-        else {
+        } else {
 
           val t3 = System.currentTimeMillis
           println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
@@ -145,11 +170,16 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
           println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t4))
 
         }
+
+        /**
+          * update offset AFTER output the result for AT LEAST ONCE
+          */
+        if (recover_mode == DataSourceConstant.AT_LEAST_ONCE)
+          StreamingSourceFactory.updateDataSource(broadDiConf.value, rdd)
       }
       else {
         println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
       }
-
     })
   }
 
@@ -185,7 +215,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     val broadTaskConf = BroadcastManager.getBroadTaskConf
 
     df.toJSON.mapPartitions(iter => {
-      val conf = broadDiConf.value
+//      val conf = broadDiConf.value
       val labels = broadLabels.value
       val qryCacheService = new ExecutorCompletionService[List[(String, Array[Byte])]](CacheQryThreadPool.threadPool)
       val hgetAllService = new ExecutorCompletionService[Seq[(String, java.util.Map[String, String])]](CacheQryThreadPool.threadPool)
