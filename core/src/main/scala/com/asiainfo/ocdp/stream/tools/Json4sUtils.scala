@@ -1,20 +1,20 @@
 package com.asiainfo.ocdp.stream.tools
 
+import com.asiainfo.ocdp.stream.common.Logging
 import org.apache.spark.sql.types._
 import org.json4s.DefaultFormats
-import org.json4s.JsonAST.{ JString, JValue }
+import org.json4s.JsonAST.{JString, JValue}
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
+
+import scala.collection.immutable.HashMap
 import scala.collection.mutable.ArrayBuffer
+import scala.util.{Failure, Success, Try}
 
 /**
  * Created by tsingfu on 15/8/18.
  */
-object Json4sUtils {
-
-  def main(args: Array[String]): Unit = {
-
-  }
+object Json4sUtils extends Logging{
 
   /**
    *
@@ -137,33 +137,6 @@ object Json4sUtils {
     jsonValue.extract[Array[Map[String, String]]]
   }
 
-  /**
-   *
-   * @param jsonStr
-   * @return
-   * example:
-   * val propsJsonStr3 = """[{"fieldName":"col1","fieldDataType":"String"},{"fieldName":"col2","fieldDataType":"Int"},{"fieldName":"col3","fieldDataType":"Long"},{"fieldName":"col4","fieldDataType":"Boolean"},{"fieldName":"col5","fieldDataType":"Double"}]"""
-   * propsJson3 = JArray(List(JObject(List((fieldName,JString(col1)), (fieldDataType,JString(String)))), JObject(List((fieldName,JString(col2)), (fieldDataType,JString(Int)))), JObject(List((fieldName,JString(col3)), (fieldDataType,JString(Long)))), JObject(List((fieldName,JString(col4)), (fieldDataType,JString(Boolean)))), JObject(List((fieldName,JString(col5)), (fieldDataType,JString(Double))))))
-   *
-   * ````propsJson3_pretty = [ {
-   * "fieldName" : "col1",
-   * "fieldDataType" : "String"
-   * }, {
-   * "fieldName" : "col2",
-   * "fieldDataType" : "Int"
-   * }, {
-   * "fieldName" : "col3",
-   * "fieldDataType" : "Long"
-   * }, {
-   * "fieldName" : "col4",
-   * "fieldDataType" : "Boolean"
-   * }, {
-   * "fieldName" : "col5",
-   * "fieldDataType" : "Double"
-   * } ]
-   * propsJson3_compact = [{"fieldName":"col1","fieldDataType":"String"},{"fieldName":"col2","fieldDataType":"Int"},{"fieldName":"col3","fieldDataType":"Long"},{"fieldName":"col4","fieldDataType":"Boolean"},{"fieldName":"col5","fieldDataType":"Double"}]
-   * ````
-   */
   def jsonStr2ArrMap(jsonStr: String): Array[Map[String, String]] = {
     val jsonValue = parse(jsonStr)
     implicit val formats = DefaultFormats
@@ -201,6 +174,26 @@ object Json4sUtils {
 
   def map2JsonStr(jsonMap: Map[String, String]): String = {
     compact(render(jsonMap))
+  }
+
+  def isValidJsonStr(jsonStr: String): Boolean = {
+    Try(parse(jsonStr)) match {
+      case Success(s) => true
+      case Failure(f) => false
+    }
+  }
+
+  def jsonStr2MapList(jsonStr: String): Map[String, List[Map[String, String]]] = {
+    val jsonValue = parse(jsonStr)
+    implicit val formats = DefaultFormats
+    val result = Try(jsonValue.extract[Map[String, List[Map[String, String]]]])
+    result match {
+      case Success(s) => result.get
+      case Failure(f) => {
+        logError("Can not transform json to Map[String, List[Map[String, String]]]")
+        new HashMap[String, List[Map[String, String]]]
+      }
+    }
   }
 
 }
