@@ -79,7 +79,7 @@ object MainFrameManager extends Logging {
         case TaskConstant.PRE_START => {
           if (pre_start_tasks.contains(taskId)) {
             val start_time = pre_start_tasks.get(taskId).get
-            if (start_time + startTimeOutSeconds * 1000 >= System.currentTimeMillis()) {
+            if (start_time + startTimeOutSeconds * 1000 <= System.currentTimeMillis()) {
               taskServer.stopTask(taskId)
               pre_start_tasks.remove(taskId)
               logInfo("Task " + taskId + " prepare start " + startTimeOutSeconds + " s has time out , stop it ! please check MainFrameManager log message !")
