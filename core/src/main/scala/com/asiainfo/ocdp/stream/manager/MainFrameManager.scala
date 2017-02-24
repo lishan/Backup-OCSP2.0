@@ -6,7 +6,7 @@ import java.util.{Timer, TimerTask}
 import akka.actor.{ActorSystem, Props}
 import com.asiainfo.ocdp.stream.common.Logging
 import com.asiainfo.ocdp.stream.config.{MainFrameConf, TaskConf}
-import com.asiainfo.ocdp.stream.constant.{CommonConstant, TaskConstant}
+import com.asiainfo.ocdp.stream.constant.{CommonConstant, DataSourceConstant, TaskConstant}
 import com.asiainfo.ocdp.stream.service.TaskServer
 import com.asiainfo.ocdp.stream.tools.ListFileWalker
 import org.apache.commons.io.filefilter.{FileFilterUtils, HiddenFileFilter}
@@ -34,7 +34,9 @@ object MainFrameManager extends Logging {
   val pre_stop_tasks = mutable.Map[String, Long]()
 
   val current_time = System.currentTimeMillis()
-  
+
+  val RETRY_RESET_TIMEDOUT = 60 * 60 * 24 * 1000
+  val RETRY_MIN_INTERVAL = 30 * 1000
   
   taskServer.getAllTaskInfos().foreach(taskConf => {
     if (taskConf.getStatus == TaskConstant.PRE_START)
@@ -79,7 +81,7 @@ object MainFrameManager extends Logging {
         case TaskConstant.PRE_START => {
           if (pre_start_tasks.contains(taskId)) {
             val start_time = pre_start_tasks.get(taskId).get
-            if (start_time + startTimeOutSeconds * 1000 >= System.currentTimeMillis()) {
+            if (start_time + startTimeOutSeconds * 1000 <= System.currentTimeMillis()) {
               taskServer.stopTask(taskId)
               pre_start_tasks.remove(taskId)
               logInfo("Task " + taskId + " prepare start " + startTimeOutSeconds + " s has time out , stop it ! please check MainFrameManager log message !")
@@ -122,11 +124,23 @@ object MainFrameManager extends Logging {
         }
 
         case TaskConstant.RETRY => {
+          val start_time = taskServer.getStartTime(taskId)
           val cur_retry = taskServer.checkTaskRetry(taskId)
           if (cur_retry < taskServer.checkMaxRetry(taskId)) {
-            taskServer.RestartTask(taskId)
-            logInfo("Retry task " + taskId + " for " + cur_retry + " time!")
-            taskServer.updateRetry(taskId, cur_retry + 1)
+            val cur_time = System.currentTimeMillis()
+
+            if (cur_time > start_time + RETRY_MIN_INTERVAL ) {
+              taskServer.RestartTask(taskId)
+              logInfo("Retry task " + taskId + " for " + cur_retry + " time!")
+
+              if (cur_time > start_time + RETRY_RESET_TIMEDOUT ) {
+                logInfo("task " + taskId + " had start long time before, reset try count")
+                taskServer.updateRetry(taskId, 0)
+              }
+              else
+                taskServer.updateRetry(taskId, cur_retry + 1)
+            }
+
           } else {
             taskServer.stopTask(taskId)
             logInfo("task " + taskId + " retry for " + cur_retry + " times! Stop now!")
@@ -140,8 +154,14 @@ object MainFrameManager extends Logging {
   }
 
   def makeCMD(conf: TaskConf): (String, String) = {
+    val owner = conf.owner
+    MainFrameConf.flushSystemProps
     val spark_home = MainFrameConf.systemProps.get("SPARK_HOME")
     var cmd = spark_home + "/bin/spark-submit "
+    if (StringUtils.isNotEmpty(owner)){
+      cmd = s"sudo -u ${owner} ${spark_home}/bin/spark-submit "
+    }
+
     val deploy_mode = " --deploy-mode client"
     val master = " --master " + MainFrameConf.systemProps.get("master")
 

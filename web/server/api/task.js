@@ -1,3 +1,4 @@
+"use strict";
 var express = require('express');
 var sequelize = require('../sequelize');
 var Sequelize = require('sequelize');
@@ -55,6 +56,9 @@ router.post('/change/:id', function(req, res){
   sequelize.transaction(function(t) {
     return Task.find({where: {id: req.params.id}, transaction: t}).then(function (task) {
       var result = task.dataValues;
+      if(result.status === 0 && status === 4){// When task is in stop status, it cannot be restart.
+        return sequelize.Promise.reject();
+      }
       result.status = status;
       return Task.update(result, {where: {id: req.params.id}, transaction: t});
     });
@@ -158,9 +162,6 @@ function createEvents(events, i, diid, status) {
   events[i].status = status;
   if(events[i].select_expr !== undefined && events[i].select_expr !== "") {
     events[i].select_expr = events[i].select_expr.replace(/\s/g, '');
-  }
-  if(events[i].delim !== undefined && events[i].delim === "|"){
-    events[i].delim = "\\|";
   }
   if(events[i].delim === undefined){
     events[i].delim = "";
@@ -266,7 +267,7 @@ router.put("/", function(req, res) {
       //create label after delete
       createLabel(labels, inputInterface, t, promises1, result[0]);
       //create or update events
-      for (var i = 0 ; i < events.length; i++) {
+      for (let i = 0 ; i < events.length; i++) {
         if(result[i+5].dataValues !== undefined && result[i+5].dataValues.id !== undefined){
           events[i].output.id = result[i+5].dataValues.id;
         }
@@ -278,10 +279,10 @@ router.put("/", function(req, res) {
         }
       }
       //deleted unused events
-      for(var i in result[1]){
+      for(let i in result[1]){
         if(result[1][i].dataValues !== undefined && result[1][i].dataValues.id !== undefined){
           var flag = true;
-          for(var j in events){
+          for(let j in events){
             if(events[j].id !== undefined && result[1][i].dataValues.id === events[j].id){
               flag = false;
               break;
@@ -292,7 +293,7 @@ router.put("/", function(req, res) {
             if(result[1][i].dataValues.PROPERTIES !== undefined){
               var obj = JSON.parse(result[1][i].dataValues.PROPERTIES);
               if(obj.output_dis !== undefined && obj.output_dis[0] !== undefined && obj.output_dis[0].diid !== undefined) {
-                promises1.push(Interface.destroy({where: {id: obj.output_dis[0].diid}, transaction: t}))
+                promises1.push(Interface.destroy({where: {id: obj.output_dis[0].diid}, transaction: t}));
               }
             }
           }

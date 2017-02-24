@@ -1,3 +1,4 @@
+"use strict";
 var express = require('express');
 var router = express.Router();
 var multer  = require('multer');
@@ -37,7 +38,7 @@ router.post('/', function(req, res){
     res.send({success : true});
   },function(){
     res.status(500).send(trans.databaseError);
-  }).catch(function(err){
+  }).catch(function(){
     res.status(500).send(trans.databaseError);
   });
 
@@ -53,7 +54,7 @@ router.get('/diid/:id', function(req, res){
     res.send(labels);
   }, function(){
     res.status(500).send(trans.databaseError);
-  })
+  });
 });
 
 router.post('/upload', upload.single('file'), function(req, res){

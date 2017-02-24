@@ -10,7 +10,10 @@
   "strict": true,
   "undef": true,
   "unused": true,
+  "devel": true,
   "globals": {
-    "angular": false
+    "angular": true,
+    "$": true,
+    "mermaidAPI": true
   }
 }

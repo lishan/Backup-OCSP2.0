@@ -1,3 +1,4 @@
+"use strict";
 var express = require('express');
 var sequelize = require('../sequelize');
 var Sequelize = require('sequelize');
@@ -36,7 +37,7 @@ router.get('/output', function(req, res){
     res.send(datainterface);
   }, function(){
     res.status(500).send(trans.databaseError);
-  })
+  });
 });
 
 router.get('/:id', function(req, res){
@@ -48,7 +49,7 @@ router.get('/:id', function(req, res){
     res.send(datainterface);
   }, function(){
     res.status(500).send(trans.databaseError);
-  })
+  });
 });
 
 module.exports = router;

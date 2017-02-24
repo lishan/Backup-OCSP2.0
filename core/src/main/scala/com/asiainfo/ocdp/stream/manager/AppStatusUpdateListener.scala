@@ -22,8 +22,7 @@ class AppStatusUpdateListener(id: String) extends SparkListener with Logging {
     if (TaskConstant.PRE_RESTART == taskServer.checkTaskStatus(id)){
       taskServer.RestartTask(id)
       logInfo("Restart task " + id + " successfully !")
-    }
-    else {
+    } else if (TaskConstant.RETRY != taskServer.checkTaskStatus(id)) {
       taskServer.stopTask(id)
       logInfo("Stop task " + id + " successfully !")
     }

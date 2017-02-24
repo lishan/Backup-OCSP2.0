@@ -63,7 +63,7 @@ CREATE TABLE `STREAM_DATASOURCE` (
 
 LOCK TABLES `STREAM_DATASOURCE` WRITE;
 /*!40000 ALTER TABLE `STREAM_DATASOURCE` DISABLE KEYS */;
-INSERT INTO `STREAM_DATASOURCE` VALUES (1,'Kafka data source','kafka',NULL,'[{\"pname\":\"zookeeper.connect\",\"pvalue\":\"hostA:2181\"},{\"pname\":\"metadata.broker.list\",\"pvalue\":\"hostA:6667\"}]'),(2,'Codis data source','codis',NULL,'[{\"pname\":\"cacheServers\",\"pvalue\":\"hostB:19000\"},{\"pname\":\"jedisMaxIdle\",\"pvalue\":\"300\"},{\"pname\":\"jedisMaxTotal\",\"pvalue\":\"1000\"},{\"pname\":\"jedisMEM\",\"pvalue\":\"600000\"},{\"pname\":\"jedisMinIdle\",\"pvalue\":\"0\"},{\"pname\":\"zk\",\"pvalue\":\"hostA:2181\"},{\"pname\":\"zkSessionTimeoutMs\",\"pvalue\":\"15000\"},{\"pname\":\"zkpath\",\"pvalue\":\"/zk/codis/db_codis-demo/proxy\"},{\"pname\":\"jedisTimeOut\",\"pvalue\":\"10000\"}]');
+INSERT INTO `STREAM_DATASOURCE` VALUES (1,'Kafka data source','kafka',1,NULL,'[{\"pname\":\"zookeeper.connect\",\"pvalue\":\"hostA:2181\"},{\"pname\":\"metadata.broker.list\",\"pvalue\":\"hostA:6667\"}]'),(2,'Codis data source','codis',1,NULL,'[{\"pname\":\"cacheServers\",\"pvalue\":\"hostB:19000\"},{\"pname\":\"jedisMaxIdle\",\"pvalue\":\"300\"},{\"pname\":\"jedisMaxTotal\",\"pvalue\":\"1000\"},{\"pname\":\"jedisMEM\",\"pvalue\":\"600000\"},{\"pname\":\"jedisMinIdle\",\"pvalue\":\"0\"},{\"pname\":\"zk\",\"pvalue\":\"hostA:2181\"},{\"pname\":\"zkSessionTimeoutMs\",\"pvalue\":\"15000\"},{\"pname\":\"zkpath\",\"pvalue\":\"/zk/codis/db_codis-demo/proxy\"},{\"pname\":\"jedisTimeOut\",\"pvalue\":\"10000\"}]');
 /*!40000 ALTER TABLE `STREAM_DATASOURCE` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -84,6 +84,7 @@ CREATE TABLE `STREAM_EVENT` (
   `PROPERTIES` text,
   `status` int(11) NOT NULL DEFAULT '0',
   `description` varchar(500) DEFAULT NULL,
+  `owner` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `diid` (`diid`,`name`),
   CONSTRAINT `STREAM_EVENT_ibfk_1` FOREIGN KEY (`diid`) REFERENCES `STREAM_DATAINTERFACE` (`id`)
@@ -104,6 +105,7 @@ CREATE TABLE `STREAM_LABEL` (
   `status` int(11) DEFAULT '0',
   `description` varchar(500) DEFAULT NULL,
   `label_id` int(16) NOT NULL,
+  `owner` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `STREAM_LABEL_ibfk_1` (`diid`),
   CONSTRAINT `STREAM_LABEL_ibfk_1` FOREIGN KEY (`diid`) REFERENCES `STREAM_DATAINTERFACE` (`id`)
@@ -150,7 +152,7 @@ CREATE TABLE `STREAM_SYSTEMPROP` (
 
 LOCK TABLES `STREAM_SYSTEMPROP` WRITE;
 /*!40000 ALTER TABLE `STREAM_SYSTEMPROP` DISABLE KEYS */;
-INSERT INTO `STREAM_SYSTEMPROP` VALUES (1,'cacheManager','JodisCacheManager',0,NULL),(7,'checkpoint_dir','streaming/checkpoint',0,NULL),(11,'SPARK_HOME','/usr/hdp/2.4.0.0-169/spark',1,'Spark安装路径'),(12,'master','yarn-client',1,'Spark应用程序的运行模式'),(13,'supervise','false',0,NULL),(17,'delaySeconds','20',0,NULL),(18,'periodSeconds','10',0,NULL),(21,'cacheQryBatchSizeLimit','1000',0,NULL),(27,'cacheQryTaskSizeLimit','1000',0,NULL);
+INSERT INTO `STREAM_SYSTEMPROP` VALUES (1,'cacheManager','JodisCacheManager',0,NULL),(7,'checkpoint_dir','streaming/checkpoint',0,NULL),(11,'SPARK_HOME','/usr/hdp/2.4.0.0-169/spark',1,'Spark安装路径'),(12,'master','yarn',1,'Spark应用程序的运行模式'),(13,'supervise','false',0,NULL),(17,'delaySeconds','20',0,NULL),(18,'periodSeconds','10',0,NULL),(21,'cacheQryBatchSizeLimit','1000',0,NULL),(27,'cacheQryTaskSizeLimit','1000',0,NULL);
 /*!40000 ALTER TABLE `STREAM_SYSTEMPROP` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -177,6 +179,7 @@ CREATE TABLE `STREAM_TASK` (
   `description` varchar(500) DEFAULT NULL,
   `retry` int(11) NOT NULL DEFAULT '0',
   `diid` int(16) NOT NULL,
+  `owner` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `STREAM_TASK_ibfk_1` (`diid`),
   CONSTRAINT `STREAM_TASK_ibfk_1` FOREIGN KEY (`diid`) REFERENCES `STREAM_DATAINTERFACE` (`id`)

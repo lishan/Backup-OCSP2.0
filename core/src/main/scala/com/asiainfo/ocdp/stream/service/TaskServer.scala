@@ -27,7 +27,6 @@ class TaskServer extends Logging {
 
   def stopTask(id: String) {
     val stopTime = System.currentTimeMillis()
-    //val sql = s"update ${TableInfoConstant.TaskTableName}  set status=${TaskConstant.STOP}, stop_time='${stopTime}' where id='${id}'"
     val sql = s"update ${TableInfoConstant.TaskTableName}  set status=${TaskConstant.STOP}, stop_time='${stopTime}', cur_retry=0 where id='${id}'"
     JDBCUtil.execute(sql)
   }
@@ -38,9 +37,14 @@ class TaskServer extends Logging {
     data.head.get("status").get.toInt
   }
 
+  def getStartTime(id: String): Long = {
+    val sql = "select start_time from " + TableInfoConstant.TaskTableName + " where id= '" + id +"'"
+    val data = JDBCUtil.query(sql)
+    data.head.get("start_time").get.toLong
+  }
+
   def updateRetry(id: String, retry: Int) {
     val sql = "update " + TableInfoConstant.TaskTableName + " set cur_retry=" + retry + " where id= '" + id +"'"
-    logInfo("update retry :"  + sql)
     JDBCUtil.execute(sql)
   }
 
@@ -58,7 +62,7 @@ class TaskServer extends Logging {
 
   def getAllTaskInfos(): Array[TaskConf] = {
 
-    val sql = "select id,type,status,num_executors,executor_memory,total_executor_cores,queue,retry,diid from " + TableInfoConstant.TaskTableName
+    val sql = "select id,type,status,num_executors,executor_memory,total_executor_cores,queue,retry,diid,owner from " + TableInfoConstant.TaskTableName
     val data = JDBCUtil.query(sql)
     data.map(x => {
       val taskConf = new TaskConf()
@@ -71,12 +75,13 @@ class TaskServer extends Logging {
       taskConf.setQueue(x.get("queue").get)
       taskConf.setRetry(x.get("retry").get.toInt)
       taskConf.setDiid(x.get("diid").get)
+      taskConf.setOwner(x.getOrElse("owner", ""))
       taskConf
     })
   }
 
   def getTaskInfoById(id: String): TaskConf = {
-    val sql = "select id,type,name,receive_interval,retry,diid from " + TableInfoConstant.TaskTableName + " where id= '" + id +"'"
+    val sql = "select id,type,name,receive_interval,retry,diid, owner from " + TableInfoConstant.TaskTableName + " where id= '" + id +"'"
     val data = JDBCUtil.query(sql).head
     val taskConf = new TaskConf()
     taskConf.setId(data.get("id").get)
@@ -85,6 +90,7 @@ class TaskServer extends Logging {
     taskConf.setReceive_interval(data.get("receive_interval").get.toInt)
     taskConf.setRetry(data.get("retry").get.toInt)
     taskConf.setDiid(data.get("diid").get)
+    taskConf.setOwner(data.getOrElse("owner", ""))
     taskConf
   }
 

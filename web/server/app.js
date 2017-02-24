@@ -1,4 +1,5 @@
 //app.js
+"use strict";
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
@@ -9,15 +10,25 @@ var favicon = require('serve-favicon');
 
 if(env === 'dev') {
   app.use(require('connect-livereload')());
+  app.use("/fonts",express.static("app/bower_components/bootstrap/fonts"));
 }
+
+if(env === "express_only") {
+  // Make express server support CORS request in another server
+  app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*"); //It need port also, like http://localhost:8080
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
+}else{ //web artifact
+  app.use(express.static(config[env].dist));
+  app.use(favicon(path.join(__dirname, '../', config[env].dist, '/favicon.ico')));
+}
+
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
-
-app.use(express.static(config[env].dist));
-app.use("/fonts",express.static("app/bower_components/bootstrap/fonts"));
-app.use(favicon(path.join(__dirname,'../',config[env].dist,'/favicon.ico')));
 
 // rest api
 app.use('/api/task', require('./api/task'));

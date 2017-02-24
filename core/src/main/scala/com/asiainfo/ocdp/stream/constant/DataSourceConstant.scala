@@ -17,7 +17,15 @@ object DataSourceConstant {
   val GROUP_ID_KEY = "group.id"
   val NUM_CONSUMER_FETCGERS_KEY = "num.consumer.fetchers"
 
+  //For kafka default value
+  val GROUP_ID_DEF = "ocsp_group"
+
+  //for recover
+  val AT_MOST_ONCE = "at_most_once"
+  val AT_LEAST_ONCE = "at_least_once"
+
   //For Hdfs
   val HDFS_DEFAULT_FS_KEY = "fs.defaultFS"
   val HDFS_PATH_KEY = "path"
+
 }

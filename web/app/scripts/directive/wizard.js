@@ -42,7 +42,7 @@ angular.module('ocspApp').directive('wizard',['$filter', function($filter){
       wizardModal.on("closed", function(){
         wizardModal.reset();
       });
-      wizardModal.cards["ocsp_web_common_013"].on("validate", function (card) {
+      wizardModal.cards.ocsp_web_common_013.on("validate", function (card) {
         var input = card.el.find("input[required]");
         var flag = true;
         input.each(function(){
@@ -58,7 +58,7 @@ angular.module('ocspApp').directive('wizard',['$filter', function($filter){
         });
         return flag;
       });
-      for(var i = 6; i < 9 ; i++) {
+      var dealWithCards = function (i){
         wizardModal.cards["ocsp_web_streams_manage_00" + i].on("validate", function (card) {
           var input = card.el.find("input[required]");
           var flag = true;
@@ -86,6 +86,9 @@ angular.module('ocspApp').directive('wizard',['$filter', function($filter){
           }
           return flag;
         });
+      };
+      for(let i = 6; i < 9 ; i++) {
+        dealWithCards(i);
       }
       wizardModal.on("submit", function() {
         var promise = scope.submitMethod();
