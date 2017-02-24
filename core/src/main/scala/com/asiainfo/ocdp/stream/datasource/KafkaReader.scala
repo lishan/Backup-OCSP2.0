@@ -32,20 +32,28 @@ class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf) extends Stream
     if (partitionsE.isLeft)
       throw new Exception(s"get kafka partition failed: ${partitionsE.left.get}")
     val partitions = partitionsE.right.get
+
+    /*
+     * FIXME
+     *currently use the lastest offset directly
+     * if read the offset, it maybe too much data, can not process in one batch or need to long time
+     */
+
+    /*
     val consumerOffsetsE = mKC.getConsumerOffsets(mGroupId, partitions)
-
-//    TestOffsets(mKC, mKafkaParams, mTopicsSet)
+    TestOffsets(mKC, mKafkaParams, mTopicsSet)
     CheckOffsets(mKC, mTopicsSet, mGroupId)
-
     val consumerOffsets = (if (consumerOffsetsE.isLeft) {
         logWarning("Init Direct Kafka Stream: Failed to get Consumer offset! Use the latest data!")
         getFromOffsets(mKC, mKafkaParams, mTopicsSet)
       } else {
         consumerOffsetsE.right.get
       })
+    */
+    val consumerOffsets = getFromOffsets(mKC, mKafkaParams, mTopicsSet)
 
-    for ((_, consumerOffset) <- consumerOffsets) {
-      logInfo("get offset :" + consumerOffset)
+    consumerOffsets.foreach{ case (tp, lo) =>
+      logInfo("using offset : " + lo)
     }
 
     KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder, String](
