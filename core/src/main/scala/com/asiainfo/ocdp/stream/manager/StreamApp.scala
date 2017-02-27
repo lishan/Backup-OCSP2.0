@@ -58,9 +58,10 @@ object StreamApp extends Logging {
     } catch {
       case e: Exception => {
         e.printStackTrace()
-        if (taskServer.checkMaxRetry(taskConf.getId) > 0)
+        if (taskServer.checkMaxRetry(taskConf.getId) > 0) {
           logInfo("task : " + taskConf.getId + " got exception, task will retry")
           taskServer.RetryTask(taskConf.getId)
+        }
       }
     } finally {
 //    ssc.awaitTermination()
