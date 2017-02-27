@@ -65,11 +65,17 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           msg.append(rand.nextInt(DATA_TYPE) + 1)
           msg.append(separator)
 
+          val is_long = rand.nextBoolean()
 
           // start lac, cell, end lac, cell
           msg.append(rand.nextInt(LAC_MAX) + 31250)
           msg.append(separator)
-          msg.append(5125)
+
+          if (is_long)
+            msg.append(5000)
+          else
+            msg.append(6000)
+
           msg.append(separator)
           msg.append(rand.nextInt(LAC_MAX) + 31250)
           msg.append(separator)
@@ -90,8 +96,11 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           msg.append("00000000000")
           msg.append(separator)
           msg.append("1")
-          msg.append(separator)
-          msg.append("2")
+
+          if (is_long) {
+            msg.append(separator)
+            msg.append("2")
+          }
 
           println(msg.toString())
           //send the generated message to broker

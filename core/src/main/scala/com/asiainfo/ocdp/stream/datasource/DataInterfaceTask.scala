@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.concurrent._
 
 import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, StreamingCache}
-import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, MainFrameConf, TaskConf}
+import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, MainFrameConf, DataSchema, TaskConf}
 import com.asiainfo.ocdp.stream.constant.DataSourceConstant
 import com.asiainfo.ocdp.stream.constant.LabelConstant
 import com.asiainfo.ocdp.stream.event.Event
@@ -21,7 +21,7 @@ import org.apache.spark.streaming.dstream.DStream
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{immutable, mutable}
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 /**
  * Created by surq on 12/09/15
@@ -38,14 +38,14 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
   val events: Array[Event] = dataInterfaceService.getEventsByIFId(taskDiid)
   conf.setInterval(interval)
   // 原始信令字段个数
-  val baseItemSize = conf.getBaseItemsSize
+  //  val baseItemSize = conf.getBaseItemsSize
 
+  protected def transform(source: String, dataSchema: DataSchema , conf: DataInterfaceConf): Option[Row] = {
 
-  protected def transform(source: String, schema: StructType, conf: DataInterfaceConf): Option[Row] = {
-
-    val delim = conf.get("delim", ",")
+    val delim = dataSchema.getDelim
+//    val delim = "\\|"
     val inputArr = (source + delim + "DummySplitHolder").split(delim).dropRight(1).toSeq
-    if (inputArr.size != baseItemSize) None else Some(Row.fromSeq(inputArr))
+    if (inputArr.size != dataSchema.getRawSchemaSize) None else Some(Row.fromSeq(inputArr))
   }
 
   private def conf_check() = {
@@ -79,9 +79,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     val inputStream = readSource(ssc)
 
     //1.2 根据输入数据接口配置，生成构造 sparkSQL DataFrame 的 structType
-    val schema = conf.getBaseSchema
-    // 全量字段: baseItems + udfItems 
-    val allItemsSchema = conf.getAllItemsSchema
+    // 全量字段: baseItems + udfItems
+    //    val allItemsSchema = conf.getCommonSchema
 
     //Broad cast configuration from driver to executor
     BroadcastManager.broadcastDiConf(conf)
@@ -96,66 +95,101 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       val t0 = System.currentTimeMillis()
       //2.1 流数据转换
       val broadDiConf = BroadcastManager.getBroadDiConf()
-      val rowRDD = rdd.map(inputArr => {
-        val diConf = broadDiConf.value
-        transform(inputArr, schema, diConf)}).collect { case Some(row) => row }
 
-      if (rowRDD.partitions.size > 0) {
+      val dataSchemas = broadDiConf.value.getDataSchemas
 
-        val t1 = System.currentTimeMillis()
-        println("1.kafka RDD 转换成 rowRDD 耗时 (millis):" + (t1 - t0))
-        val dataFrame = sqlc.createDataFrame(rowRDD, schema)
-        val t2 = System.currentTimeMillis
-        println("2.rowRDD 转换成 DataFrame 耗时 (millis):" + (t2 - t1))
-        val filter_expr = conf.get("filter_expr")
-        val mixDF = if (filter_expr != null && filter_expr.trim != "") dataFrame.selectExpr(allItemsSchema.fieldNames: _*).filter(filter_expr)
-        else dataFrame.selectExpr(allItemsSchema.fieldNames: _*)
-        if (labels.size > 0) {
-          val t3 = System.currentTimeMillis
-          println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
-          val labelRDD = execLabels(mixDF)
-          val t4 = System.currentTimeMillis
-          println("4.dataframe 转成rdd打标签耗时(millis):" + (t4 - t3))
+      var mixDF : DataFrame = null
 
-          labelRDD.persist()
-          // read.json为spark sql 动作类提交job
-          val enhancedDF = sqlc.read.json(labelRDD)
+      //FIXME
+      //dataSchemas.par.foreach()
+      for (dataSchema <- dataSchemas) {
 
-          val t5 = System.currentTimeMillis
-          println("5.RDD 转换成 DataFrame 耗时(millis):" + (t5 - t4))
+        val rowRDD = rdd.map(inputArr => {
+          val diConf = broadDiConf.value
+          transform(inputArr, dataSchema, diConf)}
+        ).collect { case Some(row) => row }
 
-          makeEvents(enhancedDF, conf.get("uniqKeys"))
+//        println("====#### after transform rdd size : " + rowRDD.count())
 
-          labelRDD.unpersist()
+        if (rowRDD.partitions.size > 0) {
+          val t1 = System.currentTimeMillis()
+          println("1.kafka RDD 转换成 rowRDD 耗时 (millis):" + (t1 - t0))
+          val schema = dataSchema.getRawSchema()
+          val commonSchema = dataSchema.getAllItemsSchema
+          val rawFrame: DataFrame = sqlc.createDataFrame(rowRDD, schema)
+          val t2 = System.currentTimeMillis
+          println("2.rowRDD 转换成 DataFrame 耗时 (millis):" + (t2 - t1))
 
-          println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t5))
-        }
-        else {
+          val filter_expr = conf.get("filter_expr")
+          val tDF =
+            if (filter_expr != null && filter_expr.trim != "")
+              rawFrame.selectExpr(commonSchema.fieldNames: _*).filter(filter_expr)
+            else
+              rawFrame.selectExpr(commonSchema.fieldNames: _*)
+
+//          println("====#### after select size : " + tDF.count())
 
           val t3 = System.currentTimeMillis
           println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
 
-          mixDF.persist()
-          mixDF.count()
-          val t4 = System.currentTimeMillis
-          println("4.mixDF count耗时(millis):" + (t4 - t3))
+          if (null == mixDF)
+            mixDF = tDF
+          else
+            mixDF = mixDF.unionAll(tDF)
 
-          makeEvents(mixDF, conf.get("uniqKeys"))
-          mixDF.unpersist()
-          println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t4))
+        } else
+          println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
+      }
 
-        }
+      if (null == mixDF) {
+        throw new Exception("NO DATA")
+      }
+
+//      println("====#### mixDF size : " + mixDF.count())
+
+      val tUnion = System.currentTimeMillis()
+
+      if (labels.size > 0) {
+        val labelRDD = execLabels(mixDF)
+        val t4 = System.currentTimeMillis
+        println("4.dataframe 转成rdd打标签耗时(millis):" + (t4 - tUnion))
+
+//        println("====#### labelRDD size : " + labelRDD.count())
+
+        labelRDD.persist()
+        // read.json为spark sql 动作类提交job
+        val enhancedDF = sqlc.read.json(labelRDD)
+
+        val t5 = System.currentTimeMillis
+        println("5.RDD 转换成 DataFrame 耗时(millis):" + (t5 - t4))
+
+        makeEvents(enhancedDF, conf.get("uniqKeys"))
+
+        labelRDD.unpersist()
+
+        println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t5))
       }
       else {
-        println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
-      }
 
+        val t3 = System.currentTimeMillis
+        //        println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
+
+        mixDF.persist()
+        mixDF.count()
+        val t4 = System.currentTimeMillis
+        println("4.mixDF count耗时(millis):" + (t4 - t3))
+
+        makeEvents(mixDF, conf.get("uniqKeys"))
+        mixDF.unpersist()
+        println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t4))
+
+      }
     })
   }
 
   /**
-   * 自定义slq 方法注册
-   */
+    * 自定义slq 方法注册
+    */
   def registFunction(sqlc: SQLContext) {
     sqlc.udf.register("Conv", (data: String) => {
       val lc = Integer.toHexString(data.toInt).toUpperCase
@@ -174,8 +208,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
   }
 
   /**
-   * 字段增强：根据uk从codis中取出相关关联数据，进行打标签操作
-   */
+    * 字段增强：根据uk从codis中取出相关关联数据，进行打标签操作
+    */
   def execLabels(df: DataFrame): RDD[String] = {
 
     val broadDiConf = BroadcastManager.getBroadDiConf
@@ -263,7 +297,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
             case Some(cache) =>
               cache
             case None =>
-             // println("old cache null, key:" + label.conf.getId)
+              // println("old cache null, key:" + label.conf.getId)
               null
           }
 
@@ -281,7 +315,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
             }
             case Failure(t) => logError("Failed to execute datainterface attachLabel" + label + ".attachLabel")
           }
-       })
+        })
 
         // 更新往期中间记算结果cache【"Label:" + uk-> {labelId->rule_caches}】
         cachemap_new += (key -> rule_caches.asInstanceOf[Any])
@@ -301,8 +335,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
   }
 
   /**
-   * 业务处理
-   */
+    * 业务处理
+    */
   final def makeEvents(df: DataFrame, uniqKeys: String) = {
     println(" Begin exec evets : " + System.currentTimeMillis())
 
