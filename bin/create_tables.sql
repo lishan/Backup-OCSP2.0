@@ -178,6 +178,7 @@ CREATE TABLE `STREAM_TASK` (
   `stop_time` varchar(500) DEFAULT NULL,
   `description` varchar(500) DEFAULT NULL,
   `retry` int(11) NOT NULL DEFAULT '0',
+  `cur_retry` int(11) NOT NULL DEFAULT '0',
   `diid` int(16) NOT NULL,
   `owner` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
