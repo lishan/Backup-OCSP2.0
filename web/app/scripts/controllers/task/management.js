@@ -133,7 +133,7 @@ angular.module('ocspApp')
         Notification.error("Cannot update null task");
       }else{
         if($("#mainFrame .ng-invalid").length > 0){
-          Notification.error($filter('translate')('ocsp_web_common_027'));
+          Notification.error($filter('translate')('ocsp_web_common_032'));
         }else {
           usSpinnerService.spin('spinner');
           $http.put("/api/task", {task: $scope.selectedJob}).success(function () {

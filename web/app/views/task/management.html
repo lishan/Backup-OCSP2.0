@@ -68,7 +68,7 @@
             button-label="name"
             item-label="name"
             tick-property="tick1"
-            helper-elements="filter",
+            helper-elements="filter"
             translation="localLang"
             required>
           </isteven-multi-select>
@@ -295,6 +295,19 @@
                         <div class="col-md-8">
                           <textarea ng-model="selectedJob.description" class="form-control" rows="3">
                           </textarea>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="row">
+                        <div class="col-md-2">
+                          <label>{{'ocsp_web_streams_manage_039' | translate}}</label>
+                        </div>
+                        <div class="col-md-8">
+                          <input type="text" class="form-control" ng-model="selectedJob.cur_retry" required
+                                 popover-trigger="'mouseenter'" popover-placement="right" popover-append-to-body=true
+                                 uib-popover="{{'ocsp_web_common_property_retry' | translate}}" popover-title="{{'ocsp_web_streams_manage_039' | translate}}">
+                          <span class="notnull" ng-if="selectedJob.cur_retry === undefined">{{'ocsp_web_common_027' | translate}}</span>
                         </div>
                       </div>
                     </div>

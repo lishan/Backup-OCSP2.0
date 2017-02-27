@@ -16,6 +16,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(11),
       allowNull: false
     },
+    cur_retry: {
+      type: DataTypes.INTEGER(11),
+      allowNull: false,
+      defaultValue: '0'
+    },
     receive_interval: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
