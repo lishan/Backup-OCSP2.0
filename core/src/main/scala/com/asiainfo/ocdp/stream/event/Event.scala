@@ -1,18 +1,20 @@
 package com.asiainfo.ocdp.stream.event
 
-import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager}
-import com.asiainfo.ocdp.stream.config.{ EventConf, MainFrameConf }
+import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, Logging}
+import com.asiainfo.ocdp.stream.config.{EventConf, MainFrameConf}
 import com.asiainfo.ocdp.stream.constant.EventConstant
 import com.asiainfo.ocdp.stream.service.EventServer
-import com.asiainfo.ocdp.stream.tools.{CacheFactory, Json4sUtils, StreamWriterFactory}
-import org.apache.spark.sql.DataFrame
-import scala.collection.mutable.ArrayBuffer
+import com.asiainfo.ocdp.stream.tools.{Json4sUtils, StreamWriterFactory}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{AnalysisException, DataFrame}
+
+import scala.collection.mutable.ArrayBuffer
+import scala.util.{Failure, Success, Try}
 
 /**
  * Created by surq on 12/09/15
  */
-class Event extends Serializable {
+class Event extends Serializable with Logging{
 
   var conf: EventConf = null
 
@@ -33,22 +35,28 @@ class Event extends Serializable {
       mix_sel_expr = mix_sel_expr ++ conf.get("ext_fields", null).split(",")
 
     // 根据业务条件过滤，并查询出输出字段
-    val eventDF = df.filter(conf.filte_expr).selectExpr(mix_sel_expr: _*)
+    Try(df.filter(conf.filte_expr).selectExpr(mix_sel_expr: _*)) match {
+      case Success(eventDF) => {
+        // 事件复用的时候会用到，注意做eventDF.persist
+        // if (EventConstant.NEEDCACHE == conf.getInt("needcache", 0)) cacheEvent(eventDF, uniqKeys)
+        // 如果业务输出周期不为0，那么需要从codis中取出比兑营销时间，满足条件的输出
+        val jsonRDD = if (EventConstant.RealtimeTransmission != conf.interval) checkEvent(eventDF, uniqKeys)
+        else eventDF.toJSON
+        outputEvent(jsonRDD, uniqKeys)
+      }
+      case Failure(e: AnalysisException) => logError(s"Make event failed since ${e}")
+    }
 
-    // 事件复用的时候会用到，注意做eventDF.persist
-   // if (EventConstant.NEEDCACHE == conf.getInt("needcache", 0)) cacheEvent(eventDF, uniqKeys)
-    // 如果业务输出周期不为0，那么需要从codis中取出比兑营销时间，满足条件的输出
-    val jsonRDD = if (EventConstant.RealtimeTransmission != conf.interval) checkEvent(eventDF, uniqKeys)
-    else eventDF.toJSON
-    outputEvent(jsonRDD, uniqKeys)
   }
 
   /**
    * 过滤营销周期不满足的数据，输出需要营销的数据，并更新codis营销时间
    */
-  import scala.collection.immutable
   import java.util.concurrent.ExecutorCompletionService
+
   import com.asiainfo.ocdp.stream.tools.CacheQryThreadPool
+
+  import scala.collection.immutable
   def checkEvent(eventDF: DataFrame, uniqKeys: String): (RDD[String]) = {
     val time_EventId = EventConstant.EVENTCACHE_FIELD_TIMEEVENTID_PREFIX_KEY + conf.id
 
