@@ -102,6 +102,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_041':'Choose during time',
     'ocsp_web_streams_manage_042':'Valid value',
     'ocsp_web_streams_manage_043':'Start time should be earlier than end time',
+    'ocsp_web_streams_manage_044':'Retrying',
 
     'ocsp_web_common_property_zookeeper_connect': 'Zookeeper address',
     'ocsp_web_common_property_zk': 'Zookeeper address',

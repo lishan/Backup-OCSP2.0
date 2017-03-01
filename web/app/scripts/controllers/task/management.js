@@ -67,6 +67,13 @@ angular.module('ocspApp')
           {name: $filter('translate')('ocsp_web_streams_manage_026'), enable: true, icon: "glyphicon glyphicon-refresh danger"},
           {name: $filter('translate')('ocsp_web_streams_manage_027'), enable: false, icon: "glyphicon glyphicon-remove-sign"}
         ];
+      }else if(status === 5){
+        $scope.actions = [
+          {name: $filter('translate')('ocsp_web_streams_manage_024'),  enable: false, icon : "glyphicon glyphicon-play"},
+          {name: $filter('translate')('ocsp_web_streams_manage_025'), enable: true, icon: "glyphicon glyphicon-stop danger"},
+          {name: $filter('translate')('ocsp_web_streams_manage_026'), enable: false, icon: "glyphicon glyphicon-refresh"},
+          {name: $filter('translate')('ocsp_web_streams_manage_027'), enable: false, icon: "glyphicon glyphicon-remove-sign"}
+        ];
       }else{
         $scope.actions = [
           {name: $filter('translate')('ocsp_web_streams_manage_024'), enable: false, icon : "glyphicon glyphicon-play"},
@@ -365,6 +372,7 @@ angular.module('ocspApp')
         case 2: return "glyphicon glyphicon-ok-sign success"; // running
         case 3: return "glyphicon glyphicon-warning-sign danger animated flash infinite"; // pre_stop
         case 4: return "glyphicon glyphicon-ok-sign success animated flash infinite"; // pre_restart
+        case 5: return "glyphicon glyphicon-refresh warning animated flash infinite"; // retry
       }
     };
 
@@ -380,6 +388,8 @@ angular.module('ocspApp')
           return $filter('translate')('ocsp_web_streams_manage_035');
         case 4:
           return $filter('translate')('ocsp_web_streams_manage_036');
+        case 5:
+          return $filter('translate')('ocsp_web_streams_manage_044');
       }
     };
 
