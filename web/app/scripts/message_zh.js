@@ -102,6 +102,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_041':'选择时间段',
     'ocsp_web_streams_manage_042':'可能值',
     'ocsp_web_streams_manage_043':'开始时间必须小于结束时间',
+    'ocsp_web_streams_manage_044':'正在重试',
 
     'ocsp_web_common_property_zookeeper_connect': 'zookeeper的连接地址',
     'ocsp_web_common_property_zk': 'zookeeper的连接地址',
