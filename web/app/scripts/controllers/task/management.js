@@ -4,7 +4,7 @@
  * For job management main page controller
  */
 angular.module('ocspApp')
-  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', 'usSpinnerService', 'loginService', '$interval', '$uibModal', '$filter', function ($scope, $http, Notification, $q, usSpinnerService, loginService, $interval, $uibModal, $filter) {
+  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', 'usSpinnerService', 'loginService', '$interval', '$uibModal', '$filter', 'moment', function ($scope, $http, Notification, $q, usSpinnerService, loginService, $interval, $uibModal, $filter, moment) {
     loginService.init('task');
     $scope.localLang = {
       search: $filter('translate')('ocsp_web_common_014'),
@@ -127,6 +127,19 @@ angular.module('ocspApp')
     }
 
     init();
+
+    $scope.onSelect = function(item){
+      //Clear periods when select audit type
+      item.audit.periods = [{}];
+    };
+
+    $scope.addPeriod = function(item){
+      item.audit.periods.push({});
+    };
+
+    $scope.removePeriod = function(item, $index){
+      item.audit.periods.splice($index,1);
+    };
 
     $scope.update = function(){
       if($scope.selectedJob.id === undefined || $scope.selectedJob.id === null){
@@ -292,6 +305,30 @@ angular.module('ocspApp')
                 for (let j in $scope.selectedJob.events[i].PROPERTIES.props) {
                   if ($scope.selectedJob.events[i].PROPERTIES.props[j].pname === "userKeyIdx") {
                     $scope.selectedJob.events[i].userKeyIdx = $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue;
+                  }
+                  if ($scope.selectedJob.events[i].PROPERTIES.props[j].pname === "period") {
+                    $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue = JSON.parse($scope.selectedJob.events[i].PROPERTIES.props[j].pvalue);
+                    $scope.selectedJob.events[i].auditEnable = true;
+                    $scope.selectedJob.events[i].audit = {
+                      type : $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.period,
+                      periods : []
+                    };
+                    for (let w in $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.time){
+                      let val = $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.time[w];
+                      if($scope.selectedJob.events[i].audit.type === "none"){
+                        $scope.selectedJob.events[i].audit.periods.push({
+                          start: moment(val.begin.d + " " + val.begin.h).toDate(),
+                          end: moment(val.end.d + " " + val.end.h).toDate()
+                        });
+                      }else{
+                        $scope.selectedJob.events[i].audit.periods.push({
+                          s: val.begin.d,
+                          d: val.end.d,
+                          start: moment("2010-07-01 " + val.begin.h).toDate(),
+                          end: moment("2010-07-01 " + val.end.h).toDate()
+                        });
+                      }
+                    }
                   }
                 }
               }

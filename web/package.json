@@ -34,6 +34,7 @@
     "gulp-zip": "^4.0.0",
     "jshint-stylish": "^1.0.0",
     "lazypipe": "^0.2.4",
+    "moment": "^2.17.1",
     "multer": "^1.2.0",
     "mysql": "^2.12.0",
     "open": "0.0.5",
@@ -50,7 +51,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "start" : "nohup node build-server/app.js nohup.out 2>&1 &"
+    "start": "nohup node build-server/app.js nohup.out 2>&1 &"
   },
   "dependencies": {}
 }

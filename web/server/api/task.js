@@ -9,6 +9,7 @@ var Event = require('../model/STREAM_EVENT')(sequelize, Sequelize);
 var randomstring = require("randomstring");
 var config = require('../config');
 var trans = config[config.trans || 'zh'];
+var moment = require('moment');
 
 var router = express.Router();
 
@@ -175,6 +176,40 @@ function createEvents(events, i, diid, status) {
       "diid": events[i].output.id,
       "interval" : events[i].interval,
       "delim": events[i].delim
+    });
+  }
+  //Add data audit function
+  if(events[i].audit !== undefined && events[i].auditEnable && events[i].audit.type !== undefined && events[i].audit.periods !== undefined && events[i].audit.periods.length > 0){
+    let result = {
+      period: events[i].audit.type,
+      time:[]
+    };
+    for(let j = 0 ; j < events[i].audit.periods.length; j++){
+      let sd = "0";
+      let ed = "0";
+      if(events[i].audit.type === 'none') {
+        sd = moment(events[i].audit.periods[j].start).format("YYYY-MM-DD");
+        ed = moment(events[i].audit.periods[j].end).format("YYYY-MM-DD");
+      }else if(events[i].audit.type === 'week' || events[i].audit.type === 'month'){
+        sd = events[i].audit.periods[j].s;
+        ed = events[i].audit.periods[j].d;
+      }
+      let sh = moment(events[i].audit.periods[j].start).format("HH:mm:ss");
+      let eh = moment(events[i].audit.periods[j].end).format("HH:mm:ss");
+      result.time.push({
+        begin:{
+          d: sd,
+          h: sh
+        },
+        end:{
+          d: ed,
+          h: eh
+        }
+      });
+    }
+    events[i].PROPERTIES.props.push({
+      "pname" : "period",
+      "pvalue" : JSON.stringify(result)
     });
   }
   events[i].PROPERTIES = JSON.stringify(events[i].PROPERTIES);

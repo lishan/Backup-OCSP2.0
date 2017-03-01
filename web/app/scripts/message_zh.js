@@ -37,6 +37,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_030': '保存失败',
     'ocsp_web_common_031': '类型',
     'ocsp_web_common_032': '表单验证失败，请检查',
+    'ocsp_web_common_033': '输出配置',
 
     'ocsp_web_user_manage_000':'用户管理',
     'ocsp_web_user_manage_001':'修改密码',
@@ -97,6 +98,10 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_037':'作业流使能',
     'ocsp_web_streams_manage_038':'输入源',
     'ocsp_web_streams_manage_039':'重试次数',
+    'ocsp_web_streams_manage_040':'订阅使能',
+    'ocsp_web_streams_manage_041':'选择时间段',
+    'ocsp_web_streams_manage_042':'可能值',
+    'ocsp_web_streams_manage_043':'开始时间必须小于结束时间',
 
     'ocsp_web_common_property_zookeeper_connect': 'zookeeper的连接地址',
     'ocsp_web_common_property_zk': 'zookeeper的连接地址',

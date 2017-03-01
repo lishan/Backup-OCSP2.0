@@ -28,7 +28,9 @@ angular
     'ngCookies',
     'ui.select',
     'toggle-switch',
-    'cfp.hotkeys'
+    'cfp.hotkeys',
+    'ui.bootstrap.datetimepicker',
+    'angularMoment'
   ])
   .config(function ($routeProvider) {
     $routeProvider
