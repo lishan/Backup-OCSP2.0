@@ -1,5 +1,5 @@
 /* jshint indent: 2 */
-
+"use strict";
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('STREAM_TASK', {
     id: {
@@ -51,6 +51,10 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: '0'
     },
     start_time: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    stop_time: {
       type: DataTypes.STRING,
       allowNull: true
     },

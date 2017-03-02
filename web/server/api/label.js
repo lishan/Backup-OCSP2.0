@@ -1,3 +1,4 @@
+"use strict";
 var express = require('express');
 var router = express.Router();
 var multer  = require('multer');
@@ -8,6 +9,7 @@ var Sequelize = require('sequelize');
 var Label = require('../model/STREAM_LABEL_DEFINITION')(sequelize, Sequelize);
 var LabelRefer = require('../model/STREAM_LABEL')(sequelize, Sequelize);
 var config = require('../config');
+var path = require('path');
 var trans = config[config.trans || 'zh'];
 
 var storage = multer.diskStorage({
@@ -36,7 +38,7 @@ router.post('/', function(req, res){
     res.send({success : true});
   },function(){
     res.status(500).send(trans.databaseError);
-  }).catch(function(err){
+  }).catch(function(){
     res.status(500).send(trans.databaseError);
   });
 
@@ -52,7 +54,7 @@ router.get('/diid/:id', function(req, res){
     res.send(labels);
   }, function(){
     res.status(500).send(trans.databaseError);
-  })
+  });
 });
 
 router.post('/upload', upload.single('file'), function(req, res){
@@ -80,9 +82,9 @@ router.post('/upload', upload.single('file'), function(req, res){
   sequelize.Promise.all(promises).then(function(){
     res.send({success: true});
   }, function(){
-    res.status(500).send(trans.databaseError);
+    res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
   }).catch(function(){
-    res.status(500).send(trans.databaseError);
+    res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
   });
 });
 

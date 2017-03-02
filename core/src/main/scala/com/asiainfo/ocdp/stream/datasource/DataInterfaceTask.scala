@@ -1,10 +1,11 @@
 package com.asiainfo.ocdp.stream.datasource
 
 import java.text.SimpleDateFormat
+import java.util.NoSuchElementException
 import java.util.concurrent._
 
-import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, StreamingCache}
 import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, MainFrameConf, DataSchema, TaskConf}
+import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, StreamingCache,EventCycleLife}
 import com.asiainfo.ocdp.stream.constant.DataSourceConstant
 import com.asiainfo.ocdp.stream.constant.LabelConstant
 import com.asiainfo.ocdp.stream.event.Event
@@ -12,7 +13,6 @@ import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.service.DataInterfaceServer
 import com.asiainfo.ocdp.stream.tools.{CacheFactory, CacheQryThreadPool, Json4sUtils}
 import org.apache.commons.lang.StringUtils
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -64,6 +64,21 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
     if (StringUtils.isEmpty(uniqKeys))
       throw new Exception("uniqueKeys is not set!!!")
+
+    val dsconf = conf.getDsConf
+    val groupID = {
+      try {
+        dsconf.get(DataSourceConstant.GROUP_ID_KEY)
+      } catch {
+        case ex: NoSuchElementException => ""
+      }
+    }
+
+    if (StringUtils.isEmpty(groupID)) {
+      val def_group_name = DataSourceConstant.GROUP_ID_DEF + taskConf.getId + taskConf.getName
+      logWarning("no group_id , use default : " + def_group_name)
+      dsconf.set(DataSourceConstant.GROUP_ID_KEY, def_group_name)
+    }
   }
 
   final def process(ssc: StreamingContext) = {
@@ -76,7 +91,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     registFunction(sqlc)
 
     //1 根据输入数据接口配置，生成数据流 DStream
-    val inputStream = readSource(ssc)
+    val dataSource = StreamingSourceFactory.createDataSource(ssc, conf)
+    val inputStream = dataSource.createStream()
 
     //1.2 根据输入数据接口配置，生成构造 sparkSQL DataFrame 的 structType
     // 全量字段: baseItems + udfItems
@@ -91,14 +107,13 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
     //2 流数据处理
     inputStream.foreachRDD(rdd => {
-
       val t0 = System.currentTimeMillis()
       //2.1 流数据转换
       val broadDiConf = BroadcastManager.getBroadDiConf()
-
       val dataSchemas = broadDiConf.value.getDataSchemas
 
       var mixDF : DataFrame = null
+      val recover_mode = DataSourceConstant.AT_MOST_ONCE
 
       //FIXME
       //dataSchemas.par.foreach()
@@ -108,8 +123,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
           val diConf = broadDiConf.value
           transform(inputArr, dataSchema, diConf)}
         ).collect { case Some(row) => row }
-
-//        println("====#### after transform rdd size : " + rowRDD.count())
 
         if (rowRDD.partitions.size > 0) {
           val t1 = System.currentTimeMillis()
@@ -126,8 +139,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
               rawFrame.selectExpr(commonSchema.fieldNames: _*).filter(filter_expr)
             else
               rawFrame.selectExpr(commonSchema.fieldNames: _*)
-
-//          println("====#### after select size : " + tDF.count())
 
           val t3 = System.currentTimeMillis
           println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
@@ -148,6 +159,12 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 //      println("====#### mixDF size : " + mixDF.count())
 
       val tUnion = System.currentTimeMillis()
+
+        /**
+          * update offset BEFORE output the result for AT MOST ONCE
+          */
+        if (recover_mode == DataSourceConstant.AT_MOST_ONCE)
+          StreamingSourceFactory.updateDataSource(broadDiConf.value, rdd)
 
       if (labels.size > 0) {
         val labelRDD = execLabels(mixDF)
@@ -184,6 +201,11 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t4))
 
       }
+      /**
+        * update offset AFTER output the result for AT LEAST ONCE
+        */
+      if (recover_mode == DataSourceConstant.AT_LEAST_ONCE)
+        StreamingSourceFactory.updateDataSource(broadDiConf.value, rdd)
     })
   }
 
@@ -219,7 +241,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     val broadTaskConf = BroadcastManager.getBroadTaskConf
 
     df.toJSON.mapPartitions(iter => {
-      val conf = broadDiConf.value
+//      val conf = broadDiConf.value
       val labels = broadLabels.value
       val qryCacheService = new ExecutorCompletionService[List[(String, Array[Byte])]](CacheQryThreadPool.threadPool)
       val hgetAllService = new ExecutorCompletionService[Seq[(String, java.util.Map[String, String])]](CacheQryThreadPool.threadPool)
@@ -344,15 +366,25 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
     val eventService = new ExecutorCompletionService[String](threadPool)
 
-    events.map(event => eventService.submit(new BuildEvent(event, df, uniqKeys)))
+    val now = new java.util.Date()
+    val validEvents = events.filter(event => {
 
-    for (index <- 0 until events.size) {
+      val period = event.conf.get("period", "")
+
+      if (period.isEmpty) true
+      else new EventCycleLife(period).contains(now)
+    })
+
+    validEvents.map(event => eventService.submit(new BuildEvent(event, df, uniqKeys)))
+
+    for (index <- 0 until validEvents.size) {
       eventService.take.get()
     }
 
     threadPool.shutdown()
 
   }
+
 }
 
 class BuildEvent(event: Event, df: DataFrame, uniqKeys: String) extends Callable[String] {

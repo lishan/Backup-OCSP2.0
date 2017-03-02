@@ -16,6 +16,9 @@ var yeoman = {
 
 var paths = {
   scripts: [yeoman.app + '/scripts/**/*.js'],
+  buildScriptsDest: yeoman.app + '/build-scripts',
+  buildScripts : [yeoman.app + '/build-scripts/**/*.js'],
+  serverScripts: ['server/**/*.js'],
   styles: [yeoman.app + '/sass/**/*.scss'],
   test: ['test/spec/**/*.js'],
   testRequire: [
@@ -51,6 +54,18 @@ var styles = lazypipe()
   .pipe($.autoprefixer, 'last 1 version')
   .pipe(gulp.dest, 'app/styles');
 
+var es6ClientScript = lazypipe()
+  .pipe($.babel, {
+    presets: ['es2015']
+  })
+  .pipe(gulp.dest, paths.buildScriptsDest);
+
+var es6ServerScript = lazypipe()
+  .pipe($.babel, {
+    presets: ['es2015']
+  })
+  .pipe(gulp.dest, 'build-server');
+
 ///////////
 // Tasks //
 ///////////
@@ -60,71 +75,69 @@ gulp.task('styles', function () {
     .pipe(styles());
 });
 
-gulp.task('lint:scripts', function () {
+gulp.task('lint:clientScripts', function () {
   return gulp.src(paths.scripts)
     .pipe(lintScripts());
 });
 
-gulp.task('start:client', ['start:server', 'styles'], function () {
-  openURL("http://localhost:9000","Chrome");
+gulp.task('lint:serverScripts', function () {
+  return gulp.src(paths.serverScripts)
+    .pipe(lintScripts());
 });
 
-gulp.task('start:server', function() {
-  $.express.run([
-    'server/app.js'
-  ]);
+gulp.task('start:client', ['start:server', 'styles', 'es6:frontend', 'es6:server'], function () {
+  openURL("http://localhost:9000","firefox");
+});
+
+gulp.task('start:server', function(cb) {
+  let started = false;
+  return $.nodemon({
+    script: 'build-server/app.js',
+    ignore: ["app","dist","upload","node","node-v6.9.1","build-server"]
+  }).on('start', function () {
+    if (!started) {
+      cb();
+      started = true;
+    }
+  });
 });
 
 gulp.task('watch', function () {
+  $.livereload.listen();
   $.watch(paths.styles)
     .pipe($.plumber())
     .pipe(styles())
-    .pipe($.express.notify());
+    .pipe($.livereload());
 
   $.watch(paths.views.files)
     .pipe($.plumber())
-    .pipe($.express.notify());
+    .pipe($.livereload());
 
   $.watch(paths.scripts)
     .pipe($.plumber())
     .pipe(lintScripts())
-    .pipe($.express.notify());
+    .pipe(es6ClientScript())
+    .pipe($.livereload());
+
+  $.watch(paths.serverScripts)
+    .pipe($.plumber())
+    .pipe(lintScripts())
+    .pipe(es6ServerScript());
 
   $.watch(paths.test)
     .pipe($.plumber())
-    .pipe(lintScripts());
+    .pipe($.livereload());
 
   gulp.watch('bower.json', ['bower']);
 });
 
 gulp.task('serve', function (cb) {
   runSequence(
-    ['lint:scripts'],
+    ['lint:clientScripts'],
+    ['lint:serverScripts'],
     ['start:client'],
 	  ['bower'],
     'watch', cb);
-});
-
-gulp.task('serve:prod', function() {
-  $.express.run([
-    'server/app.js'
-  ]);
-});
-
-//TODO: test should be changed that karma config is wrong
-gulp.task('start:server:test', function() {
-  $.express.run([
-    'server/app.js'
-  ]);
-});
-
-gulp.task('test', ['start:server:test'], function () {
-  var testToFiles = paths.testRequire.concat(paths.scripts, paths.test);
-  return gulp.src(testToFiles)
-    .pipe($.karma({
-      configFile: paths.karma,
-      action: 'watch'
-    }));
 });
 
 // inject bower components
@@ -146,7 +159,25 @@ gulp.task('clean:dist', function (cb) {
   rimraf('./dist', cb);
 });
 
-gulp.task('client:build', ['html', 'styles'], function () {
+gulp.task('clean:server', function(cb) {
+  rimraf('./build-server', cb);
+});
+
+gulp.task('clean:client', function(cb) {
+  rimraf('./app/build-scripts', cb);
+});
+
+gulp.task('es6:frontend', () => {
+  return gulp.src(paths.scripts)
+    .pipe(es6ClientScript());
+});
+
+gulp.task('es6:server', () => {
+  return gulp.src(paths.serverScripts)
+    .pipe(es6ServerScript());
+});
+
+gulp.task('client:build', ['html', 'styles', 'es6:frontend', 'es6:server'], function () {
   var jsFilter = $.filter('**/*.js');
   var cssFilter = $.filter('**/*.css');
 
@@ -174,6 +205,7 @@ gulp.task('client:build', ['html', 'styles'], function () {
 
 gulp.task('client:rename', ['client:build'], function(){
   return gulp.src(yeoman.dist + "/index*.html")
+    .pipe($.rimraf({force: true}))
     .pipe($.rename("index.html"))
     .pipe(gulp.dest(yeoman.dist))
 });
@@ -203,18 +235,33 @@ gulp.task('pageNotFound', function(){
     .pipe(gulp.dest(yeoman.dist));
 });
 
+gulp.task('config', () => {
+  return gulp.src("server/config.js.template")
+    .pipe(gulp.dest("build-server"))
+});
+
 gulp.task('copy:extras', function () {
   return gulp.src(yeoman.app + '/*/.*', { dot: true })
     .pipe(gulp.dest(yeoman.dist));
 });
 
 gulp.task('copy:fonts', function () {
-  return gulp.src(yeoman.app + '/fonts/**/*')
+  return gulp.src(yeoman.app + '/bower_components/bootstrap/fonts/**/*')
     .pipe(gulp.dest(yeoman.dist + '/fonts'));
 });
 
-gulp.task('build', ['clean:dist'], function () {
-  runSequence(['images', 'favicon', 'copy:extras', 'copy:fonts', 'client:rename', 'pageNotFound']);
+gulp.task('build', ['clean:dist', 'clean:server', 'clean:client'], function (cb) {
+  runSequence(['config', 'images', 'favicon', 'copy:extras', 'copy:fonts', 'client:rename', 'pageNotFound'], cb);
+});
+
+gulp.task('war', ['build'], () => {
+  return gulp.src([yeoman.dist + "/**"])
+    .pipe($.war({
+      welcome: 'index.html',
+      displayName: 'OCSP'
+    }))
+    .pipe($.zip('ocsp.war'))
+    .pipe(gulp.dest("."));
 });
 
 gulp.task('default', ['build']);

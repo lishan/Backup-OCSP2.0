@@ -1,12 +1,13 @@
 package com.asiainfo.ocdp.stream.datasource
 
-import com.asiainfo.ocdp.stream.common.Logging
+import com.asiainfo.ocdp.stream.common.{KafkaCluster, Logging}
 import com.asiainfo.ocdp.stream.config.DataInterfaceConf
 import com.asiainfo.ocdp.stream.constant.DataSourceConstant
 import kafka.serializer.StringDecoder
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.kafka.KafkaUtils
+
 import scala.xml.XML
 import com.asiainfo.ocdp.stream.constant.CommonConstant
 import kafka.common.TopicAndPartition
@@ -46,7 +47,7 @@ object StreamingInputReader extends Logging {
             ssc, kafkaParams, topicsSet).map(_._2)
         }
 
-        // add by surq at 2015.11.19 end 
+        // add by surq at 2015.11.19 end
 
       } else {
         val zkConnect = dsConf.get(DataSourceConstant.ZK_CONNECT_KEY)
@@ -64,8 +65,6 @@ object StreamingInputReader extends Logging {
 
     } else {
       throw new Exception("EventSourceType " + sourceType + " is not support !")
-
     }
   }
-
 }

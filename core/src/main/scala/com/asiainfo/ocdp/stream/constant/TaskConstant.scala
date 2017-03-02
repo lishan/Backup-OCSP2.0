@@ -10,6 +10,7 @@ object TaskConstant {
   val RUNNING = 2
   val PRE_STOP = 3
   val PRE_RESTART = 4
+  val RETRY = 5
 
   val TYPE_DATAINTERFACE = 1
   val TYPE_SUTJECT = 2

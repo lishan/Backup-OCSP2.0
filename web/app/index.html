@@ -40,7 +40,7 @@
         <div class="navbar-header">
           <div style="margin-top: 8px;">
             <img src="/images/logo-white.png" style="height: 32px;" alt="ocsp" title="ocsp">
-            <span class="brand">橘云流处理平台</span>
+            <span class="brand">{{'ocsp_web_common_000' | translate}}</span>
           </div>
           <!--<button type="button" class="navbar-toggle" data-toggle="sidebar" data-target=".sidebar">-->
             <!--<span class="sr-only">Toggle navigation</span>-->
@@ -51,21 +51,21 @@
         </div>
 
         <div class="collapse navbar-collapse" id="js-navbar-collapse">
-          <form class="navbar-form navbar-right" style="margin-left: 10px;">
+          <form class="navbar-form navbar-right" style="margin-left: 10px;" ng-if="username !== null">
             <button class="dropdown-toggle btn btn-default" data-toggle="dropdown" role="button" aria-haspopup="true"
                aria-expanded="false">
               <i class="glyphicon glyphicon-user"></i>
-              {{username}} <span ng-if="username !== null" class="caret"></span>
+              {{username}} <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu" ng-if="username !== null">
-              <li><a href="" ng-click="logout()">Logout</a></li>
+            <ul class="dropdown-menu">
+              <li><a href="" ng-click="logout()">{{'ocsp_web_common_004' | translate}}</a></li>
             </ul>
           </form>
           <ul class="nav navbar-nav navbar-right">
-            <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'task']" href="#/task_management">{{'task_manage' | translate}}</a></li>
-            <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'label']" href="#/label_management">{{'label_manage' | translate}}</a></li>
-            <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'system']" href="#/system_management">{{'system_manage' | translate}}</a></li>
-            <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'user']" href="#/user_management">{{'user_manage' | translate}}</a></li>
+            <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'task']" href="#/task_management">{{'ocsp_web_streams_manage_000' | translate}}</a></li>
+            <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'label']" href="#/label_management">{{'ocsp_web_label_manage_000' | translate}}</a></li>
+            <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'system']" href="#/system_management">{{'ocsp_web_system_manage_000' | translate}}</a></li>
+            <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'user']" href="#/user_management">{{'ocsp_web_user_manage_000' | translate}}</a></li>
           </ul>
         </div>
       </div>
@@ -142,17 +142,20 @@
 <script src="bower_components/bootstrap-application-wizard/src/bootstrap-wizard.js"></script>
 <script src="bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"></script>
 <script src="bower_components/mermaid/dist/mermaid.js"></script>
-<script src="scripts/tokenfield.js"></script>
-<script src="scripts/app.js"></script>
-<script src="scripts/controllers/main.js"></script>
-<script src="scripts/controllers/task/management.js"></script>
-<script src="scripts/controllers/label/management.js"></script>
-<script src="scripts/controllers/system/management.js"></script>
-<script src="scripts/controllers/user/management.js"></script>
-<script src="scripts/directive/wizard.js"></script>
-<script src="scripts/directive/tokenfield.js"></script>
-<script src="scripts/services/login.js"></script>
-<script src="scripts/directive/cusDateFilter.js"></script>
+<script src="build-scripts/tokenfield.js"></script>
+<script src="build-scripts/app.js"></script>
+<script src="build-scripts/message_en.js"></script>
+<script src="build-scripts/message_zh.js"></script>
+<script src="build-scripts/controllers/main.js"></script>
+<script src="build-scripts/controllers/task/management.js"></script>
+<script src="build-scripts/controllers/label/management.js"></script>
+<script src="build-scripts/controllers/system/management.js"></script>
+<script src="build-scripts/controllers/user/management.js"></script>
+<script src="build-scripts/directive/wizard.js"></script>
+<script src="build-scripts/directive/tokenfield.js"></script>
+<script src="build-scripts/services/login.js"></script>
+<script src="build-scripts/directive/cusDateFilter.js"></script>
+<script src="build-scripts/services/urlRewrite.js"></script>
 <!-- endbuild -->
 </body>
 </html>

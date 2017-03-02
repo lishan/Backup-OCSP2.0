@@ -16,7 +16,7 @@ angular.module('ocspApp')
         $scope.message = null;
         $scope.styles = null;
       }else{
-        $scope.message = $filter('translate')('pass_not_same');
+        $scope.message = $filter('translate')('ocsp_web_user_manage_006');
         $scope.styles = "redBlock";
       }
     };
@@ -36,9 +36,9 @@ angular.module('ocspApp')
             $scope.user = {
               name: $rootScope.username
             };
-            Notification.success("Save user success");
+            Notification.success($filter('translate')('ocsp_web_common_026'));
           }else{
-            Notification.error("Save user error, please check your password");
+            Notification.error($filter('translate')('ocsp_web_common_030'));
           }
           usSpinnerService.stop('spinner');
         }).error(function (err) {

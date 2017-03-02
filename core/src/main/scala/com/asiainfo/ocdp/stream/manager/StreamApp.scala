@@ -29,7 +29,6 @@ object StreamApp extends Logging {
 
     //1 初始化 streamingContext
 
-
     val sparkConf = new SparkConf().setAppName(taskConf.getName)
     sparkConf.set("spark.scheduler.mode", "FAIR")
 
@@ -59,6 +58,10 @@ object StreamApp extends Logging {
     } catch {
       case e: Exception => {
         e.printStackTrace()
+        if (taskServer.checkMaxRetry(taskConf.getId) > 0) {
+          logInfo("task : " + taskConf.getId + " got exception, task will retry")
+          taskServer.RetryTask(taskConf.getId)
+        }
       }
     } finally {
 //    ssc.awaitTermination()
@@ -68,15 +71,13 @@ object StreamApp extends Logging {
       if (TaskConstant.PRE_START == taskServer.checkTaskStatus(taskConf.getId) || TaskConstant.PRE_RESTART == taskServer.checkTaskStatus(taskConf.getId)){
       taskServer.RestartTask(taskConf.getId)
         logInfo("Restarting task " + taskConf.getId + " ...")
-      }
-      else {
+      } else if (TaskConstant.RETRY != taskServer.checkTaskStatus(taskConf.getId)) {
         taskServer.stopTask(taskConf.getId)
         logInfo("Stop task " + taskConf.getId + " successfully !")
       }
 
       sys.exit()
     }
-
 
   }
 

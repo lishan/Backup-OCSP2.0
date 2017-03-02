@@ -16,7 +16,14 @@ angular.module('ocspApp').directive('wizard',['$filter', function($filter){
       var options = {
         contentWidth : attrs.width,
         contentHeight : 600,
-        backdrop: 'static'
+        backdrop: 'static',
+        buttons: {
+          cancelText: $filter('translate')('ocsp_web_common_020'),
+          nextText: $filter('translate')('ocsp_web_common_007'),
+          backText: $filter('translate')('ocsp_web_common_008'),
+          submitText: $filter('translate')('ocsp_web_common_021'),
+          submittingText: $filter('translate')('ocsp_web_common_022')
+        }
       };
       var wizard = element.find(".wizard");
       wizard.attr("data-title",attrs.title);
@@ -35,25 +42,41 @@ angular.module('ocspApp').directive('wizard',['$filter', function($filter){
       wizardModal.on("closed", function(){
         wizardModal.reset();
       });
-      for(var i = 1; i < 5 ; i++) {
-        wizardModal.cards["create_task_" + i].on("validate", function (card) {
+      wizardModal.cards.ocsp_web_common_013.on("validate", function (card) {
+        var input = card.el.find("input[required]");
+        var flag = true;
+        input.each(function(){
+          var name = $(this).val();
+          if (name === "") {
+            $(this).addClass("redBlock");
+            card.wizard.errorPopover($(this), $filter('translate')('ocsp_web_common_027'));
+            flag = false;
+          }else{
+            $(this).siblings("div.error-popover").remove();
+            $(this).removeClass("redBlock");
+          }
+        });
+        return flag;
+      });
+      var dealWithCards = function (i){
+        wizardModal.cards["ocsp_web_streams_manage_00" + i].on("validate", function (card) {
           var input = card.el.find("input[required]");
           var flag = true;
           input.each(function(){
             var name = $(this).val();
             if (name === "") {
               $(this).addClass("redBlock");
-              card.wizard.errorPopover($(this), "Cannot be empty");
+              card.wizard.errorPopover($(this), $filter('translate')('ocsp_web_common_027'));
               flag = false;
             }else{
               $(this).siblings("div.error-popover").remove();
               $(this).removeClass("redBlock");
             }
           });
-          if(card.name === "create_task_2" || card.name === "create_task_4") {
+          if(card.name === "ocsp_web_streams_manage_006" || card.name === "ocsp_web_streams_manage_008") {
             card.el.find("div.ng-invalid").each(function(){
               $(this).addClass("redBlock");
-              card.wizard.errorPopover($(this), "Cannot be empty");
+              card.wizard.errorPopover($(this), $filter('translate')('ocsp_web_common_027'));
               flag = false;
             });
             card.el.find("div.ng-valid").each(function(){
@@ -63,6 +86,9 @@ angular.module('ocspApp').directive('wizard',['$filter', function($filter){
           }
           return flag;
         });
+      };
+      for(let i = 6; i < 9 ; i++) {
+        dealWithCards(i);
       }
       wizardModal.on("submit", function() {
         var promise = scope.submitMethod();

@@ -1,3 +1,4 @@
+"use strict";
 var express = require('express');
 var sequelize = require('../sequelize');
 var Sequelize = require('sequelize');
@@ -56,7 +57,7 @@ router.post('/', function(req, res){
     res.status(500).send(trans.databaseError);
   }).catch(function(){
     res.status(500).send(trans.databaseError);
-  })
+  });
 });
 
 

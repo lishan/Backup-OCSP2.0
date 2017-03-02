@@ -1,0 +1,31 @@
+module.exports = {
+  dev: {
+    mysql: '',
+    dist: 'app',
+    port: 9527
+  },
+  prod: {
+    mysql: 'mysql://@MYSQL_UNAME@:@MYSQL_PWD@@@MYSQL_ADDR@/@MYSQL_DATABASE@',
+    dist: 'dist',
+    port: 9527
+  },
+  express_only: {
+    mysql: '',
+    dist: 'app',
+    port: 9527
+  },
+  quickLinks : [
+    {name: "Spark Streaming", value: "@RM_ADDR@"},
+    {name: "Codis Dashboard", value: "@CODIS_ADDR@"}
+  ],
+  env: "prod", // By default use prod env
+  trans: "zh",
+  zh:{
+    databaseError: "请检查数据库配置",
+    uploadError: "上传失败, 请手动将jar包放到"
+  },
+  en:{
+    databaseError: "Please check your database configurations",
+    uploadError: "Upload failed, please upload manually jar to"
+  }
+};

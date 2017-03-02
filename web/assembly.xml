@@ -10,7 +10,7 @@
   <includeBaseDirectory>false</includeBaseDirectory>
   <fileSets>
     <fileSet>
-      <directory>server</directory>
+      <directory>build-server</directory>
       <outputDirectory>/server</outputDirectory>
     </fileSet>
     <fileSet>
@@ -20,10 +20,6 @@
     <fileSet>
       <directory>node_modules</directory>
       <outputDirectory>/node_modules</outputDirectory>
-    </fileSet>
-    <fileSet>
-      <directory>app/bower_components/bootstrap/fonts</directory>
-      <outputDirectory>app/bower_components/bootstrap/fonts</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>node-v6.9.1</directory>

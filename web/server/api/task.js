@@ -1,3 +1,4 @@
+"use strict";
 var express = require('express');
 var sequelize = require('../sequelize');
 var Sequelize = require('sequelize');
@@ -16,8 +17,17 @@ var getRunningTime = function (tasks) {
     var date = new Date();
     var sss = date.getTime();
     for (var i = 0; i < tasks.length; i++) {
-      if(tasks[i].dataValues !== undefined && tasks[i].dataValues.start_time !== undefined && tasks[i].dataValues.start_time != null && tasks[i].dataValues.start_time != "") {
-        tasks[i].dataValues.running_time = parseInt((sss - tasks[i].dataValues.start_time)/ 1000);
+      if(tasks[i].dataValues !== undefined && tasks[i].dataValues.start_time !== undefined &&
+        tasks[i].dataValues.start_time !== null && tasks[i].dataValues.start_time !== "") {
+        if(tasks[i].status === 2) {
+          tasks[i].dataValues.running_time = parseInt(sss - tasks[i].dataValues.start_time);
+        }else if(tasks[i].status === 0 && tasks[i].dataValues.stop_time !== undefined &&
+          tasks[i].dataValues.stop_time !== null &&
+          tasks[i].dataValues.stop_time !== ""){
+          tasks[i].dataValues.running_time = parseInt(tasks[i].dataValues.stop_time - tasks[i].dataValues.start_time);
+        }else{
+          tasks[i].dataValues.running_time = null;
+        }
       }
     }
   }
@@ -33,7 +43,8 @@ router.get('/', function(req, res){
 });
 
 router.get('/status', function(req,res){
-  Task.findAll({attributes: ['id','status']}).then(function (tasks){
+  Task.findAll({attributes: ['id','status','start_time','stop_time']}).then(function (tasks){
+    getRunningTime(tasks);
     res.send(tasks);
   }, function(){
     res.status(500).send(trans.databaseError);
@@ -45,6 +56,9 @@ router.post('/change/:id', function(req, res){
   sequelize.transaction(function(t) {
     return Task.find({where: {id: req.params.id}, transaction: t}).then(function (task) {
       var result = task.dataValues;
+      if(result.status === 0 && status === 4){// When task is in stop status, it cannot be restart.
+        return sequelize.Promise.reject();
+      }
       result.status = status;
       return Task.update(result, {where: {id: req.params.id}, transaction: t});
     });
@@ -149,9 +163,6 @@ function createEvents(events, i, diid, status) {
   if(events[i].select_expr !== undefined && events[i].select_expr !== "") {
     events[i].select_expr = events[i].select_expr.replace(/\s/g, '');
   }
-  if(events[i].delim !== undefined && events[i].delim === "|"){
-    events[i].delim = "\\|";
-  }
   if(events[i].delim === undefined){
     events[i].delim = "";
   }
@@ -194,8 +205,12 @@ router.post("/", function(req, res){
   var events = req.body.task.events;
   // create input data interface
   sequelize.transaction(function(t) {
-    //Input datasource is kafka by default
-    dealDataInterfaceProperties(inputInterface, 1, 0);
+    if(inputInterface.datasource !== undefined && inputInterface.datasource.id !== undefined){
+      dealDataInterfaceProperties(inputInterface, inputInterface.datasource.id, 0);
+    }else{
+      dealDataInterfaceProperties(inputInterface, null, 0);
+    }
+    inputInterface.name = task.name + "_" + randomstring.generate(10);
     return sequelize.Promise.all([
       Interface.create(inputInterface, {transaction: t}),
       Label.max("id", {transaction: t})]).then(function (di) {
@@ -207,7 +222,7 @@ router.post("/", function(req, res){
       // create task
       task.diid = di[0].id;
       task.type = 1;
-      task.status = 1;
+      task.status = 0;
       task.queue = "default";
       promises.push(Task.create(task, {transaction: t}));
       return sequelize.Promise.all(promises).then(function (result) {
@@ -223,7 +238,7 @@ router.post("/", function(req, res){
   }).then(function(){
     res.send({success: true});
   },function(){
-    res.status(500).send(trans.databaseError + trans.inputDuplicateKey);
+    res.status(500).send(trans.databaseError);
   }).catch(function () {
     res.status(500).send(trans.databaseError);
   });
@@ -238,7 +253,11 @@ router.put("/", function(req, res) {
     var promises = [];
     promises.push(Label.max("id", {transaction: t}));
     promises.push(Event.findAll({where:{diid : inputInterface.id}, transaction: t}));
-    dealDataInterfaceProperties(inputInterface, 1, 0);
+    if(inputInterface.datasource !== undefined && inputInterface.datasource.id !== undefined){
+      dealDataInterfaceProperties(inputInterface, inputInterface.datasource.id, 0);
+    }else{
+      dealDataInterfaceProperties(inputInterface, null, 0);
+    }
     promises.push(Interface.update(inputInterface, {where: {id : inputInterface.id}, transaction: t}));
     promises.push(Task.update(task, {where: {id: task.id}, transaction: t}));
     promises.push(Label.destroy({where: {diid: inputInterface.id}, transaction: t}));
@@ -248,7 +267,7 @@ router.put("/", function(req, res) {
       //create label after delete
       createLabel(labels, inputInterface, t, promises1, result[0]);
       //create or update events
-      for (var i = 0 ; i < events.length; i++) {
+      for (let i = 0 ; i < events.length; i++) {
         if(result[i+5].dataValues !== undefined && result[i+5].dataValues.id !== undefined){
           events[i].output.id = result[i+5].dataValues.id;
         }
@@ -260,10 +279,10 @@ router.put("/", function(req, res) {
         }
       }
       //deleted unused events
-      for(var i in result[1]){
+      for(let i in result[1]){
         if(result[1][i].dataValues !== undefined && result[1][i].dataValues.id !== undefined){
           var flag = true;
-          for(var j in events){
+          for(let j in events){
             if(events[j].id !== undefined && result[1][i].dataValues.id === events[j].id){
               flag = false;
               break;
@@ -274,7 +293,7 @@ router.put("/", function(req, res) {
             if(result[1][i].dataValues.PROPERTIES !== undefined){
               var obj = JSON.parse(result[1][i].dataValues.PROPERTIES);
               if(obj.output_dis !== undefined && obj.output_dis[0] !== undefined && obj.output_dis[0].diid !== undefined) {
-                promises1.push(Interface.destroy({where: {id: obj.output_dis[0].diid}, transaction: t}))
+                promises1.push(Interface.destroy({where: {id: obj.output_dis[0].diid}, transaction: t}));
               }
             }
           }

@@ -91,19 +91,44 @@ class DataInterfaceServer extends Logging with Serializable {
       conf.setPlabelId(x.get("p_label_id").get)
 
       val propsJsonStr = x.get("properties").getOrElse(null)
-      if (propsJsonStr != null) {
-        val propsArrMap = Json4sUtils.jsonStr2ArrMap(propsJsonStr, "props")
-        propsArrMap.foreach(kvMap => {
-          if (!kvMap.isEmpty) conf.set(kvMap.get("pname").get, kvMap.get("pvalue").get)
-        })
+      if (StringUtils.isNotEmpty(propsJsonStr)) {
+        if (!Json4sUtils.isValidJsonStr(propsJsonStr)){
+          throw new Exception(s"${propsJsonStr} is invalid json format.")
+        }
 
-        val fieldsArrMap = Json4sUtils.jsonStr2ArrMap(propsJsonStr, "labelItems")
-        val fieldsList = ArrayBuffer[String]()
-        fieldsArrMap.foreach(kvMap => {
-          if (!kvMap.isEmpty) fieldsList += kvMap.get("pvalue").get
+        val labelConfMap = Json4sUtils.jsonStr2MapList(propsJsonStr)
+
+        labelConfMap.foreach( confObject => {
+
+          if ("props".equals(confObject._1)){
+            confObject._2.foreach(props => {
+              if (!props.isEmpty){
+                conf.set(props.get("pname").get, props.get("pvalue").get)
+              }
+            })
+          }
+          else if ("labelItems".equals(confObject._1)){
+            val fieldsList = ArrayBuffer[String]()
+            confObject._2.foreach(items => {
+              if (!items.isEmpty){
+                fieldsList += items.get("pvalue").get
+              }
+            })
+
+            //打标签字段
+            conf.setFields(fieldsList.toList)
+          }
+          else {
+            logWarning(s"${confObject._1} is invalid property.")
+          }
         })
-        //打标签字段
-        conf.setFields(fieldsList.toList)
+      }
+
+      if (conf.getFields == null || conf.getFields.isEmpty){
+        logWarning("Can not find any label items")
+      }
+      else{
+        logInfo(s"The fields of label ${conf.getId} are ${conf.getFields}")
       }
 
       val label: Label = Class.forName(conf.getClass_name).newInstance().asInstanceOf[Label]

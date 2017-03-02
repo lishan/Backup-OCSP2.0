@@ -4,17 +4,21 @@
  * For job management main page controller
  */
 angular.module('ocspApp')
-  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', 'usSpinnerService', 'loginService', '$interval', '$uibModal', function ($scope, $http, Notification, $q, usSpinnerService, loginService, $interval, $uibModal) {
+  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', 'usSpinnerService', 'loginService', '$interval', '$uibModal', '$filter', function ($scope, $http, Notification, $q, usSpinnerService, loginService, $interval, $uibModal, $filter) {
     loginService.init('task');
+    $scope.localLang = {
+      search: $filter('translate')('ocsp_web_common_014'),
+      nothingSelected : $filter('translate')('ocsp_web_common_017')
+    };
     $scope.selectedJob = {
       input: {},
       events: []
     };
     $scope.actions = [
-      {name: "start", enable: true, icon : "glyphicon glyphicon-play success"},
-      {name: "stop", enable: true, icon: "glyphicon glyphicon-stop danger"},
-      {name: "restart", enable: true, icon: "glyphicon glyphicon-refresh danger"},
-      {name: "delete", enable: true, icon: "glyphicon glyphicon-remove-sign warning"}
+      {name: $filter('translate')('ocsp_web_streams_manage_024'), enable: true, icon : "glyphicon glyphicon-play success"},
+      {name: $filter('translate')('ocsp_web_streams_manage_025'), enable: true, icon: "glyphicon glyphicon-stop danger"},
+      {name: $filter('translate')('ocsp_web_streams_manage_026'), enable: true, icon: "glyphicon glyphicon-refresh danger"},
+      {name: $filter('translate')('ocsp_web_streams_manage_027'), enable: true, icon: "glyphicon glyphicon-remove-sign warning"}
     ];
     mermaidAPI.initialize({
       startOnLoad:false
@@ -51,67 +55,47 @@ angular.module('ocspApp')
     function dealWith(status) {
       if(status === 0){
         $scope.actions = [
-          {name: "start", enable: true, icon : "glyphicon glyphicon-play success"},
-          {name: "stop", enable: false, icon: "glyphicon glyphicon-stop"},
-          {name: "restart", enable: true, icon: "glyphicon glyphicon-refresh danger"},
-          {name: "delete", enable: true, icon: "glyphicon glyphicon-remove-sign warning"}
+          {name: $filter('translate')('ocsp_web_streams_manage_024'), enable: true, icon : "glyphicon glyphicon-play success"},
+          {name: $filter('translate')('ocsp_web_streams_manage_025'), enable: false, icon: "glyphicon glyphicon-stop"},
+          {name: $filter('translate')('ocsp_web_streams_manage_026'), enable: false, icon: "glyphicon glyphicon-refresh"},
+          {name: $filter('translate')('ocsp_web_streams_manage_027'), enable: true, icon: "glyphicon glyphicon-remove-sign warning"}
         ];
       }else if(status === 2){
         $scope.actions = [
-          {name: "start", enable: false, icon : "glyphicon glyphicon-play"},
-          {name: "stop", enable: true, icon: "glyphicon glyphicon-stop danger"},
-          {name: "restart", enable: true, icon: "glyphicon glyphicon-refresh danger"},
-          {name: "delete", enable: false, icon: "glyphicon glyphicon-remove-sign"}
+          {name: $filter('translate')('ocsp_web_streams_manage_024'),  enable: false, icon : "glyphicon glyphicon-play"},
+          {name: $filter('translate')('ocsp_web_streams_manage_025'), enable: true, icon: "glyphicon glyphicon-stop danger"},
+          {name: $filter('translate')('ocsp_web_streams_manage_026'), enable: true, icon: "glyphicon glyphicon-refresh danger"},
+          {name: $filter('translate')('ocsp_web_streams_manage_027'), enable: false, icon: "glyphicon glyphicon-remove-sign"}
         ];
       }else{
         $scope.actions = [
-          {name: "start", enable: false, icon : "glyphicon glyphicon-play"},
-          {name: "stop", enable: false, icon: "glyphicon glyphicon-stop"},
-          {name: "restart", enable: false, icon: "glyphicon glyphicon-refresh"},
-          {name: "delete", enable: false, icon: "glyphicon glyphicon-remove-sign"}
+          {name: $filter('translate')('ocsp_web_streams_manage_024'), enable: false, icon : "glyphicon glyphicon-play"},
+          {name: $filter('translate')('ocsp_web_streams_manage_025'), enable: false, icon: "glyphicon glyphicon-stop"},
+          {name: $filter('translate')('ocsp_web_streams_manage_026'), enable: false, icon: "glyphicon glyphicon-refresh"},
+          {name: $filter('translate')('ocsp_web_streams_manage_027'), enable: false, icon: "glyphicon glyphicon-remove-sign"}
         ];
       }
     }
 
-    var timeInterval = $interval(function(){
-      if($scope.jobs !== undefined && $scope.jobs.length > 0){
-        for(var i in $scope.jobs){
-          if($scope.jobs[i].running_time !== undefined) {
-            $scope.jobs[i].running_time += 1;
-          }
-        }
-      }
-    },1000);
-
     var taskInterval = $interval(function () {
       $http.get('/api/task/status').success(function(tasks){
         if($scope.jobs !== undefined && $scope.jobs.length > 0){
-          for(var i in $scope.jobs){
-            for(var j in tasks){
+          for(let i in $scope.jobs){
+            for(let j in tasks){
               if($scope.jobs[i].id === tasks[j].id){
                 $scope.jobs[i].status = tasks[j].status;
+                $scope.jobs[i].running_time = tasks[j].running_time;
                 break;
               }
             }
           }
         }
-        if($scope.selectedJob !== undefined && $scope.selectedJob.id !== undefined){
-          for(var j in tasks){
-            if($scope.selectedJob.id === tasks[j].id){
-              $scope.selectedJob.status = tasks[j].status;
-              break;
-            }
-          }
-          dealWith($scope.selectedJob.status);
-        }
+        dealWith($scope.selectedJob.status);
       });
     }, 3000);
     $scope.$on('$destroy', function(){
       if(taskInterval) {
         $interval.cancel(taskInterval);
-      }
-      if(timeInterval){
-        $interval.cancel(timeInterval);
       }
     });
     $scope.links = [];
@@ -128,6 +112,12 @@ angular.module('ocspApp')
       $q.all({job: $http.get('/api/task'), datasource: $http.get('/api/datasource'), labels: $http.get('/api/label')}).then(function(arr){
         $scope.jobs = arr.job.data;
         $scope.datasources = arr.datasource.data;
+        $scope.inputDatasources = [];
+        for(let i in $scope.datasources){
+          if($scope.datasources[i].type === 'kafka'){
+            $scope.inputDatasources.push($scope.datasources[i]);
+          }
+        }
         $scope.inputLabels = arr.labels.data;
         usSpinnerService.stop('spinner');
       },function(err){
@@ -142,14 +132,18 @@ angular.module('ocspApp')
       if($scope.selectedJob.id === undefined || $scope.selectedJob.id === null){
         Notification.error("Cannot update null task");
       }else{
-        usSpinnerService.spin('spinner');
-        $http.put("/api/task", {task: $scope.selectedJob}).success(function(){
-          Notification.success("Update task success");
-          usSpinnerService.stop('spinner');
-        }).error(function(err){
-          usSpinnerService.stop('spinner');
-          Notification.error(err);
-        });
+        if($("#mainFrame .ng-invalid").length > 0){
+          Notification.error($filter('translate')('ocsp_web_common_027'));
+        }else {
+          usSpinnerService.spin('spinner');
+          $http.put("/api/task", {task: $scope.selectedJob}).success(function () {
+            Notification.success($filter('translate')('ocsp_web_common_026'));
+            usSpinnerService.stop('spinner');
+          }).error(function (err) {
+            usSpinnerService.stop('spinner');
+            Notification.error(err);
+          });
+        }
       }
     };
 
@@ -165,14 +159,14 @@ angular.module('ocspApp')
           if (prop.fields.length > 0){
             datainterface.fields = prop.fields[0].pname;
           }
-          for (var i = 1; i < prop.fields.length; i++) {
+          for (let i = 1; i < prop.fields.length; i++) {
             if(prop.fields[i].pname !== undefined && prop.fields[i].pname !== "") {
               datainterface.fields += "," + prop.fields[i].pname;
             }
           }
         }
         if(prop.props !== undefined && prop.props.length > 0) {
-          for (var i in prop.props) {
+          for (let i in prop.props) {
             if(prop.props[i].pname === "topic"){
               datainterface.topic = prop.props[i].pvalue;
             }
@@ -187,15 +181,14 @@ angular.module('ocspApp')
       }
     };
 
-    //TODO: use directive instead
     function drawGraph(item, labels){
       var graphDefinition = 'graph LR;';
       graphDefinition += "task[" + item.name + "];";
       graphDefinition += "input((" + item.input.topic + "));";
-      graphDefinition += "task-->|" + item.input.name + "|input;";
+      graphDefinition += "task-->input;";
       var last = "input";
       if(labels.length > 0) {
-        graphDefinition += "subgraph labels;";
+        graphDefinition += "subgraph " + $filter('translate')('ocsp_web_common_024') + ";";
         if (labels.length > 1){
           for (var i = 0 ; i < labels.length - 1 ; i++) {
             graphDefinition += labels[i].name + "-->" + labels[i + 1].name + ";";
@@ -212,7 +205,7 @@ angular.module('ocspApp')
         }
       }
       if(item.events.length > 0) {
-        graphDefinition += "subgraph events;";
+        graphDefinition += "subgraph " + $filter('translate')('ocsp_web_common_025') + ";";
         for(var j in item.events){
           if(item.events[j].output === undefined){
             graphDefinition += item.events[j].name + "((\"" + item.events[j].name + "\"));";
@@ -225,7 +218,7 @@ angular.module('ocspApp')
           }
         }
         graphDefinition += "end;";
-        for(var j in item.events) {
+        for(let j in item.events) {
           graphDefinition += last + "-->" + item.events[j].name + ";";
         }
       }
@@ -236,6 +229,15 @@ angular.module('ocspApp')
       };
       mermaidAPI.render('graphDiv', graphDefinition, insertSvg);
     }
+
+    var parseDatasource = function (dataInterface){
+      for(var i in $scope.datasources){
+        if($scope.datasources[i].id === dataInterface.dsid){
+          dataInterface.datasource = $scope.datasources[i];
+          break;
+        }
+      }
+    };
 
     $scope.changeItem = function(item){
       $scope.selectedJob = item;
@@ -251,13 +253,14 @@ angular.module('ocspApp')
           $scope.selectedJob.events = arr.events.data;
           var labels = [];
           //Deal with input properties
+          parseDatasource($scope.selectedJob.input);
           parseProperties($scope.selectedJob.input, $scope.selectedJob.input.properties);
           //Deal with labels
-          for (var j in $scope.inputLabels) {
+          for (let j in $scope.inputLabels) {
             $scope.inputLabels[j].tick2 = false;
           }
-          for (var i in arr.labels.data) {
-            for (var j in $scope.inputLabels) {
+          for (let i in arr.labels.data) {
+            for (let j in $scope.inputLabels) {
               if (arr.labels.data[i].label_id === $scope.inputLabels[j].id) {
                 $scope.inputLabels[j].tick2 = true;
                 labels.push($scope.inputLabels[j]);
@@ -266,12 +269,12 @@ angular.module('ocspApp')
           }
           var temp = $scope.inputLabels;
           $scope.inputLabels = [];
-          for(var j in labels){
+          for(let j in labels){
             $scope.inputLabels.push(labels[j]);
           }
-          for(var i in temp){
+          for(let i in temp){
             var flag = true;
-            for(var j in labels){
+            for(let j in labels){
               if(temp[i].id === labels[j].id){
                 flag = false;
                 break;
@@ -282,11 +285,11 @@ angular.module('ocspApp')
             }
           }
           //Deal with events
-          for(var i in $scope.selectedJob.events){
+          for(let i in $scope.selectedJob.events){
             if($scope.selectedJob.events[i].PROPERTIES !== undefined && $scope.selectedJob.events[i].PROPERTIES !== null) {
               $scope.selectedJob.events[i].PROPERTIES = JSON.parse($scope.selectedJob.events[i].PROPERTIES);
               if($scope.selectedJob.events[i].PROPERTIES.props !== undefined && $scope.selectedJob.events[i].PROPERTIES.props.length > 0) {
-                for (var j in $scope.selectedJob.events[i].PROPERTIES.props) {
+                for (let j in $scope.selectedJob.events[i].PROPERTIES.props) {
                   if ($scope.selectedJob.events[i].PROPERTIES.props[j].pname === "userKeyIdx") {
                     $scope.selectedJob.events[i].userKeyIdx = $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue;
                   }
@@ -298,15 +301,11 @@ angular.module('ocspApp')
                 if($scope.selectedJob.events[i].delim === "\\|"){
                   $scope.selectedJob.events[i].delim = "|";
                 }
-                for(var j in $scope.selectedJob.output){
+                for(let j in $scope.selectedJob.output){
                   if($scope.selectedJob.output[j].id === parseInt($scope.selectedJob.events[i].PROPERTIES.output_dis[0].diid)){
                     $scope.selectedJob.events[i].output = $scope.selectedJob.output[j];
                     parseProperties($scope.selectedJob.events[i].output, $scope.selectedJob.events[i].output.properties);
-                    if($scope.selectedJob.events[i].output.dsid === 1){
-                      $scope.selectedJob.events[i].output.datasource = $scope.datasources[0];
-                    }else{
-                      $scope.selectedJob.events[i].output.datasource = $scope.datasources[1];
-                    }
+                    parseDatasource($scope.selectedJob.events[i].output);
                     break;
                   }
                 }
@@ -335,15 +334,15 @@ angular.module('ocspApp')
     $scope.statusText = function(item){
       switch(item) {
         case 0:
-          return "Stop";
+          return $filter('translate')('ocsp_web_streams_manage_032');
         case 1:
-          return "Pre_start";
+          return $filter('translate')('ocsp_web_streams_manage_033');
         case 2:
-          return "Running";
+          return $filter('translate')('ocsp_web_streams_manage_034');
         case 3:
-          return "Pre_stop";
+          return $filter('translate')('ocsp_web_streams_manage_035');
         case 4:
-          return "Pre_restart";
+          return $filter('translate')('ocsp_web_streams_manage_036');
       }
     };
 
@@ -353,13 +352,13 @@ angular.module('ocspApp')
         return;
       }
       var status = 0;
-      if(name === "start"){
+      if(name === $filter('translate')('ocsp_web_streams_manage_024')){
         status = 1;
-      }else if(name === "stop"){
+      }else if(name === $filter('translate')('ocsp_web_streams_manage_025')){
         status = 3;
-      }else if(name === "restart"){
+      }else if(name === $filter('translate')('ocsp_web_streams_manage_026')){
         status = 4;
-      }else if(name === "delete"){
+      }else if(name === $filter('translate')('ocsp_web_streams_manage_027')){
         if(confirm("Are you sure?")){
           if($scope.selectedJob.id === undefined || $scope.selectedJob.id === null){
             Notification.error("Cannot delete null task");
@@ -367,7 +366,7 @@ angular.module('ocspApp')
             usSpinnerService.spin('spinner');
             $http.post("/api/task/delete/" + $scope.selectedJob.id, {type: 0}).success(function(){
               $scope.selectedJob.type = 0;
-              Notification.success("Delete task success");
+              Notification.success($filter('translate')('ocsp_web_common_029'));
               usSpinnerService.stop('spinner');
             }).error(function(err){
               usSpinnerService.stop('spinner');
@@ -384,7 +383,7 @@ angular.module('ocspApp')
         $http.post("/api/task/change/" + $scope.selectedJob.id, {status: status}).success(function(){
           $scope.selectedJob.status = status;
           dealWith(status);
-          Notification.success("Update task status success");
+          Notification.success($filter('translate')('ocsp_web_common_026'));
           usSpinnerService.stop('spinner');
         }).error(function(err){
           usSpinnerService.stop('spinner');
@@ -423,9 +422,9 @@ angular.module('ocspApp')
       var temp = $scope.inputLabels;
       arr.splice(index, 1);
       $scope.inputLabels = arr;
-      for(var i in temp){
+      for(let i in temp){
         var flag = true;
-        for(var j in arr){
+        for(let j in arr){
           if(temp[i].id === arr[j].id){
             flag = false;
             break;
@@ -446,7 +445,7 @@ angular.module('ocspApp')
             input: {},
             events: []
           };
-          Notification.success("Create task success");
+          Notification.success($filter('translate')('ocsp_web_common_026'));
           init();
           defer.resolve();
         }).error(function(err){

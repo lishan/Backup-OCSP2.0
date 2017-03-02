@@ -1,61 +1,44 @@
-%global         _prefix /opt/OCSP/
+%global         _prefix /usr
 
 Name:           OCDP_Stream
 Version:        2.0
-Release:        1%{?dist}
+Release:        1_beta_k
 Summary:        OCSP from asiainfo.com
 
-Group:          System/Daemons
+Group:          Applications/Productivity
 License:        GPL
 URL:            https://github.com/OCSP/OCSP_mainline
-Source0:        OCDP_Stream.tar.gz
-
-Requires:       nodejs
+Prefix:         %{_prefix}
 
 %description
-
-Streaming Process from ASIAINFO
+OCSP from ASIAINFO
 
 %prep
-%pre
-echo -e '\033[0;31;5m'
-echo "------------- Installation Statement -------------"
-echo -e '\033[0m'
 
 %install
 rm -rf %{buildroot}
 %{__install} -d %{buildroot}%{_prefix}
-tar -xzf %{_sourcedir}/OCDP_Stream.tar.gz -C %{buildroot}%{_prefix}
+tar -xzf %{_sourcedir}/OCDP_Stream_2.0.1_beta_k.tar.gz -C %{buildroot}%{_prefix}
+mkdir -p %{buildroot}%{_prefix}/ocsp
+mv %{buildroot}%{_prefix}/OCDP_Stream/* %{buildroot}%{_prefix}/ocsp
 
 %post
 
 %preun
+rpm_name="OCDP_Stream-2.0-1_beta_k.x86_64"
+rpm_path=`rpm -ql  ${rpm_name} | head -n 1 | awk -F/ 'NF-=1' OFS=/`
 # stop the service
-function killproc()
-{
-        proc_name=$1
-        suffixx="\>"
-        mpid=`ps -ef|grep -i ${proc_name}${suffixx}|grep -v "grep"|awk '{print $2}'`
-        if [ ! -z "$mpid" ]; then
-                echo "killing process " $proc_name " pid " $mpid
-                kill -9 $mpid
-        fi
-}
-
-killproc "MainFrameManager"
-killproc "app.js"
-
-%postun
-    rm -rf %{prefix}
+sh ${rpm_path}/ocsp/bin/stream stop
+sh ${rpm_path}/ocsp/bin/fountain stop
 
 %files
-%dir %{_prefix}/
-%{_prefix}/bin
-%{_prefix}/conf
-%{_prefix}/lib
-%{_prefix}/logs
-%{_prefix}/web
+%dir %{_prefix}/ocsp
+%{_prefix}/ocsp/bin
+%{_prefix}/ocsp/conf
+%{_prefix}/ocsp/lib
+%{_prefix}/ocsp/logs
+%{_prefix}/ocsp/web
+%defattr (755,root,root)
 %doc
-
 
 %changelog

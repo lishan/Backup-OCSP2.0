@@ -1,21 +1,93 @@
+<script type="text/ng-template" id="stackedModal.html">
+  <div class="modal-header">
+    <h3 class="modal-title">{{'ocsp_web_system_manage_003' | translate}}</h3>
+  </div>
+  <div class="modal-body">
+    <form name="myForm" id="mainFrame">
+      <div class="form-group">
+        <label>{{'ocsp_web_common_011' | translate}}*</label>
+        <input type="text" name="name" class="form-control" ng-model="newDatasource.name" required>
+        <span class="notnull" ng-messages="myForm.name.$error"
+             ng-if="myForm.name.$touched">
+          <div ng-message="required">{{'ocsp_web_common_027' | translate}}</div>
+        </span>
+      </div>
+      <div class="form-group">
+        <label>{{'ocsp_web_common_031' | translate}}*</label>
+        <ui-select name="sourceType" ng-model="newDatasource.type" ng-required="true">
+          <ui-select-match>
+            <span ng-bind="$select.selected"></span>
+          </ui-select-match>
+          <ui-select-choices
+            repeat="item in (['kafka','codis'] | filter: $select.search) track by item">
+            <span ng-bind="item"></span>
+          </ui-select-choices>
+        </ui-select>
+        <span class="notnull" ng-messages="myForm.sourceType.$error" ng-if="myForm.sourceType.$touched">
+          <div ng-message="required">{{'ocsp_web_common_027' | translate}}</div>
+        </span>
+      </div>
+      <div class="form-group" ng-if="newDatasource.type === 'kafka'">
+        <label>zookeeper.connect*</label>
+        <input type="text" name="zk" class="form-control" ng-model="newDatasource.zk" required>
+        <span class="notnull" ng-messages="myForm.zk.$error"
+              ng-if="myForm.zk.$touched">
+          <div ng-message="required">{{'ocsp_web_common_027' | translate}}</div>
+        </span>
+      </div>
+      <div class="form-group" ng-if="newDatasource.type === 'kafka'">
+        <label>metadata.broker.list*</label>
+        <input type="text" name="blist" class="form-control" ng-model="newDatasource.blist" required>
+        <span class="notnull" ng-messages="myForm.blist.$error"
+              ng-if="myForm.blist.$touched">
+          <div ng-message="required">{{'ocsp_web_common_027' | translate}}</div>
+        </span>
+      </div>
+      <div class="form-group" ng-if="newDatasource.type === 'codis'">
+        <label>zk*</label>
+        <input type="text" name="zkco" class="form-control" ng-model="newDatasource.zk" required>
+        <span class="notnull" ng-messages="myForm.zkco.$error"
+              ng-if="myForm.zkco.$touched">
+          <div ng-message="required">{{'ocsp_web_common_027' | translate}}</div>
+        </span>
+      </div>
+      <div class="form-group" ng-if="newDatasource.type === 'codis'">
+        <label>zkpath*</label>
+        <input type="text" name="zkpath" class="form-control" ng-model="newDatasource.zkpath" required>
+        <span class="notnull" ng-messages="myForm.zkpath.$error"
+              ng-if="myForm.zkpath.$touched">
+          <div ng-message="required">{{'ocsp_web_common_027' | translate}}</div>
+        </span>
+      </div>
+      <div class="form-group">
+        <label>{{'ocsp_web_common_012' | translate}}</label>
+        <textarea ng-model="newDatasource.description" class="form-control" rows="6"></textarea>
+      </div>
+      <div class="form-group">
+        <button type="button" class="btn btn-primary" ng-click="saveDatasource()">{{'ocsp_web_common_009' | translate}}</button>
+      </div>
+    </form>
+  </div>
+</script>
 <div class="row">
   <div class="col-md-2 well">
     <div class="list-group">
       <div class="list-group-item">
-        {{'system_properties' | translate}}
+        <button class="wizard-button btn btn-default btn-block" ng-click="openSparkModal()">{{'ocsp_web_system_manage_003' | translate}}</button>
       </div>
     </div>
   </div>
   <div class="col-md-10 main">
     <div class="panel panel-oc">
       <div class="panel-heading">
-        {{'system_properties' | translate}}
+        {{'ocsp_web_system_manage_001' | translate}}
       </div>
       <div class="panel-body">
         <uib-accordion>
           <div uib-accordion-group class="panel-default" ng-init="isOpen = true" is-open="isOpen">
             <uib-accordion-heading>
-              System Properties <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': isOpen, 'glyphicon-chevron-right': !isOpen}"></i>
+              <i class="glyphicon" ng-class="{'glyphicon-chevron-down': isOpen, 'glyphicon-chevron-right': !isOpen}"></i>
+              &nbsp; {{'ocsp_web_common_013' | translate}}
             </uib-accordion-heading>
             <div ng-repeat="property in prop" class="form-group">
               <div class="row">
@@ -24,32 +96,46 @@
                 </div>
                 <div class="col-md-8">
                   <input ng-model="property.value" class="form-control" popover-trigger="'mouseenter'"
-                         popover-placement="right"
-                         uib-popover="Description: {{property.description}}" popover-title="{{property.name}}">
+                         popover-placement="right" popover-append-to-body=true
+                         uib-popover="{{property.description}}" popover-title="{{property.name}}">
                 </div>
               </div>
             </div>
           </div>
         </uib-accordion>
         <uib-accordion ng-repeat="data in datasource">
-          <div uib-accordion-group class="panel-default" popover-trigger="'mouseenter'" ng-init="data.isOpen = true" is-open="data.isOpen"
-               popover-placement="right" popover-title="{{data.name}}" uib-popover="Description: {{data.description}}">
+          <div uib-accordion-group class="panel-default" ng-init="data.isOpen = true" is-open="data.isOpen">
             <uib-accordion-heading>
-              {{data.name}} <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': data.isOpen, 'glyphicon-chevron-right': !status.isOpen}"></i>
+              <i class="glyphicon" ng-class="{'glyphicon-chevron-down': data.isOpen, 'glyphicon-chevron-right': !status.isOpen}"></i>
+              &nbsp;{{data.name}}
+              <span ng-if="data.type === 'kafka'" class="label label-danger">Kafka</span>
+              <span ng-if="data.type === 'codis'" class="label label-success">Codis</span>
             </uib-accordion-heading>
-            <div ng-repeat="item in data.props" class="form-group">
-              <div class="row" ng-show="data.type === 'kafka' || (data.type === 'codis' && (item.pname === 'zk' || item.pname === 'zkpath'))">
+            <div class="form-group">
+              <div class="row">
+                <div class="col-md-2">
+                  <label>{{'ocsp_web_common_011' | translate}}</label>
+                </div>
+                <div class="col-md-8">
+                  <input class="form-control" ng-model="data.name">
+                </div>
+              </div>
+            </div>
+            <div class="form-group" ng-repeat="item in data.props track by $index" ng-if="data.type === 'kafka' || item.pname === 'zk' || item.pname === 'zkpath'">
+              <div class="row">
                 <div class="col-md-2">
                   <label>{{item.pname}}</label>
                 </div>
                 <div class="col-md-8">
-                  <input class="form-control" ng-model="item.pvalue">
+                  <input class="form-control" ng-model="item.pvalue" popover-append-to-body=true
+                         popover-trigger="'mouseenter'" popover-placement="right" popover-title="{{item.pname}}"
+                         uib-popover="{{'ocsp_web_common_property_' + trans(item.pname) | translate}}">
                 </div>
               </div>
             </div>
           </div>
         </uib-accordion>
-        <button type="button" class="btn btn-primary" ng-click="save()">Save</button>
+        <button type="button" class="btn btn-primary" ng-click="save()">{{'ocsp_web_common_009' | translate}}</button>
       </div>
     </div>
   </div>
