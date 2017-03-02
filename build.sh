@@ -21,8 +21,6 @@ else
     esac
 fi
 
-mvn clean package -Dmaven.test.skip=true -Pspark-1.6
-
 if [ $? -ne 0 ]; then
    echo "Build failed..."
    exit 1
