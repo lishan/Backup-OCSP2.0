@@ -15,7 +15,7 @@
     "bootstrap-sidebar": "^0.2.2",
     "angular-translate": "^2.13.0",
     "ng-file-upload": "^12.2.12",
-    "bootstrap-application-wizard": "*",
+    "bootstrap-application-wizard": "bootstrap-application-wizard-ocsp#^1.0.0",
     "isteven-angular-multiselect": "angular-multi-select#^4.0.0",
     "angular-bootstrap": "^2.2.0",
     "angular-ui-notification": "^0.2.0",
