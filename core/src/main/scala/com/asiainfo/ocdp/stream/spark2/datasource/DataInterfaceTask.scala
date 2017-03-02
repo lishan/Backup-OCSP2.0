@@ -1,6 +1,5 @@
 package com.asiainfo.ocdp.stream.spark2.datasource
 
-import java.text.SimpleDateFormat
 import java.util.NoSuchElementException
 import java.util.concurrent._
 
@@ -13,11 +12,12 @@ import com.asiainfo.ocdp.stream.spark2.event.Event
 import com.asiainfo.ocdp.stream.spark2.service.DataInterfaceServer
 import com.asiainfo.ocdp.stream.tools.{CacheFactory, CacheQryThreadPool, Json4sUtils}
 import org.apache.commons.lang.StringUtils
-import org.apache.spark.SparkConf
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
+import org.apache.spark.util.LongAccumulator
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{immutable, mutable}
@@ -41,10 +41,17 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
   val baseItemSize = conf.getBaseItemsSize
 
 
-  protected def transform(source: String, schema: StructType, conf: DataInterfaceConf): Option[Row] = {
+  protected def transform(source: String, schema: StructType, conf: DataInterfaceConf, droppedRecordsCounter: LongAccumulator, reservedRecordsCounter: LongAccumulator): Option[Row] = {
     val delim = conf.get("delim", ",")
-    val inputArr = (source + delim + "DummySplitHolder").split(delim).dropRight(1).toSeq
-    if (inputArr.size != baseItemSize) None else Some(Row.fromSeq(inputArr))
+    val inputArr = source.split(delim, -1)
+
+    if (inputArr.size != schema.size) {
+      droppedRecordsCounter.add(1)
+      None
+    } else {
+      reservedRecordsCounter.add(1)
+      Some(Row.fromSeq(inputArr))
+    }
   }
 
   private def conf_check() = {
@@ -101,6 +108,9 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     BroadcastManager.broadcastCodisProps(MainFrameConf.codisProps)
     BroadcastManager.broadcastTaskConf(taskConf)
 
+    val droppedRecordsCounter = DroppedRecordsCounter.getInstance(ssc.sparkContext)
+    val reservedRecordsCounter = ReservedRecordsCounter.getInstance(ssc.sparkContext)
+
     //2 流数据处理
     inputStream.foreachRDD(rdd => {
       val t0 = System.currentTimeMillis()
@@ -109,7 +119,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       val recover_mode = DataSourceConstant.AT_MOST_ONCE
       val rowRDD = rdd.map(inputArr => {
         val diConf = broadDiConf.value
-        transform(inputArr, schema, diConf)
+        transform(inputArr, schema, diConf, droppedRecordsCounter, reservedRecordsCounter)
       }).collect { case Some(row) => row }
 
       if (rowRDD.partitions.size > 0) {
@@ -166,6 +176,9 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
           println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t4))
 
         }
+
+        logInfo(s"Dropped ${droppedRecordsCounter.value} records since their schema size is ${schema.size} not matching records field size.")
+        logInfo(s"Reserved ${reservedRecordsCounter.value} records successfully.")
       }
       else {
         println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
@@ -177,22 +190,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       if (recover_mode == DataSourceConstant.AT_LEAST_ONCE)
         StreamingSourceFactory.updateDataSource(broadDiConf.value, rdd)
     })
-  }
-
-  /**
-   * 自定义slq 方法注册
-   */
-  def registFunction(sqlc: SQLContext) {
-    sqlc.udf.register("Conv", (data: String) => {
-      val lc = Integer.toHexString(data.toInt).toUpperCase
-      if (lc.length < 4) { val concatStr = "0000" + lc; concatStr.substring(concatStr.length - 4) } else lc
-    })
-
-    sqlc.udf.register("concat", (firststr: String, secondstr: String) => firststr + secondstr)
-    sqlc.udf.register("from_unixtime", (date: String, format: String) => (new SimpleDateFormat(format)).parse(date).toString())
-    sqlc.udf.register("unix_timestamp", () => System.currentTimeMillis().toString)
-    sqlc.udf.register("currenttimesub", (subduction: Int) => (System.currentTimeMillis - subduction).toString)
-    sqlc.udf.register("currenttimeadd", (add: Int) => (System.currentTimeMillis + add).toString)
   }
 
   final def readSource(ssc: StreamingContext): DStream[String] = {
@@ -377,6 +374,44 @@ object SparkSessionSingleton {
         .builder
         .config(sparkConf)
         .getOrCreate()
+    }
+    instance
+  }
+}
+
+/**
+  * Use this singleton to get or register an Accumulator.
+  */
+object DroppedRecordsCounter {
+
+  @volatile private var instance: LongAccumulator = null
+
+  def getInstance(sc: SparkContext): LongAccumulator = {
+    if (instance == null) {
+      synchronized {
+        if (instance == null) {
+          instance = sc.longAccumulator("DroppedRecordsCounter")
+        }
+      }
+    }
+    instance
+  }
+}
+
+/**
+  * Use this singleton to get or register an Accumulator.
+  */
+object ReservedRecordsCounter {
+
+  @volatile private var instance: LongAccumulator = null
+
+  def getInstance(sc: SparkContext): LongAccumulator = {
+    if (instance == null) {
+      synchronized {
+        if (instance == null) {
+          instance = sc.longAccumulator("ReservedRecordsCounter")
+        }
+      }
     }
     instance
   }
