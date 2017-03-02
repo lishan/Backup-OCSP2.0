@@ -36,6 +36,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_029': 'Delete successfully',
     'ocsp_web_common_030': 'Save failed',
     'ocsp_web_common_031': 'Category',
+    'ocsp_web_common_032': 'Form validate failed, please double check',
+    'ocsp_web_common_033': 'Output configuration',
 
     'ocsp_web_user_manage_000':'User Management',
     'ocsp_web_user_manage_001':'Change password',
@@ -95,6 +97,12 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_036':'Restarting',
     'ocsp_web_streams_manage_037':'Stream Enable',
     'ocsp_web_streams_manage_038':'Input Datasource',
+    'ocsp_web_streams_manage_039':'Retries',
+    'ocsp_web_streams_manage_040':'Audit enable',
+    'ocsp_web_streams_manage_041':'Choose during time',
+    'ocsp_web_streams_manage_042':'Valid value',
+    'ocsp_web_streams_manage_043':'Start time should be earlier than end time',
+    'ocsp_web_streams_manage_044':'Retrying',
 
     'ocsp_web_common_property_zookeeper_connect': 'Zookeeper address',
     'ocsp_web_common_property_zk': 'Zookeeper address',
@@ -105,6 +113,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_property_driverMemory': 'The memory of driver',
     'ocsp_web_common_property_executorMemory': 'The memory of executor',
     'ocsp_web_common_property_queue': 'The queue for running spark application on Yarn',
-    'ocsp_web_common_property_filter': 'The condition expression for DataFrame'
+    'ocsp_web_common_property_filter': 'The condition expression for DataFrame',
+    'ocsp_web_common_property_retry': 'Number of retries after stream crashed'
+
   });
 }]);

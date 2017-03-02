@@ -12,18 +12,8 @@
     <artifactId>core</artifactId>
 
     <properties>
-        <spark.version>1.6.0</spark.version>
         <build.time>${timestamp}</build.time>
     </properties>
-
-
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.10</artifactId>
-            <version>${spark.version}</version>
-        </dependency>
-    </dependencies>
 
     <build>
         <resources>
@@ -84,6 +74,274 @@
 
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>spark-2.1</id>
+
+            <properties>
+                <scala.version>2.11.8</scala.version>
+                <scala.binary.version>2.11</scala.binary.version>
+                <spark.version>2.1.0</spark.version>
+                <Event.impl>com.asiainfo.ocdp.stream.spark2.event.Event</Event.impl>
+            </properties>
+
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+                    <version>${spark.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-sql_${scala.binary.version}</artifactId>
+                    <version>${spark.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-streaming-kafka-0-8_${scala.binary.version}</artifactId>
+                    <version>${spark.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>kafka_2.10</artifactId>
+                    <version>0.8.2.1</version>
+                </dependency>
+                <dependency>
+                    <groupId>io.codis.jodis</groupId>
+                    <artifactId>jodis</artifactId>
+                    <version>0.3.0</version>
+                </dependency>
+
+                <!--for mysql-->
+                <dependency>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                    <version>5.1.34</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-compiler</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-reflect</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-actors</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scalap</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.scalatest</groupId>
+                    <artifactId>scalatest_${scala.binary.version}</artifactId>
+                    <version>2.2.1</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                    <version>1.7.5</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <version>1.7.5</version>
+                </dependency>
+                <dependency>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                    <version>1.2.17</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-core_2.10</artifactId>
+                    <version>3.2.10</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-ast_2.10</artifactId>
+                    <version>3.2.10</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-jackson_2.10</artifactId>
+                    <version>3.2.10</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.typesafe.akka</groupId>
+                    <artifactId>akka-actor_2.11</artifactId>
+                    <version>2.4.9</version>
+                </dependency>
+            </dependencies>
+            <build>
+            <plugins>
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>3.1.6</version>
+                    <executions>
+                        <execution>
+                            <id>scala-compile-first</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>scala-test-compile-first</id>
+                            <phase>process-test-resources</phase>
+                            <goals>
+                                <goal>testCompile</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>attach-scaladocs</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>doc-jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <excludes>
+                            <exclude>com/asiainfo/ocdp/stream/datasource/DataInterfaceTask.scala</exclude>
+                            <exclude>com/asiainfo/ocdp/stream/event/Event.scala</exclude>
+                            <exclude>com/asiainfo/ocdp/stream/manager/StreamApp.scala</exclude>
+                            <exclude>com/asiainfo/ocdp/stream/manager/StreamTaskFactory.scala</exclude>
+                            <exclude>com/asiainfo/ocdp/stream/service/DataInterfaceServer.scala</exclude>
+                            <exclude>com/asiainfo/ocdp/stream/tools/StreamCodisWriter.scala</exclude>
+                            <exclude>com/asiainfo/ocdp/stream/tools/StreamWriter.scala</exclude>
+                            <exclude>com/asiainfo/ocdp/stream/tools/StreamWriterFactory.scala</exclude>
+                            <exclude>com/asiainfo/ocdp/stream/datasource/StreamingSourceFactory.scala</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+        </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>spark-1.6</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <scala.version>2.10.4</scala.version>
+                <scala.binary.version>2.10</scala.binary.version>
+                <spark.version>1.6.0</spark.version>
+            </properties>
+
+            <dependencies>
+                <dependency>
+                    <groupId>io.codis.jodis</groupId>
+                    <artifactId>jodis</artifactId>
+                    <version>0.3.0</version>
+                </dependency>
+
+                <!--for mysql-->
+                <dependency>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                    <version>5.1.34</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-compiler</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-reflect</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-actors</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scalap</artifactId>
+                    <version>${scala.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.scalatest</groupId>
+                    <artifactId>scalatest_${scala.binary.version}</artifactId>
+                    <version>2.2.1</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-streaming-kafka-assembly_2.10</artifactId>
+                    <version>1.6.0</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.talend.libraries</groupId>
+                    <artifactId>spark-assembly-1.6.0.2.4.0.0-169-hadoop2.7.1.2.4.0.0-169</artifactId>
+                    <version>6.0.0</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.1.6</version>
+                        <executions>
+                            <execution>
+                                <id>scala-compile-first</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>scala-test-compile-first</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>testCompile</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>attach-scaladocs</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>doc-jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                        <excludes>
+                        <exclude>com/asiainfo/ocdp/stream/spark2/**</exclude>
+                        </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
 

@@ -1,12 +1,12 @@
 package com.asiainfo.ocdp.stream.config
 
+import java.io.InputStream
+import java.util.Properties
+
 import com.asiainfo.ocdp.stream.common.JDBCUtil
 import com.asiainfo.ocdp.stream.constant.TableInfoConstant
 import com.asiainfo.ocdp.stream.tools.Json4sUtils
-import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
-
-import scala.collection.mutable
 
 /**
  * Created by leo on 8/12/15.
@@ -60,4 +60,24 @@ object MainFrameConf {
     }
   }
 
+  val versionInfo: Properties = {
+    val info = new Properties
+    val versionInfoFile = "common-version-info.properties"
+    var is: InputStream = null
+    try {
+      is = Thread.currentThread.getContextClassLoader.getResourceAsStream(versionInfoFile)
+      if (is == null) {
+        println("Resource not found")
+      }else{
+        info.load(is)
+      }
+
+      info
+    }
+    finally {
+      if(is != null){
+        is.close()
+      }
+    }
+  }
 }

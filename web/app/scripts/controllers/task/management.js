@@ -4,7 +4,7 @@
  * For job management main page controller
  */
 angular.module('ocspApp')
-  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', 'usSpinnerService', 'loginService', '$interval', '$uibModal', '$filter', function ($scope, $http, Notification, $q, usSpinnerService, loginService, $interval, $uibModal, $filter) {
+  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', 'usSpinnerService', 'loginService', '$interval', '$uibModal', '$filter', 'moment', function ($scope, $http, Notification, $q, usSpinnerService, loginService, $interval, $uibModal, $filter, moment) {
     loginService.init('task');
     $scope.localLang = {
       search: $filter('translate')('ocsp_web_common_014'),
@@ -65,6 +65,13 @@ angular.module('ocspApp')
           {name: $filter('translate')('ocsp_web_streams_manage_024'),  enable: false, icon : "glyphicon glyphicon-play"},
           {name: $filter('translate')('ocsp_web_streams_manage_025'), enable: true, icon: "glyphicon glyphicon-stop danger"},
           {name: $filter('translate')('ocsp_web_streams_manage_026'), enable: true, icon: "glyphicon glyphicon-refresh danger"},
+          {name: $filter('translate')('ocsp_web_streams_manage_027'), enable: false, icon: "glyphicon glyphicon-remove-sign"}
+        ];
+      }else if(status === 5){
+        $scope.actions = [
+          {name: $filter('translate')('ocsp_web_streams_manage_024'),  enable: false, icon : "glyphicon glyphicon-play"},
+          {name: $filter('translate')('ocsp_web_streams_manage_025'), enable: true, icon: "glyphicon glyphicon-stop danger"},
+          {name: $filter('translate')('ocsp_web_streams_manage_026'), enable: false, icon: "glyphicon glyphicon-refresh"},
           {name: $filter('translate')('ocsp_web_streams_manage_027'), enable: false, icon: "glyphicon glyphicon-remove-sign"}
         ];
       }else{
@@ -128,12 +135,25 @@ angular.module('ocspApp')
 
     init();
 
+    $scope.onSelect = function(item){
+      //Clear periods when select audit type
+      item.audit.periods = [{}];
+    };
+
+    $scope.addPeriod = function(item){
+      item.audit.periods.push({});
+    };
+
+    $scope.removePeriod = function(item, $index){
+      item.audit.periods.splice($index,1);
+    };
+
     $scope.update = function(){
       if($scope.selectedJob.id === undefined || $scope.selectedJob.id === null){
         Notification.error("Cannot update null task");
       }else{
         if($("#mainFrame .ng-invalid").length > 0){
-          Notification.error($filter('translate')('ocsp_web_common_027'));
+          Notification.error($filter('translate')('ocsp_web_common_032'));
         }else {
           usSpinnerService.spin('spinner');
           $http.put("/api/task", {task: $scope.selectedJob}).success(function () {
@@ -293,6 +313,30 @@ angular.module('ocspApp')
                   if ($scope.selectedJob.events[i].PROPERTIES.props[j].pname === "userKeyIdx") {
                     $scope.selectedJob.events[i].userKeyIdx = $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue;
                   }
+                  if ($scope.selectedJob.events[i].PROPERTIES.props[j].pname === "period") {
+                    $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue = JSON.parse($scope.selectedJob.events[i].PROPERTIES.props[j].pvalue);
+                    $scope.selectedJob.events[i].auditEnable = true;
+                    $scope.selectedJob.events[i].audit = {
+                      type : $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.period,
+                      periods : []
+                    };
+                    for (let w in $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.time){
+                      let val = $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.time[w];
+                      if($scope.selectedJob.events[i].audit.type === "none"){
+                        $scope.selectedJob.events[i].audit.periods.push({
+                          start: moment(val.begin.d + " " + val.begin.h).toDate(),
+                          end: moment(val.end.d + " " + val.end.h).toDate()
+                        });
+                      }else{
+                        $scope.selectedJob.events[i].audit.periods.push({
+                          s: val.begin.d,
+                          d: val.end.d,
+                          start: moment("2010-07-01 " + val.begin.h).toDate(),
+                          end: moment("2010-07-01 " + val.end.h).toDate()
+                        });
+                      }
+                    }
+                  }
                 }
               }
               if($scope.selectedJob.events[i].PROPERTIES.output_dis !== undefined && $scope.selectedJob.events[i].PROPERTIES.output_dis[0] !== undefined) {
@@ -328,6 +372,7 @@ angular.module('ocspApp')
         case 2: return "glyphicon glyphicon-ok-sign success"; // running
         case 3: return "glyphicon glyphicon-warning-sign danger animated flash infinite"; // pre_stop
         case 4: return "glyphicon glyphicon-ok-sign success animated flash infinite"; // pre_restart
+        case 5: return "glyphicon glyphicon-refresh warning animated flash infinite"; // retry
       }
     };
 
@@ -343,6 +388,8 @@ angular.module('ocspApp')
           return $filter('translate')('ocsp_web_streams_manage_035');
         case 4:
           return $filter('translate')('ocsp_web_streams_manage_036');
+        case 5:
+          return $filter('translate')('ocsp_web_streams_manage_044');
       }
     };
 

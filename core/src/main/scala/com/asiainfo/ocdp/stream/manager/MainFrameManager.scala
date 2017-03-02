@@ -6,7 +6,7 @@ import java.util.{Timer, TimerTask}
 import akka.actor.{ActorSystem, Props}
 import com.asiainfo.ocdp.stream.common.Logging
 import com.asiainfo.ocdp.stream.config.{MainFrameConf, TaskConf}
-import com.asiainfo.ocdp.stream.constant.{CommonConstant, DataSourceConstant, TaskConstant}
+import com.asiainfo.ocdp.stream.constant.{CommonConstant, TaskConstant}
 import com.asiainfo.ocdp.stream.service.TaskServer
 import com.asiainfo.ocdp.stream.tools.ListFileWalker
 import org.apache.commons.io.filefilter.{FileFilterUtils, HiddenFileFilter}
@@ -185,7 +185,13 @@ object MainFrameManager extends Logging {
       logError("Can not find core jar")
     }
 
-    val streamClass = " --class com.asiainfo.ocdp.stream.manager.StreamApp"
+    val spark_version = MainFrameConf.versionInfo.getProperty("spark_version", "1.6")
+    var streamClass = ""
+    if (spark_version.startsWith("1")){
+      streamClass = " --class com.asiainfo.ocdp.stream.manager.StreamApp"
+    }else{
+      streamClass = " --class com.asiainfo.ocdp.stream.spark2.manager.StreamApp"
+    }
 
     val executor_memory = " --executor-memory " + conf.getExecutor_memory
 

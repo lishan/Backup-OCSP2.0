@@ -261,11 +261,11 @@ a:hover, a:focus {
   text-decoration: none;
 }
 
-#mainFrame input.ng-invalid.ng-touched{
+#mainFrame input.ng-invalid{
   border: 1px solid red;
 }
 
-#mainFrame div.ng-invalid.ng-touched{
+#mainFrame div.ng-invalid{
   border: 1px solid red;
 }
 
@@ -275,4 +275,14 @@ a:hover, a:focus {
 
 .popover-content {
   width: 200px;
+}
+
+.btn-circle {
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 12px;
+  line-height: 1.428571429;
+  border-radius: 15px;
 }

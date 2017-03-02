@@ -36,6 +36,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_029': '删除成功',
     'ocsp_web_common_030': '保存失败',
     'ocsp_web_common_031': '类型',
+    'ocsp_web_common_032': '表单验证失败，请检查',
+    'ocsp_web_common_033': '输出配置',
 
     'ocsp_web_user_manage_000':'用户管理',
     'ocsp_web_user_manage_001':'修改密码',
@@ -95,6 +97,12 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_036':'正在重启',
     'ocsp_web_streams_manage_037':'作业流使能',
     'ocsp_web_streams_manage_038':'输入源',
+    'ocsp_web_streams_manage_039':'重试次数',
+    'ocsp_web_streams_manage_040':'订阅使能',
+    'ocsp_web_streams_manage_041':'选择时间段',
+    'ocsp_web_streams_manage_042':'可能值',
+    'ocsp_web_streams_manage_043':'开始时间必须小于结束时间',
+    'ocsp_web_streams_manage_044':'正在重试',
 
     'ocsp_web_common_property_zookeeper_connect': 'zookeeper的连接地址',
     'ocsp_web_common_property_zk': 'zookeeper的连接地址',
@@ -105,8 +113,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_property_driverMemory': 'driver的内存',
     'ocsp_web_common_property_executorMemory': '每个executor的内存',
     'ocsp_web_common_property_queue': 'Spark streaming应用程序运行在Yarn上的队列',
-    'ocsp_web_common_property_filter': '过滤条件，必须符合Spark DateFrame过滤条件表达式的格式'
-
+    'ocsp_web_common_property_filter': '过滤条件，必须符合Spark DateFrame过滤条件表达式的格式',
+    'ocsp_web_common_property_retry': '作业流异常重启次数'
 
   });
 }]);
