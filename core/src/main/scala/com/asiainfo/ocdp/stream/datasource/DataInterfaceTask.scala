@@ -4,10 +4,9 @@ import java.text.SimpleDateFormat
 import java.util.NoSuchElementException
 import java.util.concurrent._
 
-import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, StreamingCache,EventCycleLife}
+import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, EventCycleLife, StreamingCache}
 import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, MainFrameConf, TaskConf}
-import com.asiainfo.ocdp.stream.constant.DataSourceConstant
-import com.asiainfo.ocdp.stream.constant.LabelConstant
+import com.asiainfo.ocdp.stream.constant.{DataSourceConstant, LabelConstant}
 import com.asiainfo.ocdp.stream.event.Event
 import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.service.DataInterfaceServer
@@ -18,6 +17,7 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
+import org.apache.spark.{Accumulator, SparkContext}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{immutable, mutable}
@@ -41,11 +41,17 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
   val baseItemSize = conf.getBaseItemsSize
 
 
-  protected def transform(source: String, schema: StructType, conf: DataInterfaceConf): Option[Row] = {
-
+  protected def transform(source: String, schema: StructType, conf: DataInterfaceConf, droppedRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): Option[Row] = {
     val delim = conf.get("delim", ",")
-    val inputArr = (source + delim + "DummySplitHolder").split(delim).dropRight(1).toSeq
-    if (inputArr.size != baseItemSize) None else Some(Row.fromSeq(inputArr))
+    val inputArr = source.split(delim, -1)
+
+    if (inputArr.size != schema.size) {
+      droppedRecordsCounter.add(1)
+      None
+    } else {
+      reservedRecordsCounter.add(1)
+      Some(Row.fromSeq(inputArr))
+    }
   }
 
   private def conf_check() = {
@@ -106,6 +112,9 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     BroadcastManager.broadcastCodisProps(MainFrameConf.codisProps)
     BroadcastManager.broadcastTaskConf(taskConf)
 
+    val droppedRecordsCounter = DroppedRecordsCounter.getInstance(ssc.sparkContext)
+    val reservedRecordsCounter = ReservedRecordsCounter.getInstance(ssc.sparkContext)
+
     //2 流数据处理
     inputStream.foreachRDD(rdd => {
       val t0 = System.currentTimeMillis()
@@ -114,7 +123,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       val recover_mode = DataSourceConstant.AT_MOST_ONCE
       val rowRDD = rdd.map(inputArr => {
         val diConf = broadDiConf.value
-        transform(inputArr, schema, diConf)
+        transform(inputArr, schema, diConf, droppedRecordsCounter, reservedRecordsCounter)
       }).collect { case Some(row) => row }
 
       if (rowRDD.partitions.size > 0) {
@@ -168,6 +177,9 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
           println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t4))
 
         }
+
+        logInfo(s"Dropped ${droppedRecordsCounter.value} records since their schema size is ${schema.size} not matching records field size.")
+        logInfo(s"Reserved ${reservedRecordsCounter.value} records successfully.")
       }
       else {
         println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
@@ -363,6 +375,44 @@ class BuildEvent(event: Event, df: DataFrame, uniqKeys: String) extends Callable
   override def call() = {
     event.buildEvent(df, uniqKeys)
     ""
+  }
+}
+
+/**
+  * Use this singleton to get or register an Accumulator.
+  */
+object DroppedRecordsCounter {
+
+  @volatile private var instance: Accumulator[Long] = null
+
+  def getInstance(sc: SparkContext): Accumulator[Long] = {
+    if (instance == null) {
+      synchronized {
+        if (instance == null) {
+          instance = sc.accumulator(0L, "DroppedRecordsCounter")
+        }
+      }
+    }
+    instance
+  }
+}
+
+/**
+  * Use this singleton to get or register an Accumulator.
+  */
+object ReservedRecordsCounter {
+
+  @volatile private var instance: Accumulator[Long] = null
+
+  def getInstance(sc: SparkContext): Accumulator[Long] = {
+    if (instance == null) {
+      synchronized {
+        if (instance == null) {
+          instance = sc.accumulator(0L, "ReservedRecordsCounter")
+        }
+      }
+    }
+    instance
   }
 }
 
