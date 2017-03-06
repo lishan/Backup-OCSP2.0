@@ -19,7 +19,7 @@ import scala.collection.mutable
  */
 object MainFrameManager extends Logging {
   logBegin
-  val waiter = new ContextWaiter
+  private val waiter = new ContextWaiter
   val delaySeconds = MainFrameConf.systemProps.getInt("delaySeconds", 10)
   val periodSeconds = MainFrameConf.systemProps.getInt("periodSeconds", 30)
   val startTimeOutSeconds = MainFrameConf.systemProps.getInt("startTimeOutSeconds", 120)

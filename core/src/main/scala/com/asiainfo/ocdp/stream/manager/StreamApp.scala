@@ -1,7 +1,6 @@
 package com.asiainfo.ocdp.stream.manager
 
-import com.asiainfo.ocdp.stream.common.{SscManager, Logging}
-import com.asiainfo.ocdp.stream.config.MainFrameConf
+import com.asiainfo.ocdp.stream.common.{Logging, SscManager}
 import com.asiainfo.ocdp.stream.constant.TaskConstant
 import com.asiainfo.ocdp.stream.service.TaskServer
 import org.apache.spark.streaming.{Seconds, StreamingContext, StreamingContextState}
@@ -11,9 +10,6 @@ import org.apache.spark.{SparkConf, SparkContext}
   */
 
 object StreamApp extends Logging {
-
-  val delaySeconds = MainFrameConf.systemProps.getInt("delaySeconds", 10)
-  val periodSeconds = MainFrameConf.systemProps.getInt("periodSeconds", 60)
   val taskServer = new TaskServer
 
   def main(args: Array[String]) {
