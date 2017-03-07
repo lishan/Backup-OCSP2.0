@@ -35,7 +35,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
   val conf = dataInterfaceService.getDataInterfaceInfoById(taskDiid)
   val labels = dataInterfaceService.getLabelsByIFId(taskDiid)
-  val events: Array[Event] = dataInterfaceService.getEventsByIFId(taskDiid)
+
   conf.setInterval(interval)
   // 原始信令字段个数
   val baseItemSize = conf.getBaseItemsSize
@@ -341,6 +341,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     val eventService = new ExecutorCompletionService[String](threadPool)
 
     val now = new java.util.Date()
+    val events: Array[Event] = dataInterfaceService.getEventsByIFId(taskDiid)
+
     val validEvents = events.filter(event => {
 
       val period = event.conf.get("period", "")
