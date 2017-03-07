@@ -10,7 +10,7 @@ import com.asiainfo.ocdp.stream.constant.{DataSourceConstant, LabelConstant}
 import com.asiainfo.ocdp.stream.event.Event
 import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.service.DataInterfaceServer
-import com.asiainfo.ocdp.stream.tools.{CacheFactory, CacheQryThreadPool, Json4sUtils}
+import com.asiainfo.ocdp.stream.tools._
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.StructType
@@ -180,6 +180,10 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
         logInfo(s"Dropped ${droppedRecordsCounter.value} records since their schema size is ${schema.size} not matching records field size.")
         logInfo(s"Reserved ${reservedRecordsCounter.value} records successfully.")
+
+        if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_RECORDS_CORRECTNESS_ENABLE, false)){
+          MonitorUtils.outputRecordsCorrectness(taskConf.id,reservedRecordsCounter.value,droppedRecordsCounter.value,ssc.sparkContext.applicationId)
+        }
       }
       else {
         println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")

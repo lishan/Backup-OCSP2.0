@@ -19,6 +19,8 @@ object MainFrameConf {
   val systemProps = new SystemProps()
   val codisProps = new DataSourceConf()
 
+  val MONITOR_RECORDS_CORRECTNESS_ENABLE = "ocsp.monitor.records-correctness.enable"
+
   initMainFrameConf()
 
   def initMainFrameConf(): Unit = {

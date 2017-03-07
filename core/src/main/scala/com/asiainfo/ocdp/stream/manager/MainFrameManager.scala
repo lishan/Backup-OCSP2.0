@@ -8,7 +8,7 @@ import com.asiainfo.ocdp.stream.common.Logging
 import com.asiainfo.ocdp.stream.config.{MainFrameConf, TaskConf}
 import com.asiainfo.ocdp.stream.constant.{CommonConstant, TaskConstant}
 import com.asiainfo.ocdp.stream.service.TaskServer
-import com.asiainfo.ocdp.stream.tools.ListFileWalker
+import com.asiainfo.ocdp.stream.tools.{DateFormatUtils, ListFileWalker, MonitorUtils}
 import org.apache.commons.io.filefilter.{FileFilterUtils, HiddenFileFilter}
 import org.apache.commons.lang.StringUtils
 
@@ -23,6 +23,8 @@ object MainFrameManager extends Logging {
   val delaySeconds = MainFrameConf.systemProps.getInt("delaySeconds", 10)
   val periodSeconds = MainFrameConf.systemProps.getInt("periodSeconds", 30)
   val startTimeOutSeconds = MainFrameConf.systemProps.getInt("startTimeOutSeconds", 120)
+
+  var lastCheckTime = System.currentTimeMillis()
 
   // 对表STREAM_TASK的务服句柄
   val taskServer = new TaskServer()
@@ -91,11 +93,16 @@ object MainFrameManager extends Logging {
             val task = system.actorOf(Props[Task], name = "task_" + taskId)
             task ! makeCMD(taskConf)
             pre_start_tasks.put(taskId, System.currentTimeMillis())
+            if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_RECORDS_CORRECTNESS_ENABLE, false)){
+              MonitorUtils.updateRecordsCorrectnessHistoryStatus(taskId)
+            }
+
             logInfo("Task " + taskId + " prepare to start !")
           }
         }
 
         case TaskConstant.RUNNING => {
+          checkRecordsCorrectness(taskId)
           if (pre_start_tasks.contains(taskId)) {
             pre_start_tasks.remove(taskId)
             logInfo("Task " + taskId + " start successfully !")
@@ -218,5 +225,20 @@ object MainFrameManager extends Logging {
     }
     logInfo("Executor submit shell : " + cmd)
     (tid, cmd)
+  }
+
+  private def checkRecordsCorrectness(taskId: String) = {
+    if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_RECORDS_CORRECTNESS_ENABLE, false)){
+      val currentTime = System.currentTimeMillis()
+      val intervalMins = MainFrameConf.systemProps.getLong("ocsp.monitor.records-correctness.retain-check-interval-mins", 2880L)
+
+      if ((currentTime - lastCheckTime) > intervalMins * 60 * 1000){
+        logInfo(s"CurrentTime is ${DateFormatUtils.dateMs2Str(currentTime)} and lastCheckTime is ${DateFormatUtils.dateMs2Str(lastCheckTime)}")
+
+        MonitorUtils.deleteRecordsCorrectnessHistory(MainFrameConf.systemProps.getLong("ocsp.monitor.records-correctness.retain-mins", 10080L))
+
+        lastCheckTime = currentTime
+      }
+    }
   }
 }

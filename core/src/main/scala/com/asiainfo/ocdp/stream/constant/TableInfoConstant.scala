@@ -20,4 +20,6 @@ object TableInfoConstant {
   val BusinessEventTableName = "STREAM_SUBJECT"
 
   val TaskTableName = "STREAM_TASK"
+
+  val MonitorRecordsCorrectnessName = "STREAM_MONITOR_RECORDS_CORRECTNESS"
 }
