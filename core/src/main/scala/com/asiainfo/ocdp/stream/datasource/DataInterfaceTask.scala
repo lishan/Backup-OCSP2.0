@@ -124,8 +124,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       var mixDF : DataFrame = null
       val recover_mode = DataSourceConstant.AT_MOST_ONCE
 
-      //FIXME
-      //dataSchemas.par.foreach()
       for (dataSchema <- dataSchemas) {
 
         val rowRDD = rdd.map(inputArr => {
@@ -210,7 +208,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         logInfo(s"Reserved ${reservedRecordsCounter.value} records successfully.")
 
         if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_RECORDS_CORRECTNESS_ENABLE, false)){
-          MonitorUtils.outputRecordsCorrectness(taskConf.id,reservedRecordsCounter.value,droppedRecordsCounter.value,ssc.sparkContext.applicationId)
+          MonitorUtils.outputRecordsCorrectness(taskConf.id,reservedRecordsCounter.value, droppedCount, ssc.sparkContext.applicationId)
         }
       }
       /**

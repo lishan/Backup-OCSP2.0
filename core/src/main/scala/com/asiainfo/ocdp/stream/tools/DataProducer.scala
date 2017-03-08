@@ -65,10 +65,17 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           msg.append(rand.nextInt(DATA_TYPE) + 1)
           msg.append(separator)
 
+          val is_long = rand.nextBoolean()
+
           // start lac, cell, end lac, cell
           msg.append(RandomStringUtils.randomNumeric(5))
           msg.append(separator)
-          msg.append(RandomStringUtils.randomNumeric(4))
+
+          if (is_long)
+            msg.append(5000)
+          else
+            msg.append(6000)
+
           msg.append(separator)
           msg.append(RandomStringUtils.randomNumeric(5))
           msg.append(separator)
@@ -98,10 +105,6 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           if(flag > 80){
             msg.append(separator)
             msg.append("redundancy")
-          }
-
-
-          if(flag > 90){
             msg.append(separator)
           }
 

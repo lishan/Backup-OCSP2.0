@@ -13,7 +13,7 @@ object MonitorUtils extends Logging{
     val sql = s"INSERT INTO ${TableInfoConstant.MonitorRecordsCorrectnessName} (task_id,reserved_records,dropped_records,archived,application_id) VALUES ('${taskId}',${reservedRecordsCounter},${droppedRecordsCounter}, 0, '${applicationId}');"
     try{
       JDBCUtil.execute(sql)
-      logError(s"Update records correctness via '${sql}' successfully")
+      logInfo(s"Update records correctness via '${sql}' successfully")
     }catch{
       case e: Exception=>logError(s"Update records correctness via '${sql}' failed", e)
     }

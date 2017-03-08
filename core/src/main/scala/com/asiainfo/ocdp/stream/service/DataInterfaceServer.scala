@@ -41,7 +41,7 @@ class DataInterfaceServer extends Logging with Serializable {
 
       //val propsJsonStr = interface.get("properties").getOrElse("").replace(" ", "")
       val propsJsonStr = interface.get("properties").getOrElse("")
-      conf.setCommonSchema(Json4sUtils.jsonStr2BaseStructType(propsJsonStr, "schema"))
+      conf.setCommonSchema(Json4sUtils.jsonStr2BaseStructType(propsJsonStr, "fields"))
 //      conf.setBaseSchema(Json4sUtils.jsonStr2BaseStructType(propsJsonStr, "sources"))
 //      conf.setBaseItemsSize((Json4sUtils.jsonStr2ArrMap(propsJsonStr, "fields")).size)
  //     conf.setAllItemsSchema(Json4sUtils.jsonStr2UdfStructType(propsJsonStr, "fields", "userFields"))
