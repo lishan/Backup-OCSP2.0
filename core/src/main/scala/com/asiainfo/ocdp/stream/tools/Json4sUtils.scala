@@ -62,11 +62,6 @@ object Json4sUtils extends Logging {
       throw new Exception("No main fields !!!")
     }
 
-    logError("======commonFields: " + commonFields.toString())
-    logError("======filedsInfo: " + fieldsInfo.toString())
-    for ((filed, _, _) <- fieldsInfo) {
-      logError("======filed: " + filed)
-    }
     generateStructType(fieldsInfo.toArray)
   }
 
