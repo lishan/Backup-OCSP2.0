@@ -65,11 +65,11 @@ function setupStream(){
 }
 
 function startStream(){
-    sudo -A pwd > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        error "The current user is not in the sudoers file"
-        exit 2
-    fi
+#    sudo -A pwd > /dev/null 2>&1
+#    if [ $? -ne 0 ]; then
+#        error "The current user is not in the sudoers file"
+#        exit 2
+#    fi
 
     if [ ! -d "${STREAM_HOME}/logs/stream_pid.log" ]; then
        touch "${STREAM_HOME}/logs/stream_pid.log"
