@@ -38,6 +38,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_031': 'Category',
     'ocsp_web_common_032': 'Form validate failed, please double check',
     'ocsp_web_common_033': 'Output configuration',
+    'ocsp_web_common_034': 'Invaild integer',
+    'ocsp_web_common_035': 'Input error',
 
     'ocsp_web_user_manage_000':'User Management',
     'ocsp_web_user_manage_001':'Change password',
@@ -103,6 +105,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_042':'Valid value',
     'ocsp_web_streams_manage_043':'Start time should be earlier than end time',
     'ocsp_web_streams_manage_044':'Retrying',
+    'ocsp_web_streams_manage_045':'Add input sources',
+    'ocsp_web_streams_manage_046':'User fields',
 
     'ocsp_web_common_property_zookeeper_connect': 'Zookeeper address',
     'ocsp_web_common_property_zk': 'Zookeeper address',

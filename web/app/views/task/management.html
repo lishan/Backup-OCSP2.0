@@ -14,191 +14,7 @@
 </script>
 <div class="row">
   <div class="well col-md-2">
-    <wizard title="{{'ocsp_web_streams_manage_001' | translate}}" width="1020px" name="ocsp_web_streams_manage_001" submit-method="submitMethod()"
-            task="task">
-      <div class="wizard-card" data-cardname="ocsp_web_common_013">
-        <div class="form-group">
-          <label>{{'ocsp_web_common_011' | translate}}*</label>
-          <input type="text" name="name" class="form-control" ng-model="task.name" required>
-        </div>
-        <div class="form-group">
-          <label>{{'ocsp_web_common_012' | translate}}</label>
-          <textarea ng-model="task.description" class="form-control" rows="6"></textarea>
-        </div>
-      </div>
-      <div class="wizard-card" data-cardname="ocsp_web_streams_manage_006">
-        <div class="form-group">
-          <label>{{'ocsp_web_streams_manage_010' | translate}}*</label>
-          <input type="text" class="form-control" ng-model="task.input.topic" required>
-        </div>
-        <div class="form-group">
-          <label>{{'ocsp_web_streams_manage_038' | translate}}*</label>
-          <ui-select ng-model="task.input.datasource" ng-required="true">
-            <ui-select-match>
-              <span ng-bind="$select.selected.name"></span>
-            </ui-select-match>
-            <ui-select-choices
-              repeat="datasource in (inputDatasources | filter: $select.search) track by datasource.id">
-              <span ng-bind="datasource.name"></span>
-            </ui-select-choices>
-          </ui-select>
-        </div>
-        <div class="form-group">
-          <label>{{'ocsp_web_streams_manage_011' | translate}}*</label>
-          <tokenfield ng-model="task.input.fields" required></tokenfield>
-        </div>
-        <div class="form-group">
-          <label>{{'ocsp_web_streams_manage_012' | translate}}*</label>
-          <input type="text" class="form-control" ng-model="task.input.delim" required>
-        </div>
-        <div class="form-group">
-          <label>{{'ocsp_web_streams_manage_013' | translate}}</label>
-          <input type="text" class="form-control" ng-model="task.input.filter_expr">
-        </div>
-        <div class="form-group">
-          <label>{{'ocsp_web_streams_manage_014' | translate}}*</label>
-          <input type="text" class="form-control" ng-model="task.input.uniqueKey" required>
-        </div>
-      </div>
-      <div class="wizard-card" data-cardname="ocsp_web_streams_manage_007">
-        <div class="form-group">
-          <isteven-multi-select
-            input-model="inputLabels"
-            output-model="task.outputLabels"
-            button-label="name"
-            item-label="name"
-            tick-property="tick1"
-            helper-elements="filter"
-            translation="localLang"
-            required>
-          </isteven-multi-select>
-        </div>
-        <div class="form-group">
-          <ul dnd-list="task.outputLabels">
-            <li ng-repeat="item in task.outputLabels"
-                dnd-draggable="item"
-                dnd-moved="sortLabels(task.outputLabels, $index)"
-                dnd-effect-allowed="move"
-                dnd-selected="models.selected = item"
-                ng-class="{'selected': models.selected === item}">
-              <dnd-nodrag>
-                <div dnd-handle class="handle"><span class="badge">{{$index+1}}</span>&nbsp;{{item.name}}</div>
-              </dnd-nodrag>
-            </li>
-            <li class="dndPlaceholder">
-              {{'ocsp_web_streams_manage_015' | translate}}
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="wizard-card" data-cardname="ocsp_web_streams_manage_008">
-        <button type="button" class="btn btn-primary" ng-click="addOutput()">{{'ocsp_web_streams_manage_016' | translate}}
-        </button>
-        <uib-accordion>
-          <div uib-accordion-group class="panel-default" ng-repeat="item in task.events" is-open="item.isOpen">
-            <uib-accordion-heading>
-              <i class="pull-left glyphicon"
-                 ng-class="{'glyphicon-chevron-down': item.isOpen, 'glyphicon-chevron-right': !item.isOpen}"></i>
-              &nbsp;
-              {{'ocsp_web_streams_manage_031' | translate}} {{item.name}} <a class="pull-right"
-                                             ng-click="$event.stopPropagation();$event.preventDefault();removeOutput($index)"><i
-              class="glyphicon glyphicon-remove"></i></a>
-            </uib-accordion-heading>
-            <div class="container-fluid">
-              <div class="panel panel-oc">
-                <div class="panel-heading">
-                  {{'ocsp_web_common_013' | translate}}
-                </div>
-                <div class="panel-body">
-                  <div class="form-group">
-                    <label>{{'ocsp_web_streams_manage_017' | translate}}*</label>
-                    <input type="text" class="form-control" ng-model="item.name" required>
-                  </div>
-                  <div class="form-group">
-                    <label>{{'ocsp_web_streams_manage_018' | translate}}*</label>
-                    <tokenfield ng-model="item.select_expr" required></tokenfield>
-                  </div>
-                  <div class="form-group">
-                    <label>{{'ocsp_web_streams_manage_019' | translate}}*</label>
-                    <input type="text" class="form-control" ng-model="item.delim" required>
-                  </div>
-                  <div class="form-group">
-                    <label>{{'ocsp_web_streams_manage_013' | translate}}</label>
-                    <input type="text" class="form-control" ng-model="item.filter_expr">
-                  </div>
-                  <div class="form-group">
-                    <label>{{'ocsp_web_streams_manage_020' | translate}}({{'ocsp_web_common_023' | translate}})</label>
-                    <input type="text" class="form-control" ng-model="item.interval" required>
-                  </div>
-                  <div class="form-group">
-                    <label>{{'ocsp_web_streams_manage_014' | translate}}*</label>
-                    <input type="text" class="form-control" ng-model="item.output.uniqueKey" required>
-                  </div>
-                </div>
-              </div>
-              <!--For interface-->
-              <div class="panel panel-oc">
-                <div class="panel-heading">
-                  {{'ocsp_web_streams_manage_030' | translate}}
-                </div>
-                <div class="panel-body">
-                  <div class="form-group">
-                    <label>{{'ocsp_web_streams_manage_021' | translate}}*</label>
-                    <ui-select ng-model="item.output.datasource" ng-required="true">
-                      <ui-select-match>
-                        <span ng-bind="$select.selected.name"></span>
-                      </ui-select-match>
-                      <ui-select-choices
-                        repeat="datasource in (datasources | filter: $select.search) track by datasource.id">
-                        <span ng-bind="datasource.name"></span>
-                      </ui-select-choices>
-                    </ui-select>
-                  </div>
-                  <div class="form-group" ng-if="item.output.datasource.type == 'kafka'">
-                    <label>{{'ocsp_web_streams_manage_010' | translate}}*</label>
-                    <input type="text" class="form-control" ng-model="item.output.topic" required>
-                  </div>
-                  <div class="form-group" ng-if="item.output.datasource.type == 'codis'">
-                    <label>{{'ocsp_web_streams_manage_022' | translate}}*</label>
-                    <input type="text" class="form-control" ng-model="item.output.codisKeyPrefix" required>
-                  </div>
-                  <div class="form-group">
-                    <br ng-repeat="val in datasources">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </uib-accordion>
-      </div>
-      <div class="wizard-card" data-cardname="ocsp_web_streams_manage_009">
-        <h1 class="page-header">
-          {{task.name}}
-        </h1>
-        <div class="form-group" ng-show="task.input.topic !== null && task.input.topic !== '' && task.input.topic !== undefined">
-          <label>{{'ocsp_web_streams_manage_010' | translate}}:</label>
-          &nbsp;{{task.input.topic}}
-        </div>
-        <div ng-show="task.outputLabels !== undefined && task.outputLabels.length > 0" class="form-group">
-          <label>{{'ocsp_web_common_024' | translate}}:</label>
-          <ul class="list-group">
-            <li ng-repeat="item in task.outputLabels" class="list-group-item"><span class="badge">{{$index+1}}</span>&nbsp;{{item.name}}</li>
-          </ul>
-        </div>
-        <div ng-show="task.events !== undefined && task.events.length > 0" class="form-group">
-          <label>{{'ocsp_web_common_025' | translate}}:</label>
-          <ul ng-repeat="item in task.events" class="list-group">
-            <li class="list-group-item"><strong>{{item.name}}</strong>({{item.output.datasource.type}})</li>
-          </ul>
-        </div>
-        </p>
-      </div>
-    </wizard>
-    <a ng-repeat="item in jobs" href="" class="list-group-item tasks" ng-click="changeItem(item)"
-       ng-class="{true: 'choose'}[item.id === selectedJob.id]" ng-show="item.type === 1">
-      <i ng-class="statusName(item.status)"></i>
-      &nbsp;&nbsp;{{item.name}}
-    </a>
+    <ng-include src="'views/task/sidebar.html'"></ng-include>
   </div>
   <div class="main col-md-10">
     <ul class="nav nav-tabs" role="tablist">
@@ -265,7 +81,7 @@
         <div class="container-fluid">
           <div class="panel panel-oc">
             <div class="panel-heading">{{'ocsp_web_streams_manage_003' | translate}}</div>
-            <div class="panel-body" id="mainFrame">
+            <div class="panel-body" id="mainFrame" ng-form name="mainForm">
               <div class="alert alert-danger alert-dismissible" role="alert" ng-show="selectedJob.id === undefined">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
                   aria-hidden="true">&times;</span></button>
@@ -286,7 +102,7 @@
                         </div>
                         <div class="col-md-8">
                           <input type="text" name="name" class="form-control" ng-model="selectedJob.name" required>
-                          <span class="notnull" ng-if="selectedJob.name === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                          <span class="redtip" ng-show="mainForm.name.$touched && mainForm.name.$error.required">{{'ocsp_web_common_027' | translate}}</span>
                         </div>
                       </div>
                     </div>
@@ -304,13 +120,17 @@
                     <div class="form-group">
                       <div class="row">
                         <div class="col-md-2">
-                          <label>{{'ocsp_web_streams_manage_039' | translate}}</label>
+                          <label>{{'ocsp_web_streams_manage_039' | translate}}*</label>
                         </div>
                         <div class="col-md-8">
-                          <input type="text" class="form-control" ng-model="selectedJob.cur_retry" required
-                                 popover-trigger="'mouseenter'" popover-placement="right" popover-append-to-body=true
-                                 uib-popover="{{'ocsp_web_common_property_retry' | translate}}" popover-title="{{'ocsp_web_streams_manage_039' | translate}}">
-                          <span class="notnull" ng-if="selectedJob.cur_retry === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                          <input type="number" class="form-control" ng-model="selectedJob.cur_retry" ng-pattern="/^(0|[1-9][0-9]*)$/" name="retry" required
+                                 popover-trigger="'mouseenter'"
+                                 popover-placement="right"
+                                 popover-append-to-body=true
+                                 uib-popover="{{'ocsp_web_common_property_retry' | translate}}"
+                                 popover-title="{{'ocsp_web_streams_manage_039' | translate}}">
+                          <span class="redtip" ng-show="mainForm.retry.$touched && mainForm.retry.$error.required">{{'ocsp_web_common_027' | translate}}</span>
+                          <span class="redtip" ng-show="mainForm.retry.$touched && mainForm.retry.$error.pattern">{{'ocsp_web_common_034' | translate}}</span>
                         </div>
                       </div>
                     </div>
@@ -320,10 +140,14 @@
                           <label>Receive interval(s)*</label>
                         </div>
                         <div class="col-md-8">
-                          <input type="text" class="form-control" ng-model="selectedJob.receive_interval" required
-                                 popover-trigger="'mouseenter'" popover-placement="right" popover-append-to-body=true
-                                 uib-popover="{{'ocsp_web_common_property_receiveInterval' | translate}}" popover-title="Receive interval(s)">
-                          <span class="notnull" ng-if="selectedJob.receive_interval === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                          <input type="number" class="form-control" ng-model="selectedJob.receive_interval" ng-pattern="/^(0|[1-9][0-9]*)$/" name="interval" required
+                                 popover-trigger="'mouseenter'"
+                                 popover-placement="right"
+                                 popover-append-to-body=true
+                                 uib-popover="{{'ocsp_web_common_property_receiveInterval' | translate}}"
+                                 popover-title="Receive interval(s)">
+                          <span class="redtip" ng-show="mainForm.interval.$touched && mainForm.interval.$error.required">{{'ocsp_web_common_027' | translate}}</span>
+                          <span class="redtip" ng-show="mainForm.interval.$touched && mainForm.interval.$error.pattern">{{'ocsp_web_common_034' | translate}}</span>
                         </div>
                       </div>
                     </div>
@@ -333,10 +157,13 @@
                           <label>Num executors*</label>
                         </div>
                         <div class="col-md-8">
-                          <input type="text" class="form-control" ng-model="selectedJob.num_executors" required
-                                 popover-trigger="'mouseenter'" popover-placement="right" popover-append-to-body=true
-                                 uib-popover="{{'ocsp_web_common_property_numExecutors' | translate}}" popover-title="Num executors">
-                          <span class="notnull" ng-if="selectedJob.num_executors === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                          <input type="text" class="form-control" ng-model="selectedJob.num_executors" name="executor" required
+                                 popover-trigger="'mouseenter'"
+                                 popover-placement="right"
+                                 popover-append-to-body=true
+                                 uib-popover="{{'ocsp_web_common_property_numExecutors' | translate}}"
+                                 popover-title="Num executors">
+                          <span class="redtip" ng-show="mainForm.executor.$touched && mainForm.executor.$error.required">{{'ocsp_web_common_027' | translate}}</span>
                         </div>
                       </div>
                     </div>
@@ -346,10 +173,13 @@
                           <label>Driver memory*</label>
                         </div>
                         <div class="col-md-8">
-                          <input type="text" class="form-control" ng-model="selectedJob.driver_memory" required
-                                 popover-trigger="'mouseenter'" popover-placement="right" popover-append-to-body=true
-                                 uib-popover="{{'ocsp_web_common_property_driverMemory' | translate}}" popover-title="Driver memory">
-                          <span class="notnull" ng-if="selectedJob.driver_memory === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                          <input type="text" class="form-control" ng-model="selectedJob.driver_memory" name="memory" required
+                                 popover-trigger="'mouseenter'"
+                                 popover-placement="right"
+                                 popover-append-to-body=true
+                                 uib-popover="{{'ocsp_web_common_property_driverMemory' | translate}}"
+                                 popover-title="Driver memory">
+                          <span class="redtip" ng-show="mainForm.memory.$touched && mainForm.memory.$error.required">{{'ocsp_web_common_027' | translate}}</span>
                         </div>
                       </div>
                     </div>
@@ -359,10 +189,13 @@
                           <label>Executor memory*</label>
                         </div>
                         <div class="col-md-8">
-                          <input type="text" class="form-control" ng-model="selectedJob.executor_memory" required
-                                 popover-trigger="'mouseenter'" popover-placement="right" popover-append-to-body=true
-                                 uib-popover="{{'ocsp_web_common_property_executorMemory' | translate}}" popover-title="Executor memory">
-                          <span class="notnull" ng-if="selectedJob.executor_memory === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                          <input type="text" class="form-control" ng-model="selectedJob.executor_memory" name="ememory" required
+                                 popover-trigger="'mouseenter'"
+                                 popover-placement="right"
+                                 popover-append-to-body=true
+                                 uib-popover="{{'ocsp_web_common_property_executorMemory' | translate}}"
+                                 popover-title="Executor memory">
+                          <span class="redtip" ng-show="mainForm.ememory.$touched && mainForm.ememory.$error.required">{{'ocsp_web_common_027' | translate}}</span>
                         </div>
                       </div>
                     </div>
@@ -372,10 +205,13 @@
                           <label>Queue*</label>
                         </div>
                         <div class="col-md-8">
-                          <input type="text" class="form-control" ng-model="selectedJob.queue" required
-                                 popover-trigger="'mouseenter'" popover-placement="right" popover-append-to-body=true
-                                 uib-popover="{{'ocsp_web_common_property_queue' | translate}}" popover-title="Queue">
-                          <span class="notnull" ng-if="selectedJob.queue === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                          <input type="text" class="form-control" ng-model="selectedJob.queue" name="queue" required
+                                 popover-trigger="'mouseenter'"
+                                 popover-placement="right"
+                                 popover-append-to-body=true
+                                 uib-popover="{{'ocsp_web_common_property_queue' | translate}}"
+                                 popover-title="Queue">
+                          <span class="redtip" ng-show="mainForm.queue.$touched && mainForm.queue.$error.required">{{'ocsp_web_common_027' | translate}}</span>
                         </div>
                       </div>
                     </div>
@@ -394,8 +230,8 @@
                           <label>{{'ocsp_web_streams_manage_010' | translate}}*</label>
                         </div>
                         <div class="col-md-8">
-                          <input type="text" class="form-control" ng-model="selectedJob.input.topic" required>
-                          <span class="notnull" ng-if="selectedJob.input.topic === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                          <input type="text" class="form-control" ng-model="selectedJob.input.topic" name="topic" required>
+                          <span class="redtip" ng-show="mainForm.topic.$touched && mainForm.topic.$error.required">{{'ocsp_web_common_027' | translate}}</span>
                         </div>
                       </div>
                     </div>
@@ -405,7 +241,7 @@
                           <label>{{'ocsp_web_streams_manage_038' | translate}}*</label>
                         </div>
                         <div class="col-md-8">
-                          <ui-select ng-model="selectedJob.input.datasource" ng-required="true" ng-class="{'redBlock' : selectedJob.input.datasource === undefined}">
+                          <ui-select ng-model="selectedJob.input.datasource" name="datasource" ng-required="true">
                             <ui-select-match>
                               <span ng-bind="$select.selected.name"></span>
                             </ui-select-match>
@@ -414,29 +250,18 @@
                               <span ng-bind="datasource.name"></span>
                             </ui-select-choices>
                           </ui-select>
-                          <span class="notnull" ng-if="selectedJob.input.datasource === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                          <span class="redtip" ng-show="mainForm.datasource.$touched && mainForm.datasource.$error.required">{{'ocsp_web_common_027' | translate}}</span>
                         </div>
                       </div>
                     </div>
                     <div class="form-group">
                       <div class="row">
                         <div class="col-md-2">
-                          <label>{{'ocsp_web_streams_manage_011' | translate}}*</label>
+                          <label>Schema*</label>
                         </div>
                         <div class="col-md-8">
-                          <tokenfield ng-model="selectedJob.input.fields" ng-class="{'redBlock' : selectedJob.input.fields === ''}" required></tokenfield>
-                          <span class="notnull" ng-if="selectedJob.input.fields === ''">{{'ocsp_web_common_027' | translate}}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <div class="row">
-                        <div class="col-md-2">
-                          <label>{{'ocsp_web_streams_manage_012' | translate}}*</label>
-                        </div>
-                        <div class="col-md-8">
-                          <input type="text" class="form-control" ng-model="selectedJob.input.delim" required>
-                          <span class="notnull" ng-if="selectedJob.input.delim === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                          <tokenfield ng-model="selectedJob.input.fields" name="inputFields" required></tokenfield>
+                          <span class="redtip" ng-show="mainForm.inputFields.$touched && mainForm.inputFields.$error.required">{{'ocsp_web_common_027' | translate}}</span>
                         </div>
                       </div>
                     </div>
@@ -447,8 +272,11 @@
                         </div>
                         <div class="col-md-8">
                           <input type="text" class="form-control" ng-model="selectedJob.input.filter_expr"
-                                 popover-trigger="'mouseenter'" popover-placement="right" popover-append-to-body=true
-                                 uib-popover="{{'ocsp_web_common_property_filter' | translate}}" popover-title="{{'ocsp_web_streams_manage_013' | translate}}">
+                                 popover-trigger="'mouseenter'"
+                                 popover-placement="right"
+                                 popover-append-to-body=true
+                                 uib-popover="{{'ocsp_web_common_property_filter' | translate}}"
+                                 popover-title="{{'ocsp_web_streams_manage_013' | translate}}">
                         </div>
                       </div>
                     </div>
@@ -458,11 +286,86 @@
                           <label>{{'ocsp_web_streams_manage_014' | translate}}*</label>
                         </div>
                         <div class="col-md-8">
-                          <input type="text" class="form-control" ng-model="selectedJob.input.uniqueKey" required>
-                          <span class="notnull" ng-if="selectedJob.input.uniqueKey === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                          <input type="text" class="form-control" ng-model="selectedJob.input.uniqueKey" name="uniqueKey" required>
+                          <span class="redtip" ng-show="mainForm.uniqueKey.$touched && mainForm.uniqueKey.$error.required">{{'ocsp_web_common_027' | translate}}</span>
                         </div>
                       </div>
                     </div>
+                    <button type="button" class="btn btn-primary" ng-click="add(selectedJob.input.inputs)">{{'ocsp_web_streams_manage_045' | translate}}</button>
+                    <uib-accordion>
+                      <div uib-accordion-group class="panel-default" ng-repeat="item in selectedJob.input.inputs" is-open="item.isOpen">
+                        <uib-accordion-heading>
+                          <i class="pull-left glyphicon"
+                             ng-class="{'glyphicon-chevron-down': item.isOpen, 'glyphicon-chevron-right': !item.isOpen}"></i>
+                          &nbsp;
+                          {{'ocsp_web_streams_manage_038' | translate}} {{item.name}}
+                          <a class="pull-right" ng-click="$event.stopPropagation();$event.preventDefault();remove(selectedJob.input.inputs, $index)"><i
+                          class="glyphicon glyphicon-remove"></i></a>
+                        </uib-accordion-heading>
+                        <div class="container-fluid">
+                          <div class="form-group">
+                            <div class="row">
+                              <div class="col-md-2">
+                                <label>{{'ocsp_web_common_011' | translate}}*</label>
+                              </div>
+                              <div class="col-md-8">
+                                <input type="text" class="form-control" ng-model="item.name" name="inputName_{{$index}}" required>
+                                <span class="redtip" ng-show="mainForm['inputName_' + $index].$touched && mainForm['inputName_' + $index].$error.required">{{'ocsp_web_common_027' | translate}}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="form-group">
+                            <div class="row">
+                              <div class="col-md-2">
+                                <label>{{'ocsp_web_streams_manage_011' | translate}}*</label>
+                              </div>
+                              <div class="col-md-8">
+                                <tokenfield ng-model="item.fields" name="inputFields_{{$index}}" required></tokenfield>
+                                <span class="redtip" ng-show="mainForm['inputFields_' + $index].$touched && mainForm['inputFields_' + $index].$error.required">{{'ocsp_web_common_027' | translate}}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="form-group">
+                            <div class="row">
+                              <div class="col-md-2">
+                                <label>{{'ocsp_web_streams_manage_012' | translate}}*</label>
+                              </div>
+                              <div class="col-md-8">
+                                <input type="text" class="form-control" ng-model="item.delim" name="inputDelim_{{$index}}" required>
+                                <span class="redtip" ng-show="mainForm['inputDelim_' + $index].$touched && mainForm['inputDelim_' + $index].$error.required">{{'ocsp_web_common_027' | translate}}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-10">
+                            <div class="panel panel-oc">
+                              <div class="panel-heading">
+                                {{'ocsp_web_streams_manage_046' | translate}}
+                              </div>
+                              <div class="panel-body">
+                                <div class="form-group">
+                                  <table class="table table-hover">
+                                    <thead>
+                                      <tr>
+                                        <th class="col-md-1"><button type="button" class="btn btn-success" ng-click="add(item.userFields)"><i class="glyphicon glyphicon-plus"></i></button></th>
+                                        <th class="col-md-3">{{'ocsp_web_common_011' | translate}}*</th>
+                                        <th class="col-md-8">pvalue*</th>
+                                      </tr>
+                                      </thead>
+                                      <tbody>
+                                      <tr ng-repeat="userfield in item.userFields">
+                                        <td><button type="button" class="btn btn-danger" ng-click="remove(item.userFields, $index)"><i class="glyphicon glyphicon-remove"></i></button></td>
+                                        <td><input type="text" class="form-control" ng-model="userfield.name" required></td>
+                                        <td><textarea class="form-control" ng-model="userfield.value" rows="2" required></textarea></td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </uib-accordion>
                   </div>
                 </uib-accordion>
                 <uib-accordion>
@@ -508,15 +411,15 @@
                       <i class="pull-left glyphicon" ng-class="{'glyphicon-chevron-down': isOpen3, 'glyphicon-chevron-right': !isOpen3}"></i>
                       &nbsp; {{'ocsp_web_streams_manage_008' | translate}}
                     </uib-accordion-heading>
-                    <button type="button" class="btn btn-primary" ng-click="addOutput1()">{{'ocsp_web_streams_manage_016' | translate}}</button>
+                    <button type="button" class="btn btn-primary" ng-click="add(selectedJob.events)">{{'ocsp_web_streams_manage_016' | translate}}</button>
                     <uib-accordion>
                       <div uib-accordion-group class="panel-default" ng-repeat="item in selectedJob.events" is-open="item.isOpen">
                         <uib-accordion-heading>
                           <i class="pull-left glyphicon"
                              ng-class="{'glyphicon-chevron-down': item.isOpen, 'glyphicon-chevron-right': !item.isOpen}"></i>
                           &nbsp;
-                          {{'ocsp_web_streams_manage_031' | translate}} {{item.name}} <a class="pull-right"
-                                                  ng-click="$event.stopPropagation();$event.preventDefault();removeOutput1($index)"><i
+                          {{'ocsp_web_streams_manage_031' | translate}} {{item.name}}
+                          <a class="pull-right" ng-click="$event.stopPropagation();$event.preventDefault();remove(selectedJob.events, $index)"><i
                           class="glyphicon glyphicon-remove"></i></a>
                         </uib-accordion-heading>
                         <div class="container-fluid">
@@ -535,18 +438,18 @@
                               </div>
                               <div class="form-group">
                                 <label>{{'ocsp_web_streams_manage_017' | translate}}*</label>
-                                <input type="text" class="form-control" ng-model="item.name" required>
-                                <span class="notnull" ng-if="item.name === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                                <input type="text" class="form-control" ng-model="item.name" name="eventsName_{{$index}}" required>
+                                <span class="redtip" ng-show="mainForm['eventsName_' + $index].$touched && mainForm['eventsName_' + $index].$error.required">{{'ocsp_web_common_027' | translate}}</span>
                               </div>
                               <div class="form-group">
                                 <label>{{'ocsp_web_streams_manage_018' | translate}}*</label>
-                                <tokenfield ng-model="item.select_expr" ng-class="{'redBlock' : item.select_expr === ''}" required></tokenfield>
-                                <span class="notnull" ng-if="item.select_expr === ''">{{'ocsp_web_common_027' | translate}}</span>
+                                <tokenfield auto-complete-model="selectedJob.input.fields" labels="{{selectedJob.labels}}" ng-model="item.select_expr" name="eventsFields_{{$index}}" required></tokenfield>
+                                <span class="redtip" ng-show="mainForm['eventsFields_' + $index].$touched && mainForm['eventsFields_' + $index].$error.required">{{'ocsp_web_common_027' | translate}}</span>
                               </div>
                               <div class="form-group">
                                 <label>{{'ocsp_web_streams_manage_019' | translate}}*</label>
-                                <input type="text" class="form-control" ng-model="item.delim" required>
-                                <span class="notnull" ng-if="item.delim === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                                <input type="text" class="form-control" ng-model="item.delim" name="eventsDelim_{{$index}}" required>
+                                <span class="redtip" ng-show="mainForm['eventsDelim_' + $index].$touched && mainForm['eventsDelim_' + $index].$error.required">{{'ocsp_web_common_027' | translate}}</span>
                               </div>
                               <div class="form-group">
                                 <label>{{'ocsp_web_streams_manage_013' | translate}}</label>
@@ -554,13 +457,14 @@
                               </div>
                               <div class="form-group">
                                 <label>{{'ocsp_web_streams_manage_020' | translate}}({{'ocsp_web_common_023' | translate}})*</label>
-                                <input type="text" class="form-control" ng-model="item.interval" required>
-                                <span class="notnull" ng-if="item.interval === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                                <input type="number" class="form-control" ng-model="item.interval" name="eventsInterval_{{$index}}" ng-pattern="/^(0|[1-9][0-9]*)$/" required>
+                                <span class="redtip" ng-show="mainForm['eventsInterval_' + $index].$touched && mainForm['eventsInterval_' + $index].$error.required">{{'ocsp_web_common_027' | translate}}</span>
+                                <span class="redtip" ng-show="mainForm['eventsInterval_' + $index].$touched && mainForm['eventsInterval_' + $index].$error.pattern">{{'ocsp_web_common_034' | translate}}</span>
                               </div>
                               <div class="form-group">
                                 <label>{{'ocsp_web_streams_manage_014' | translate}}*</label>
-                                <input type="text" class="form-control" ng-model="item.output.uniqueKey" required>
-                                <span class="notnull" ng-if="item.output.uniqueKey === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                                <input type="text" class="form-control" ng-model="item.output.uniqueKey" name="eventsUniqueKey_{{$index}}" required>
+                                <span class="redtip" ng-show="mainForm['eventsUniqueKey_' + $index].$touched && mainForm['eventsUniqueKey_' + $index].$error.required">{{'ocsp_web_common_027' | translate}}</span>
                               </div>
                               <div class="form-group">
                                 <label>{{'ocsp_web_streams_manage_040' | translate}}*</label>
@@ -571,8 +475,8 @@
                                                off-label="{{'ocsp_web_common_016' | translate}}"></toggle-switch>
                               </div>
                               <div class="form-group" ng-if="item.auditEnable">
-                                <ui-select ng-model="item.audit.type" ng-required="true"
-                                           ng-class="{'redBlock' : item.audit === undefined}" append-to-body="true"
+                                <ui-select ng-model="item.audit.type" ng-required="true" name="eventsAudit_{{$index}}"
+                                           append-to-body="true"
                                            on-select="onSelect(item)">
                                   <ui-select-match>
                                     <span ng-bind="$select.selected"></span>
@@ -582,14 +486,14 @@
                                     <span ng-bind="type"></span>
                                   </ui-select-choices>
                                 </ui-select>
-                                <span class="notnull" ng-if="item.audit.type === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                                <span class="redtip" ng-show="mainForm['eventsAudit_' + $index].$touched && mainForm['eventsAudit_' + $index].$error.required">{{'ocsp_web_common_027' | translate}}</span>
                               </div>
                               <div class="form-group" ng-if="item.auditEnable && item.audit.type === 'none'">
                                 <label>{{'ocsp_web_streams_manage_041' | translate}}</label>
                                 <div class="row" ng-repeat="period in item.audit.periods">
                                   <div class="col-md-2">
-                                    <button type="button" class="btn btn-success btn-circle" ng-click="addPeriod(item)"><i class="glyphicon glyphicon-plus"></i></button>
-                                    <button type="button" class="btn btn-danger btn-circle" ng-click="removePeriod(item, $index)"><i class="glyphicon glyphicon-remove"></i></button>
+                                    <button type="button" class="btn btn-success btn-circle" ng-click="add(item.audit.periods)"><i class="glyphicon glyphicon-plus"></i></button>
+                                    <button type="button" class="btn btn-danger btn-circle" ng-click="remove(item.audit.periods, $index)"><i class="glyphicon glyphicon-remove"></i></button>
                                   </div>
                                   <div class="col-md-5">
                                     <p class="input-group">
@@ -615,8 +519,8 @@
                                 <label>{{'ocsp_web_streams_manage_041' | translate}}</label>
                                 <div class="row" ng-repeat="period in item.audit.periods">
                                   <div class="col-md-2">
-                                    <button type="button" class="btn btn-success btn-circle" ng-click="addPeriod(item)"><i class="glyphicon glyphicon-plus"></i></button>
-                                    <button type="button" class="btn btn-danger btn-circle" ng-click="removePeriod(item, $index)"><i class="glyphicon glyphicon-remove"></i></button>
+                                    <button type="button" class="btn btn-success btn-circle" ng-click="add(item.audit.periods)"><i class="glyphicon glyphicon-plus"></i></button>
+                                    <button type="button" class="btn btn-danger btn-circle" ng-click="remove(item.audit.periods, $index)"><i class="glyphicon glyphicon-remove"></i></button>
                                   </div>
                                   <div class="col-md-5">
                                     <div class="input-group">
@@ -666,7 +570,7 @@
                             <div class="panel-body">
                               <div class="form-group">
                                 <label>{{'ocsp_web_streams_manage_021' | translate}}*</label>
-                                <ui-select ng-model="item.output.datasource" ng-required="true" ng-class="{'redBlock' : item.output.datasource === undefined}" append-to-body="true">
+                                <ui-select ng-model="item.output.datasource" ng-required="true" append-to-body="true">
                                   <ui-select-match>
                                     <span ng-bind="$select.selected.name"></span>
                                   </ui-select-match>
@@ -675,17 +579,17 @@
                                     <span ng-bind="datasource.name"></span>
                                   </ui-select-choices>
                                 </ui-select>
-                                <span class="notnull" ng-if="item.output.datasource === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                                <span class="redtip" ng-if="item.output.datasource === undefined">{{'ocsp_web_common_027' | translate}}</span>
                               </div>
                               <div class="form-group" ng-if="item.output.datasource.type === 'kafka'">
                                 <label>{{'ocsp_web_streams_manage_010' | translate}}*</label>
                                 <input type="text" class="form-control" ng-model="item.output.topic" required>
-                                <span class="notnull" ng-if="item.output.topic === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                                <span class="redtip" ng-if="item.output.topic === undefined">{{'ocsp_web_common_027' | translate}}</span>
                               </div>
                               <div class="form-group" ng-if="item.output.datasource.type === 'codis'">
                                 <label>{{'ocsp_web_streams_manage_022' | translate}}*</label>
                                 <input type="text" class="form-control" ng-model="item.output.codisKeyPrefix" required>
-                                <span class="notnull" ng-if="item.output.codisKeyPrefix === undefined">{{'ocsp_web_common_027' | translate}}</span>
+                                <span class="redtip" ng-if="item.output.codisKeyPrefix === undefined">{{'ocsp_web_common_027' | translate}}</span>
                               </div>
                             </div>
                           </div>
@@ -694,7 +598,7 @@
                     </uib-accordion>
                   </div>
                 </uib-accordion>
-                <button class="btn btn-primary" ng-click="update()">{{'ocsp_web_common_009' | translate}}</button>
+                <button type="submit" class="btn btn-primary" ng-click="update()">{{'ocsp_web_common_009' | translate}}</button>
               </div>
             </div>
           </div>
@@ -702,5 +606,4 @@
       </div>
     </div>
   </div>
-</div>
 </div>

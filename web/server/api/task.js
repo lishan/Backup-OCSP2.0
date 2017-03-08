@@ -102,20 +102,26 @@ function dealDataInterfaceProperties(dataInterface, dsid, type) {
   if(dataInterface.delim === undefined){
     dataInterface.delim = "";
   }
-  if (dataInterface.fields !== undefined && dataInterface.fields !== ""){
-    dataInterface.fields = dataInterface.fields.replace(/\s/g, '');
-    var splits = dataInterface.fields.split(",");
-    for(var i in splits){
-      if(splits[i] !== undefined && splits[i] !== "") {
-        dataInterface.properties.fields.push({
+  let _parseFields = function (properties, fields, name) {
+    if(fields === undefined){
+      return [];
+    }
+    fields = fields.replace(/\s/g, '');
+    let splits = fields.split(",");
+    for (let i in splits) {
+      if (splits[i] !== undefined && splits[i] !== "") {
+        properties[name].push({
           "pname": splits[i],
           "ptype": "String"
         });
       }
     }
+    return splits;
+  };
+  if (dataInterface.fields !== undefined && dataInterface.fields !== ""){
     dataInterface.properties.props.push({
       "pname" : "field.numbers",
-      "pvalue" : splits.length
+      "pvalue" : _parseFields(dataInterface.properties, dataInterface.fields, "fields").length
     });
   }
   if (dataInterface.topic !== undefined){
@@ -135,6 +141,34 @@ function dealDataInterfaceProperties(dataInterface, dsid, type) {
       "pname" : "codisKeyPrefix",
       "pvalue" : dataInterface.codisKeyPrefix
     });
+  }
+  if (dataInterface.inputs !== undefined && dataInterface.inputs.length > 0){
+    dataInterface.properties.sources = [];
+    for(let i in dataInterface.inputs){
+      if(dataInterface.inputs[i].delim !== undefined && dataInterface.inputs[i].delim === "|"){
+        dataInterface.inputs[i].delim = "\\|";
+      }
+      if(dataInterface.delim === undefined){
+        dataInterface.inputs[i].delim = "";
+      }
+      let result = {
+        "pname": dataInterface.inputs[i].name,
+        "delim": dataInterface.inputs[i].delim,
+        "userFields":[],
+        "fields":[]
+      };
+      _parseFields(result, dataInterface.inputs[i].fields, "fields");
+      if(dataInterface.inputs[i].userFields !== undefined && dataInterface.inputs[i].userFields.length > 0) {
+        for (let j in dataInterface.inputs[i].userFields) {
+          result.userFields.push({
+            "pname": dataInterface.inputs[i].userFields[j].name,
+            "pvalue": dataInterface.inputs[i].userFields[j].value,
+            "undefined": "on"
+          });
+        }
+      }
+      dataInterface.properties.sources.push(result);
+    }
   }
   dataInterface.properties = JSON.stringify(dataInterface.properties);
 }
