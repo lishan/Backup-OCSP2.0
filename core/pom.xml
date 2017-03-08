@@ -83,7 +83,6 @@
                 <scala.version>2.11.8</scala.version>
                 <scala.binary.version>2.11</scala.binary.version>
                 <spark.version>2.1.0</spark.version>
-                <Event.impl>com.asiainfo.ocdp.stream.spark2.event.Event</Event.impl>
             </properties>
 
             <dependencies>

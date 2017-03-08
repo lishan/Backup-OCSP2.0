@@ -10,7 +10,7 @@ import com.asiainfo.ocdp.stream.constant.{DataSourceConstant, LabelConstant}
 import com.asiainfo.ocdp.stream.event.Event
 import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.service.DataInterfaceServer
-import com.asiainfo.ocdp.stream.tools.{CacheFactory, CacheQryThreadPool, Json4sUtils}
+import com.asiainfo.ocdp.stream.tools._
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.StructType
@@ -35,7 +35,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
   val conf = dataInterfaceService.getDataInterfaceInfoById(taskDiid)
   val labels = dataInterfaceService.getLabelsByIFId(taskDiid)
-  val events: Array[Event] = dataInterfaceService.getEventsByIFId(taskDiid)
+
   conf.setInterval(interval)
   // 原始信令字段个数
   //  val baseItemSize = conf.getBaseItemsSize
@@ -208,6 +208,10 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         val droppedCount = totalRecordsCounter.value/dataSchemas.length - reservedRecordsCounter.value
         logInfo(s"Dropped ${droppedCount} records since their schema size do not matching records field size.")
         logInfo(s"Reserved ${reservedRecordsCounter.value} records successfully.")
+
+        if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_RECORDS_CORRECTNESS_ENABLE, false)){
+          MonitorUtils.outputRecordsCorrectness(taskConf.id,reservedRecordsCounter.value,droppedRecordsCounter.value,ssc.sparkContext.applicationId)
+        }
       }
       /**
         * update offset AFTER output the result for AT LEAST ONCE
@@ -373,6 +377,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     val threadPool: ExecutorService = Executors.newCachedThreadPool
 
     val eventService = new ExecutorCompletionService[String](threadPool)
+    val events: Array[Event] = dataInterfaceService.getEventsByIFId(taskDiid)
 
     val now = new java.util.Date()
     val validEvents = events.filter(event => {

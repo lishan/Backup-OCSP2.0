@@ -20,4 +20,6 @@ class TaskConf() extends BaseConf{
   @BeanProperty var diid: String = ""
   @BeanProperty var owner: String = ""
 
+
+  override def toString = s"TaskConf($id, $name, $status)"
 }

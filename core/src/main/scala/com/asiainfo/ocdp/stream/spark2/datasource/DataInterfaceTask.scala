@@ -10,7 +10,7 @@ import com.asiainfo.ocdp.stream.datasource.StreamingInputReader
 import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.spark2.event.Event
 import com.asiainfo.ocdp.stream.spark2.service.DataInterfaceServer
-import com.asiainfo.ocdp.stream.tools.{CacheFactory, CacheQryThreadPool, Json4sUtils}
+import com.asiainfo.ocdp.stream.tools._
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.StructType
@@ -35,7 +35,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
   val conf = dataInterfaceService.getDataInterfaceInfoById(taskDiid)
   val labels = dataInterfaceService.getLabelsByIFId(taskDiid)
-  val events: Array[Event] = dataInterfaceService.getEventsByIFId(taskDiid)
+
   conf.setInterval(interval)
   // 原始信令字段个数
   val baseItemSize = conf.getBaseItemsSize
@@ -179,6 +179,11 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
         logInfo(s"Dropped ${droppedRecordsCounter.value} records since their schema size is ${schema.size} not matching records field size.")
         logInfo(s"Reserved ${reservedRecordsCounter.value} records successfully.")
+
+        if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_RECORDS_CORRECTNESS_ENABLE, false)){
+          MonitorUtils.outputRecordsCorrectness(taskConf.id,reservedRecordsCounter.value,droppedRecordsCounter.value,ssc.sparkContext.applicationId)
+        }
+
       }
       else {
         println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
@@ -336,6 +341,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     val eventService = new ExecutorCompletionService[String](threadPool)
 
     val now = new java.util.Date()
+    val events: Array[Event] = dataInterfaceService.getEventsByIFId(taskDiid)
+
     val validEvents = events.filter(event => {
 
       val period = event.conf.get("period", "")
