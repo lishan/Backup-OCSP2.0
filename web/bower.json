@@ -15,7 +15,6 @@
     "bootstrap-sidebar": "^0.2.2",
     "angular-translate": "^2.13.0",
     "ng-file-upload": "^12.2.12",
-    "bootstrap-application-wizard": "bootstrap-application-wizard-ocsp#^1.0.0",
     "isteven-angular-multiselect": "angular-multi-select#^4.0.0",
     "angular-bootstrap": "^2.2.0",
     "angular-ui-notification": "^0.2.0",
@@ -24,12 +23,14 @@
     "angular-ui-select": "^0.19.6",
     "angular-toggle-switch": "^1.3.0",
     "animate.css": "^3.5.2",
-    "bootstrap-tokenfield": "^0.12.1",
     "jquery-ui": "^1.12.1",
     "mermaid": "^6.0.0",
     "angular-hotkeys": "chieffancypants/angular-hotkeys#^1.7.0",
     "bootstrap-ui-datetime-picker": "^2.5.4",
-    "angular-moment": "^1.0.1"
+    "angular-moment": "^1.0.1",
+    "highcharts": "^5.0.7",
+    "bootstrap-tokenfield": "bootstrap-tokenfield-ocsp#^0.12.2",
+    "bootstrap-application-wizard": "bootstrap-application-wizard-ocsp#^1.0.3"
   },
   "devDependencies": {
     "angular-mocks": "1.4.5"

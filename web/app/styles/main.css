@@ -193,10 +193,6 @@ ul[dnd-list] li.selected {
   color: #3c763d;
 }
 
-.redBlock {
-  border: 1px solid red;
-}
-
 .wizard-card-container {
   height: 300px;
   overflow-y: scroll;
@@ -254,15 +250,19 @@ a:hover, a:focus {
   text-decoration: none;
 }
 
-#mainFrame input.ng-invalid {
+input.ng-invalid.ng-touched,
+div.ng-invalid.ng-touched div.tokenfield,
+div.ng-invalid.ng-touched.ui-select-container span.ui-select-toggle {
   border: 1px solid red;
 }
 
-#mainFrame div.ng-invalid {
+#mainFrame input.ng-invalid.ng-touched + span.input-group-btn button {
   border: 1px solid red;
+  color: red;
 }
 
-#mainFrame span.notnull {
+#mainFrame span.redtip,
+div.ng-invalid.ng-touched.ui-select-container i.caret.pull-right {
   color: red;
 }
 
@@ -278,4 +278,9 @@ a:hover, a:focus {
   font-size: 12px;
   line-height: 1.428571429;
   border-radius: 15px;
+}
+
+ul.ui-autocomplete {
+  width: 112px !important;
+  z-index: 1100 !important;
 }
