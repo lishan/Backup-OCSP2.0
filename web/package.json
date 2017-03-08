@@ -45,7 +45,7 @@
     "sequelize": "^3.24.7",
     "serve-favicon": "^2.3.2",
     "unzip2": "^0.2.5",
-    "wiredep": "^2.2.2"
+    "wiredep": "^1.8.6"
   },
   "engines": {
     "node": ">=0.10.0"

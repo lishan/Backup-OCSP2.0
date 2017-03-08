@@ -5,9 +5,8 @@ import java.util.NoSuchElementException
 import java.util.concurrent._
 
 import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, MainFrameConf, DataSchema, TaskConf}
-import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, StreamingCache,EventCycleLife}
-import com.asiainfo.ocdp.stream.constant.DataSourceConstant
-import com.asiainfo.ocdp.stream.constant.LabelConstant
+import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, EventCycleLife, StreamingCache}
+import com.asiainfo.ocdp.stream.constant.{DataSourceConstant, LabelConstant}
 import com.asiainfo.ocdp.stream.event.Event
 import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.service.DataInterfaceServer
@@ -18,6 +17,7 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
+import org.apache.spark.{Accumulator, SparkContext}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{immutable, mutable}
@@ -40,12 +40,18 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
   // 原始信令字段个数
   //  val baseItemSize = conf.getBaseItemsSize
 
-  protected def transform(source: String, dataSchema: DataSchema , conf: DataInterfaceConf): Option[Row] = {
-
+  protected def transform(source: String, dataSchema: DataSchema , conf: DataInterfaceConf, totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): Option[Row] = {
     val delim = dataSchema.getDelim
-//    val delim = "\\|"
-    val inputArr = (source + delim + "DummySplitHolder").split(delim).dropRight(1).toSeq
-    if (inputArr.size != dataSchema.getRawSchemaSize) None else Some(Row.fromSeq(inputArr))
+    val inputArr = source.split(delim, -1)
+
+		totalRecordsCounter.add(1)
+
+    if (inputArr.size != dataSchema.getRawSchemaSize) {
+      None
+    } else {
+      reservedRecordsCounter.add(1)
+      Some(Row.fromSeq(inputArr))
+    }
   }
 
   private def conf_check() = {
@@ -105,6 +111,9 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     BroadcastManager.broadcastCodisProps(MainFrameConf.codisProps)
     BroadcastManager.broadcastTaskConf(taskConf)
 
+    val totalRecordsCounter = TotalRecordsCounter.getInstance(ssc.sparkContext)
+    val reservedRecordsCounter = ReservedRecordsCounter.getInstance(ssc.sparkContext)
+
     //2 流数据处理
     inputStream.foreachRDD(rdd => {
       val t0 = System.currentTimeMillis()
@@ -121,8 +130,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
         val rowRDD = rdd.map(inputArr => {
           val diConf = broadDiConf.value
-          transform(inputArr, dataSchema, diConf)}
-        ).collect { case Some(row) => row }
+          transform(inputArr, dataSchema, diConf, totalRecordsCounter, reservedRecordsCounter)
+        }).collect { case Some(row) => row }
 
         if (rowRDD.partitions.size > 0) {
           val t1 = System.currentTimeMillis()
@@ -152,13 +161,9 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
           println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
       }
 
-      if (null == mixDF) {
-        throw new Exception("NO DATA")
-      }
+      if (null != mixDF) {
 
-//      println("====#### mixDF size : " + mixDF.count())
-
-      val tUnion = System.currentTimeMillis()
+        val tUnion = System.currentTimeMillis()
 
         /**
           * update offset BEFORE output the result for AT MOST ONCE
@@ -166,40 +171,43 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         if (recover_mode == DataSourceConstant.AT_MOST_ONCE)
           StreamingSourceFactory.updateDataSource(broadDiConf.value, rdd)
 
-      if (labels.size > 0) {
-        val labelRDD = execLabels(mixDF)
-        val t4 = System.currentTimeMillis
-        println("4.dataframe 转成rdd打标签耗时(millis):" + (t4 - tUnion))
+        if (labels.size > 0) {
+          val labelRDD = execLabels(mixDF)
+          val t4 = System.currentTimeMillis
+          println("4.dataframe 转成rdd打标签耗时(millis):" + (t4 - tUnion))
 
-//        println("====#### labelRDD size : " + labelRDD.count())
+          labelRDD.persist()
+          // read.json为spark sql 动作类提交job
+          val enhancedDF = sqlc.read.json(labelRDD)
 
-        labelRDD.persist()
-        // read.json为spark sql 动作类提交job
-        val enhancedDF = sqlc.read.json(labelRDD)
+          val t5 = System.currentTimeMillis
+          println("5.RDD 转换成 DataFrame 耗时(millis):" + (t5 - t4))
 
-        val t5 = System.currentTimeMillis
-        println("5.RDD 转换成 DataFrame 耗时(millis):" + (t5 - t4))
+          makeEvents(enhancedDF, conf.get("uniqKeys"))
 
-        makeEvents(enhancedDF, conf.get("uniqKeys"))
+          labelRDD.unpersist()
 
-        labelRDD.unpersist()
+          println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t5))
+        }
+        else {
 
-        println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t5))
-      }
-      else {
+          val t3 = System.currentTimeMillis
+          //        println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
 
-        val t3 = System.currentTimeMillis
-        //        println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
+          mixDF.persist()
+          mixDF.count()
+          val t4 = System.currentTimeMillis
+          println("4.mixDF count耗时(millis):" + (t4 - t3))
 
-        mixDF.persist()
-        mixDF.count()
-        val t4 = System.currentTimeMillis
-        println("4.mixDF count耗时(millis):" + (t4 - t3))
+          makeEvents(mixDF, conf.get("uniqKeys"))
+          mixDF.unpersist()
+          println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t4))
 
-        makeEvents(mixDF, conf.get("uniqKeys"))
-        mixDF.unpersist()
-        println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t4))
+        }
 
+        val droppedCount = totalRecordsCounter.value/dataSchemas.length - reservedRecordsCounter.value
+        logInfo(s"Dropped ${droppedCount} records since their schema size do not matching records field size.")
+        logInfo(s"Reserved ${reservedRecordsCounter.value} records successfully.")
       }
       /**
         * update offset AFTER output the result for AT LEAST ONCE
@@ -391,6 +399,44 @@ class BuildEvent(event: Event, df: DataFrame, uniqKeys: String) extends Callable
   override def call() = {
     event.buildEvent(df, uniqKeys)
     ""
+  }
+}
+
+/**
+  * Use this singleton to get or register an Accumulator.
+  */
+object TotalRecordsCounter {
+
+  @volatile private var instance: Accumulator[Long] = null
+
+  def getInstance(sc: SparkContext): Accumulator[Long] = {
+    if (instance == null) {
+      synchronized {
+        if (instance == null) {
+          instance = sc.accumulator(0L, "TotalRecordsCounter")
+        }
+      }
+    }
+    instance
+  }
+}
+
+/**
+  * Use this singleton to get or register an Accumulator.
+  */
+object ReservedRecordsCounter {
+
+  @volatile private var instance: Accumulator[Long] = null
+
+  def getInstance(sc: SparkContext): Accumulator[Long] = {
+    if (instance == null) {
+      synchronized {
+        if (instance == null) {
+          instance = sc.accumulator(0L, "ReservedRecordsCounter")
+        }
+      }
+    }
+    instance
   }
 }
 

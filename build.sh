@@ -6,8 +6,20 @@ HOME_PATH=$(cd `dirname $0`; pwd)
 version=2.0.1
 
 cd ${HOME_PATH}
-
-mvn clean package -Dmaven.test.skip=true -Pspark-1.6
+spark_version=$1
+if [[ -z ${spark_version} ]];then
+    echo "Build based on spark 1.6"
+    mvn clean package -Dmaven.test.skip=true -Pspark-1.6
+else
+    case ${spark_version} in
+    1.6|2.1)
+        echo "Build based on spark ${spark_version}"
+        mvn clean package -Dmaven.test.skip=true -Pspark-${spark_version};;
+    *)
+        echo "Invalid argument, only support to spark version 1.6 or 2.1"
+        exit 2
+    esac
+fi
 
 if [ $? -ne 0 ]; then
    echo "Build failed..."
