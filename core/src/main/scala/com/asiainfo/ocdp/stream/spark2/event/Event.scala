@@ -36,18 +36,20 @@ class Event extends Serializable with Logging{
     if (conf.get("ext_fields", null) != null)
       mix_sel_expr = mix_sel_expr ++ conf.get("ext_fields", null).split(",")
 
-    // 根据业务条件过滤，并查询出输出字段
-    Try(if(StringUtils.isEmpty(conf.filte_expr)) df.selectExpr(mix_sel_expr: _*) else df.filter(conf.filte_expr).selectExpr(mix_sel_expr: _*)) match {
-      case Success(eventDF) => {
-        // 事件复用的时候会用到，注意做eventDF.persist
-        // if (EventConstant.NEEDCACHE == conf.getInt("needcache", 0)) cacheEvent(eventDF, uniqKeys)
-        // 如果业务输出周期不为0，那么需要从codis中取出比兑营销时间，满足条件的输出
-        val jsonRDD = if (EventConstant.RealtimeTransmission != conf.interval) checkEvent(eventDF, uniqKeys)
-        else eventDF.toJSON
-        outputEvent(jsonRDD.rdd, uniqKeys)
-        logInfo(s"Make event ${conf.id} successfully")
-      }
-      case Failure(e: AnalysisException) => logError(s"Make event ${conf.id} failed since ${e}")
+    val filter_expr = conf.filte_expr;
+
+    try {
+      // 根据业务条件过滤，并查询出输出字段
+      val eventDF = if(StringUtils.isEmpty(filter_expr))df.selectExpr(mix_sel_expr: _*) else df.filter(conf.filte_expr).selectExpr(mix_sel_expr: _*)
+
+      // 事件复用的时候会用到，注意做eventDF.persist
+      // if (EventConstant.NEEDCACHE == conf.getInt("needcache", 0)) cacheEvent(eventDF, uniqKeys)
+      // 如果业务输出周期不为0，那么需要从codis中取出比兑营销时间，满足条件的输出
+      val jsonRDD = if (EventConstant.RealtimeTransmission != conf.interval) checkEvent(eventDF, uniqKeys)
+      else eventDF.toJSON
+      outputEvent(jsonRDD.rdd, uniqKeys)
+    } catch {
+      case e: AnalysisException => logError(s"Make event [${conf.getId}] failed", e)
     }
 
   }
