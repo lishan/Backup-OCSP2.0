@@ -3,9 +3,11 @@ package com.asiainfo.ocdp.stream.tools
 import java.util.{Properties, Random}
 
 import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
+import org.apache.commons.lang3._
 
 /**
-  * Created by xingh1991 on 2016/6/29.
+  * run the producer as
+  * java -cp "spark-streaming-kafka-assembly_2.10-1.6.0.jar:spark-assembly-1.6.0.2.4.0.0-169-hadoop2.7.1.2.4.0.0-169-6.0.0.jar:core-2.0.1.jar" com.asiainfo.ocdp.stream.tools.DataProducerClient host:6667 topic
   */
 class DataProducer(brokers: String, topic: String) extends Runnable {
   /**
@@ -34,12 +36,12 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
 
   def run(): Unit = {
     val rand = new Random()
-    var msgId = 1
-    var imsi = 1019400
+    var msgNo = 0
+    val imsi = 1019400
     while (true) {
-      val msgNum = rand.nextInt(MSGNUM_MAX)
+      //val msgNum = rand.nextInt(MSGNUM_MAX)
       try {
-        for (i <- 0 to msgNum) {
+        //for (i <- 0 to msgNum) {
 
           //begin time & end time
 
@@ -53,11 +55,9 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           msg.append(separator)
 
           // phone number, imsi
-          val phoneNum1 = rand.nextInt(PHONE_MAX) + 1000
-          val phoneNum2 = rand.nextInt(PHONE_MAX) + 2000
-          msg.append("139" + phoneNum1.toString() + phoneNum2.toString)
+          msg.append("139" + RandomStringUtils.randomNumeric(8))
           msg.append(separator)
-          val long_imsi = "460009269" + (imsi + rand.nextInt(IMSI_MAX)).toString
+          val long_imsi = "460009269" + RandomStringUtils.randomNumeric(7)//(imsi + rand.nextInt(IMSI_MAX)).toString
 
           msg.append(long_imsi)
           msg.append(separator)
@@ -65,15 +65,14 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           msg.append(rand.nextInt(DATA_TYPE) + 1)
           msg.append(separator)
 
-
           // start lac, cell, end lac, cell
-          msg.append(rand.nextInt(LAC_MAX) + 31250)
+          msg.append(RandomStringUtils.randomNumeric(5))
           msg.append(separator)
-          msg.append(5125)
+          msg.append(RandomStringUtils.randomNumeric(4))
           msg.append(separator)
-          msg.append(rand.nextInt(LAC_MAX) + 31250)
+          msg.append(RandomStringUtils.randomNumeric(5))
           msg.append(separator)
-          msg.append(5125)
+          msg.append(RandomStringUtils.randomNumeric(4))
           msg.append(separator)
           msg.append(separator)
           msg.append("0")
@@ -81,9 +80,7 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           msg.append("111")
           msg.append(separator)
 
-          val phoneNum3 = rand.nextInt(PHONE_MAX) + 1000
-          val phoneNum4 = rand.nextInt(PHONE_MAX) + 2000
-          msg.append("137" + phoneNum3.toString() + phoneNum4.toString)
+          msg.append("137" + RandomStringUtils.randomNumeric(8))
           msg.append(separator)
           msg.append(imsi + 1)
           msg.append(separator)
@@ -93,17 +90,33 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           msg.append(separator)
           msg.append("2")
 
-          println(msg.toString())
+          val flag = RandomUtils.nextInt(1, 100)
+
+          if(flag > 80){
+            msg.append(separator)
+            msg.append("redundancy")
+          }
+
+
+          if(flag > 90){
+            msg.append(separator)
+          }
+
+          //println(msg.toString())
           //send the generated message to broker
           sendMessage(msg.toString(), long_imsi)
-          msgId = msgId + 1
-        }
+          msgNo = msgNo + 1
+        //}
       } catch {
         case e: Exception => println(e)
       }
       try {
         //sleep for 10 seconds after send a micro batch of message
-        Thread.sleep(1)
+
+        if(msgNo%10000 == 0){
+          println(s"${msgNo} records have been sent...")
+          Thread.sleep(10000)
+        }
       } catch {
         case e: Exception => println(e)
       }
