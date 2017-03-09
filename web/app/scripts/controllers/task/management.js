@@ -282,6 +282,7 @@ angular.module('ocspApp')
         if(prop.sources !== undefined && prop.sources.length > 0 && type === "input") {
           for(let i = 0 ; i < prop.sources.length; i++){
             let result = {
+              topic: prop.sources[i].topic,
               name: prop.sources[i].pname,
               delim: prop.sources[i].delim === "\\|"?"|":prop.sources[i].delim,
               fields: "",

@@ -261,7 +261,7 @@ div.ng-invalid.ng-touched.ui-select-container span.ui-select-toggle {
   color: red;
 }
 
-#mainFrame span.redtip,
+span.redtip,
 div.ng-invalid.ng-touched.ui-select-container i.caret.pull-right {
   color: red;
 }

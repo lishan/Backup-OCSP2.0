@@ -148,12 +148,13 @@ function dealDataInterfaceProperties(dataInterface, dsid, type) {
       if(dataInterface.inputs[i].delim !== undefined && dataInterface.inputs[i].delim === "|"){
         dataInterface.inputs[i].delim = "\\|";
       }
-      if(dataInterface.delim === undefined){
+      if(dataInterface.inputs[i].delim === undefined){
         dataInterface.inputs[i].delim = "";
       }
       let result = {
         "pname": dataInterface.inputs[i].name,
         "delim": dataInterface.inputs[i].delim,
+        "topic": dataInterface.inputs[i].topic,
         "userFields":[],
         "fields":[]
       };

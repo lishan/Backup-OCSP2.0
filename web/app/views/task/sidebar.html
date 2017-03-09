@@ -12,10 +12,6 @@
   </div>
   <div class="wizard-card" data-cardname="ocsp_web_streams_manage_006">
     <div class="form-group">
-      <label>{{'ocsp_web_streams_manage_010' | translate}}*</label>
-      <input type="text" class="form-control" ng-model="task.input.topic" required>
-    </div>
-    <div class="form-group">
       <label>{{'ocsp_web_streams_manage_038' | translate}}*</label>
       <ui-select ng-model="task.input.datasource" ng-required="true">
         <ui-select-match>
@@ -41,12 +37,16 @@
           </uib-accordion-heading>
           <div class="container-fluid">
             <div class="form-group">
+              <label>{{'ocsp_web_streams_manage_010' | translate}}*</label>
+              <input type="text" class="form-control" ng-model="item.topic" required>
+            </div>
+            <div class="form-group">
               <label>{{'ocsp_web_common_011' | translate}}*</label>
               <input type="text" class="form-control" ng-model="item.name" required>
             </div>
             <div class="form-group">
               <label>{{'ocsp_web_streams_manage_011' | translate}}*</label>
-              <tokenfield ng-model="item.fields"></tokenfield>
+              <tokenfield ng-model="item.fields" required="true"></tokenfield>
             </div>
             <div class="form-group">
               <label>{{'ocsp_web_streams_manage_012' | translate}}*</label>
@@ -76,7 +76,7 @@
     </div>
     <div class="form-group">
       <label>{{'ocsp_web_streams_manage_047' | translate}}*</label>
-      <tokenfield ng-model="task.input.fields"></tokenfield>
+      <tokenfield ng-model="task.input.fields" disabled="true" required="true"></tokenfield>
     </div>
     <div class="form-group">
       <label>{{'ocsp_web_streams_manage_013' | translate}}</label>
@@ -136,67 +136,52 @@
             class="glyphicon glyphicon-remove"></i></a>
           </uib-accordion-heading>
           <div class="container-fluid">
-            <div class="panel panel-oc">
-              <div class="panel-heading">
-                {{'ocsp_web_common_013' | translate}}
-              </div>
-              <div class="panel-body">
-                <div class="form-group">
-                  <label>{{'ocsp_web_streams_manage_017' | translate}}*</label>
-                  <input type="text" class="form-control" ng-model="item.name" required>
-                </div>
-                <div class="form-group">
-                  <label>{{'ocsp_web_streams_manage_018' | translate}}*</label>
-                  <tokenfield auto-complete-model="task.input.fields" labels="{{task.outputLabels}}" ng-model="item.select_expr"></tokenfield>
-                </div>
-                <div class="form-group">
-                  <label>{{'ocsp_web_streams_manage_019' | translate}}*</label>
-                  <input type="text" class="form-control" ng-model="item.delim" required>
-                </div>
-                <div class="form-group">
-                  <label>{{'ocsp_web_streams_manage_013' | translate}}</label>
-                  <input type="text" class="form-control" ng-model="item.filter_expr">
-                </div>
-                <div class="form-group">
-                  <label>{{'ocsp_web_streams_manage_020' | translate}}({{'ocsp_web_common_023' | translate}})*</label>
-                  <input type="number" class="form-control" ng-model="item.interval" ng-pattern="/^(0|[1-9][0-9]*)$/" required>
-                </div>
-                <div class="form-group">
-                  <label>{{'ocsp_web_streams_manage_014' | translate}}*</label>
-                  <input type="text" class="form-control" ng-model="item.output.uniqueKey" required>
-                </div>
-              </div>
+            <div class="form-group">
+              <label>{{'ocsp_web_streams_manage_017' | translate}}*</label>
+              <input type="text" class="form-control" ng-model="item.name" required>
             </div>
-            <!--For interface-->
-            <div class="panel panel-oc">
-              <div class="panel-heading">
-                {{'ocsp_web_streams_manage_030' | translate}}
-              </div>
-              <div class="panel-body">
-                <div class="form-group">
-                  <label>{{'ocsp_web_streams_manage_021' | translate}}*</label>
-                  <ui-select ng-model="item.output.datasource" ng-required="true">
-                    <ui-select-match>
-                      <span ng-bind="$select.selected.name"></span>
-                    </ui-select-match>
-                    <ui-select-choices
-                      repeat="datasource in (datasources | filter: $select.search) track by datasource.id">
-                      <span ng-bind="datasource.name"></span>
-                    </ui-select-choices>
-                  </ui-select>
-                </div>
-                <div class="form-group" ng-if="item.output.datasource.type == 'kafka'">
-                  <label>{{'ocsp_web_streams_manage_010' | translate}}*</label>
-                  <input type="text" class="form-control" ng-model="item.output.topic" required>
-                </div>
-                <div class="form-group" ng-if="item.output.datasource.type == 'codis'">
-                  <label>{{'ocsp_web_streams_manage_022' | translate}}*</label>
-                  <input type="text" class="form-control" ng-model="item.output.codisKeyPrefix" required>
-                </div>
-                <div class="form-group">
-                  <br ng-repeat="val in datasources">
-                </div>
-              </div>
+            <div class="form-group">
+              <label>{{'ocsp_web_streams_manage_018' | translate}}*</label>
+              <tokenfield auto-complete-model="task.input.fields" labels="{{task.outputLabels}}" ng-model="item.select_expr" required="true"></tokenfield>
+            </div>
+            <div class="form-group">
+              <label>{{'ocsp_web_streams_manage_019' | translate}}*</label>
+              <input type="text" class="form-control" ng-model="item.delim" required>
+            </div>
+            <div class="form-group">
+              <label>{{'ocsp_web_streams_manage_013' | translate}}</label>
+              <input type="text" class="form-control" ng-model="item.filter_expr">
+            </div>
+            <div class="form-group">
+              <label>{{'ocsp_web_streams_manage_020' | translate}}({{'ocsp_web_common_023' | translate}})*</label>
+              <input type="number" class="form-control" ng-model="item.interval" ng-pattern="/^(0|[1-9][0-9]*)$/" required>
+            </div>
+            <div class="form-group">
+              <label>{{'ocsp_web_streams_manage_014' | translate}}*</label>
+              <input type="text" class="form-control" ng-model="item.output.uniqueKey" required>
+            </div>
+            <div class="form-group">
+              <label>{{'ocsp_web_streams_manage_021' | translate}}*</label>
+              <ui-select ng-model="item.output.datasource" ng-required="true">
+                <ui-select-match>
+                  <span ng-bind="$select.selected.name"></span>
+                </ui-select-match>
+                <ui-select-choices
+                  repeat="datasource in (datasources | filter: $select.search) track by datasource.id">
+                  <span ng-bind="datasource.name"></span>
+                </ui-select-choices>
+              </ui-select>
+            </div>
+            <div class="form-group" ng-if="item.output.datasource.type == 'kafka'">
+              <label>{{'ocsp_web_streams_manage_010' | translate}}*</label>
+              <input type="text" class="form-control" ng-model="item.output.topic" required>
+            </div>
+            <div class="form-group" ng-if="item.output.datasource.type == 'codis'">
+              <label>{{'ocsp_web_streams_manage_022' | translate}}*</label>
+              <input type="text" class="form-control" ng-model="item.output.codisKeyPrefix" required>
+            </div>
+            <div class="form-group">
+              <br ng-repeat="val in datasources">
             </div>
           </div>
         </div>

@@ -44,15 +44,19 @@ angular.module('ocspApp').directive('wizard',['$filter', function($filter){
       });
       wizardModal.on("validate", function(wizard){
         let flag = true;
-        wizard.el.find("div.popover.error-popover.fade.right.in").remove();
-        wizard.el.find("input.ng-invalid").each(function(){
+        wizard.el.find("span.redtip").remove();
+        wizard.el.find("input.ng-invalid:not(.tokenfield)").each(function(){
           $(this).addClass("ng-touched");
-          wizardModal.errorPopover($(this), $filter('translate')('ocsp_web_common_035'));
+          $(this).after(`
+            <span class="redtip">${$filter('translate')('ocsp_web_common_035')}</span>
+          `);
           flag = false;
         });
         wizard.el.find("div.ng-invalid").each(function(){
           $(this).addClass("ng-touched");
-          wizardModal.errorPopover($(this), $filter('translate')('ocsp_web_common_035'));
+          $(this).after(`
+            <span class="redtip">${$filter('translate')('ocsp_web_common_035')}</span>
+          `);
           flag = false;
         });
         return flag;
