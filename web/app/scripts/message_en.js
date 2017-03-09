@@ -107,6 +107,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_044':'Retrying',
     'ocsp_web_streams_manage_045':'Add input sources',
     'ocsp_web_streams_manage_046':'User fields',
+    'ocsp_web_streams_manage_047':'Available fields',
+    'ocsp_web_streams_manage_048':'Generate available fields',
 
     'ocsp_web_common_property_zookeeper_connect': 'Zookeeper address',
     'ocsp_web_common_property_zk': 'Zookeeper address',

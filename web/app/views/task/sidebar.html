@@ -28,18 +28,6 @@
       </ui-select>
     </div>
     <div class="form-group">
-      <label>Schema*</label>
-      <tokenfield ng-model="task.input.fields" required></tokenfield>
-    </div>
-    <div class="form-group">
-      <label>{{'ocsp_web_streams_manage_013' | translate}}</label>
-      <input type="text" class="form-control" ng-model="task.input.filter_expr">
-    </div>
-    <div class="form-group">
-      <label>{{'ocsp_web_streams_manage_014' | translate}}*</label>
-      <input type="text" class="form-control" ng-model="task.input.uniqueKey" required>
-    </div>
-    <div class="form-group">
       <button type="button" class="btn btn-primary" ng-click="add(task.input.inputs)">{{'ocsp_web_streams_manage_045' | translate}}</button>
       <uib-accordion>
         <div uib-accordion-group class="panel-default" ng-repeat="item in task.input.inputs" is-open="item.isOpen">
@@ -58,40 +46,48 @@
             </div>
             <div class="form-group">
               <label>{{'ocsp_web_streams_manage_011' | translate}}*</label>
-              <tokenfield ng-model="item.fields" required></tokenfield>
+              <tokenfield ng-model="item.fields"></tokenfield>
             </div>
             <div class="form-group">
               <label>{{'ocsp_web_streams_manage_012' | translate}}*</label>
               <input type="text" class="form-control" ng-model="item.delim" required>
             </div>
-            <div class="panel panel-oc">
-              <div class="panel-heading">
-                {{'ocsp_web_streams_manage_046' | translate}}
-              </div>
-              <div class="panel-body">
-                <div class="form-group">
-                  <table class="table table-hover">
-                    <thead>
-                    <tr>
-                      <th class="col-md-1"><button type="button" class="btn btn-success btn-circle" ng-click="add(item.userFields)"><i class="glyphicon glyphicon-plus"></i></button></th>
-                      <th class="col-md-3">{{'ocsp_web_common_011' | translate}}*</th>
-                      <th class="col-md-8">pvalue*</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr ng-repeat="userfield in item.userFields">
-                      <td><button type="button" class="btn btn-danger btn-circle" ng-click="remove(item.userFields, $index)"><i class="glyphicon glyphicon-remove"></i></button></td>
-                      <td><input type="text" class="form-control" ng-model="userfield.name" required></td>
-                      <td><input type="text" class="form-control" ng-model="userfield.value" required></td>
-                    </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+            <div class="form-group">
+              <table class="table table-hover">
+                <thead>
+                <tr>
+                  <th class="col-md-3">{{'ocsp_web_common_011' | translate}}*</th>
+                  <th class="col-md-8">pvalue*</th>
+                  <th class="col-md-1"><a ng-click="add(item.userFields)"><i class="glyphicon glyphicon-plus"></i></a></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="userfield in item.userFields">
+                  <td><input type="text" class="form-control" ng-model="userfield.name" required></td>
+                  <td><input type="text" class="form-control" ng-model="userfield.value" required></td>
+                  <td><a ng-click="remove(item.userFields, $index)"><i class="glyphicon glyphicon-remove"></i></a></td>
+                </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </uib-accordion>
+    </div>
+    <div class="form-group">
+      <label>{{'ocsp_web_streams_manage_047' | translate}}*</label>
+      <tokenfield ng-model="task.input.fields"></tokenfield>
+    </div>
+    <div class="form-group">
+      <label>{{'ocsp_web_streams_manage_013' | translate}}</label>
+      <input type="text" class="form-control" ng-model="task.input.filter_expr">
+    </div>
+    <div class="form-group">
+      <label>{{'ocsp_web_streams_manage_014' | translate}}*</label>
+      <input type="text" class="form-control" ng-model="task.input.uniqueKey" required>
+    </div>
+    <div class="form-group">
+      <button type="button" class="btn btn-primary" ng-click="generate(task.input, task.input.inputs)">{{'ocsp_web_streams_manage_048' | translate}}</button>
     </div>
   </div>
   <div class="wizard-card" data-cardname="ocsp_web_streams_manage_007">
@@ -151,7 +147,7 @@
                 </div>
                 <div class="form-group">
                   <label>{{'ocsp_web_streams_manage_018' | translate}}*</label>
-                  <tokenfield auto-complete-model="task.input.fields" labels="{{task.outputLabels}}" ng-model="item.select_expr" required></tokenfield>
+                  <tokenfield auto-complete-model="task.input.fields" labels="{{task.outputLabels}}" ng-model="item.select_expr"></tokenfield>
                 </div>
                 <div class="form-group">
                   <label>{{'ocsp_web_streams_manage_019' | translate}}*</label>

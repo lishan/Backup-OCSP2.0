@@ -4,7 +4,7 @@
  * For job management main page controller
  */
 angular.module('ocspApp')
-  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', 'usSpinnerService', 'loginService', '$interval', '$uibModal', '$filter', 'moment', function ($scope, $http, Notification, $q, usSpinnerService, loginService, $interval, $uibModal, $filter, moment) {
+  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', 'usSpinnerService', 'loginService', '$interval', '$uibModal', '$filter', 'moment', 'strService', function ($scope, $http, Notification, $q, usSpinnerService, loginService, $interval, $uibModal, $filter, moment, strService) {
     loginService.init('task');
     //i18n
     $scope.localLang = {
@@ -261,7 +261,7 @@ angular.module('ocspApp')
             datainterface.fields = prop.fields[0].pname;
           }
           for (let i = 1; i < prop.fields.length; i++) {
-            if(prop.fields[i].pname !== undefined && prop.fields[i].pname !== "") {
+            if(prop.fields[i].pname !== undefined && prop.fields[i].pname.trim() !== "") {
               datainterface.fields += "," + prop.fields[i].pname;
             }
           }
@@ -292,7 +292,7 @@ angular.module('ocspApp')
                 result.fields = prop.sources[i].fields[0].pname;
               }
               for (let j = 1; j < prop.sources[i].fields.length; j++) {
-                if(prop.sources[i].fields[j].pname !== undefined && prop.sources[i].fields[j].pname !== "") {
+                if(prop.sources[i].fields[j].pname !== undefined && prop.sources[i].fields[j].pname.trim() !== "") {
                   result.fields += "," + prop.sources[i].fields[j].pname;
                 }
               }
@@ -473,6 +473,50 @@ angular.module('ocspApp')
           Notification.error(err.data);
           usSpinnerService.stop('spinner');
         });
+    };
+
+    $scope.generate = function(inputs, array){
+      let str = "";
+      if(array !== undefined && array.length > 0) {
+        let result = new Set();
+        if(array[0].fields !== undefined && array[0].fields.trim() !== ""){
+          result = new Set(strService.split(array[0].fields));
+        }
+        if(array[0].userFields !== undefined && array[0].userFields.length > 0){
+          for(let i in array[0].userFields){
+            if(!result.has(array[0].userFields[i].name)){
+              result.add(array[0].userFields[i].name);
+            }
+          }
+        }
+        for (let i = 1 ; i < array.length; i++) {
+          let tmp = new Set();
+          if(array[i].fields !== undefined && array[i].fields.trim() !== ""){
+            let splits = strService.split(array[i].fields);
+            for(let j in splits){
+              if(result.has(splits[j])){
+                tmp.add(splits[j]);
+              }
+            }
+          }
+          if(array[i].userFields !== undefined && array[i].userFields.length > 0){
+            for(let j in array[i].userFields){
+              if(result.has(array[i].userFields[j].name)){
+                tmp.add(array[i].userFields[j].name);
+              }
+            }
+          }
+          result = tmp;
+        }
+        let resultArray = [...result];
+        if(resultArray.length > 0){
+          str = resultArray[0];
+          for(let i = 1 ; i < resultArray.length; i++){
+            str += "," + resultArray[i];
+          }
+        }
+      }
+      inputs.fields = str;
     };
 
     $scope.submitMethod = function(){

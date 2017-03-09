@@ -2,7 +2,7 @@
 /**
  * Wizard directive
  */
-angular.module('ocspApp').directive('tokenfield',[function() {
+angular.module('ocspApp').directive('tokenfield',['strService', function(strService) {
   return {
     restrict: 'E',
     templateUrl: 'views/directive/tokenfield.html',
@@ -13,12 +13,12 @@ angular.module('ocspApp').directive('tokenfield',[function() {
       autoCompleteModel: "="
     },
     link: function (scope, element, attrs) {
-      let _findLabelTips = function(array, labels){
+      let _findLabelTips = function(str, labels){
         let result = new Set();
-        if(array !== undefined && array.length > 0){
-          result = new Set(array.split(","));
+        if(str !== undefined && str.trim() !== ""){
+          result = new Set(strService.split(str));
         }
-        if(labels !== undefined && labels !== ""){
+        if(labels !== undefined && labels.trim() !== ""){
           labels = JSON.parse(labels);
           for(let i in labels){
             if(labels[i].properties !== undefined) {
@@ -33,14 +33,15 @@ angular.module('ocspApp').directive('tokenfield',[function() {
         }
         return [...result];
       };
-      scope.bRequired = attrs !== undefined && attrs.required === true ? true : false;
+      scope.bRequired = attrs !== undefined && attrs.required === 'true' ? true : false;
+      let _bDisabled = attrs !== undefined && attrs.disabled === 'true' ? true : false;
       let $e = element.find('input');
       let token = {};
       // Add tips
       if(scope.autoCompleteModel !== undefined) {
         token = $e.tokenfield({
           autocomplete: {
-            source: scope.autoCompleteModel.split(','),
+            source: strService.split(scope.autoCompleteModel),
             delay: 100
           },
           sortable: true,
@@ -68,6 +69,9 @@ angular.module('ocspApp').directive('tokenfield',[function() {
       scope.$watch('ngModel', function() {
         token.tokenfield('setTokens', scope.ngModel);
       });
+      if(_bDisabled) {
+        element.find("input.token-input").attr('disabled',true);
+      }
       token.on('tokenfield:sorttoken', function(){
         scope.$apply(function(){
           var fields = token.tokenfield('getTokens');
@@ -76,7 +80,7 @@ angular.module('ocspApp').directive('tokenfield',[function() {
             results = fields[0].value;
           }
           for (var i = 1; i < fields.length; i++) {
-            if(fields[i].value !== undefined && fields[i].value !== "") {
+            if(fields[i].value !== undefined && fields[i].value.trim() !== "") {
               results += "," + fields[i].value;
             }
           }

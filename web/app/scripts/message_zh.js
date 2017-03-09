@@ -107,6 +107,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_044':'正在重试',
     'ocsp_web_streams_manage_045':'添加输入源',
     'ocsp_web_streams_manage_046':'用户自定义字段',
+    'ocsp_web_streams_manage_047':'可用字段',
+    'ocsp_web_streams_manage_048':'生成可用字段',
 
     'ocsp_web_common_property_zookeeper_connect': 'zookeeper的连接地址',
     'ocsp_web_common_property_zk': 'zookeeper的连接地址',
