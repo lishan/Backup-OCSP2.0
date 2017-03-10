@@ -64,9 +64,43 @@ object Json4sUtils extends Logging {
 
     generateStructType(fieldsInfo.toArray)
   }
+  /**
+    * filter user filed in common schema
+    * @param jsonStr schema for struct data with fieldName and FieldDataType, in json string format
+    * @param udfFieldName fieldName for schema json string
+    * @return structType of sparkSQL for the schema
+    */
+  def jsonStrFilterUserStructType(jsonStr: String, udfFieldName: String, commonSchema: StructType): StructType = {
+
+    val commonFields = commonSchema.fieldNames.toSet
+    val rawFields = mutable.Set[String]()
+    val fieldsNameTypeArrMap =(jsonStr2ArrMap(jsonStr, udfFieldName))
+
+    var fieldsInfo = fieldsNameTypeArrMap.map(fieldsNameTypeMap => {
+      if (commonFields.contains(fieldsNameTypeMap("pname"))) {
+        var field_expr = ""
+        if (fieldsNameTypeMap.contains("pvalue")) field_expr = fieldsNameTypeMap("pvalue") + " as " + fieldsNameTypeMap("pname")
+        else field_expr = fieldsNameTypeMap("pname")
+        rawFields += fieldsNameTypeMap("pname")
+        Some((field_expr, "String", "true"))
+      } else None
+    }).collect{case Some(t) => (t)}.toBuffer
+
+    if (!commonFields.isEmpty) {
+
+      val moreInput = commonFields -- rawFields
+      for (field <- moreInput) {
+        fieldsInfo += Tuple3(field, "String", "true")
+      }
+    }
+    if (fieldsInfo.isEmpty) {
+      throw new Exception("No main fields !!!")
+    }
+
+    generateStructType(fieldsInfo.toArray)
+  }
 
   /**
-    *
     * @param jsonStr schema for struct data with fieldName and FieldDataType, in json string format
     * @param fieldName fieldName for sourceConfs json string
     * @return structType of sparkSQL for the schema
@@ -89,6 +123,7 @@ object Json4sUtils extends Logging {
       dataSchema.setRawSchema(jsonStr2BaseStructType(compact(obj), "fields"))
       dataSchema.setRawSchemaSize((jsonStr2ArrMap(compact(obj), "fields")).size)
       dataSchema.setAllItemsSchema(jsonStr2UserStructType(compact(obj), "userFields", commonSchema))
+      dataSchema.setUsedItemsSchema(jsonStrFilterUserStructType(compact(obj), "userFields", commonSchema))
 
       arraySchema += dataSchema
     }

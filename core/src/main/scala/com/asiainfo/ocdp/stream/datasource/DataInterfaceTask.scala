@@ -122,7 +122,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         val t1 = System.currentTimeMillis()
         println("1.kafka RDD 转换成 rowRDD 耗时 (millis):" + (t1 - t0))
         val schema = dataSchema.getRawSchema()
-        val commonSchema = dataSchema.getAllItemsSchema
+        val commonSchema = dataSchema.getUsedItemsSchema
         val rawFrame: DataFrame = sqlc.createDataFrame(rowRDD, schema)
         val t2 = System.currentTimeMillis
         println("2.rowRDD 转换成 DataFrame 耗时 (millis):" + (t2 - t1))
