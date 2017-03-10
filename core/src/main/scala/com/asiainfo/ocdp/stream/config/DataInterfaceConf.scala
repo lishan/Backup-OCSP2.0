@@ -11,6 +11,7 @@ class DataSchema extends Serializable {
   @BeanProperty var rawSchema: StructType = null
   @BeanProperty var rawSchemaSize: Int = 0
   @BeanProperty var allItemsSchema: StructType = null
+  @BeanProperty var usedItemsSchema: StructType = null
   @BeanProperty var topic : String = ""
 }
 
