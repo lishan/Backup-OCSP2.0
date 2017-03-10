@@ -1,9 +1,10 @@
 package com.asiainfo.ocdp.stream.datasource
 
 import com.asiainfo.ocdp.stream.common.KafkaCluster
+import com.asiainfo.ocdp.stream.constant.CommonConstant
 import com.asiainfo.ocdp.stream.common.KafkaCluster.LeaderOffset
 import com.asiainfo.ocdp.stream.config.DataInterfaceConf
-import com.asiainfo.ocdp.stream.constant.DataSourceConstant
+import com.asiainfo.ocdp.stream.constant.{CommonConstant, DataSourceConstant}
 import kafka.common.TopicAndPartition
 import kafka.message.MessageAndMetadata
 import kafka.serializer.StringDecoder
@@ -17,11 +18,34 @@ import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
   */
 class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf) extends StreamingSource(ssc, conf) {
 
-  val mTopicsSet = conf.get(DataSourceConstant.TOPIC_KEY).split(DataSourceConstant.DELIM).toSet
+  val mTopicsSet = {
+    if(CommonConstant.MulTopic) conf.getTopicSet()
+    else conf.get(DataSourceConstant.TOPIC_KEY).split(DataSourceConstant.DELIM).toSet
+  }
   val mKafkaParams = Map[String, String](DataSourceConstant.BROKER_LIST_KEY -> mDsConf.get(DataSourceConstant.BROKER_LIST_KEY)
             , "auto.offset.reset" -> "largest")
   val mGroupId = mDsConf.get(DataSourceConstant.GROUP_ID_KEY)
   val mKC = new KafkaCluster(mKafkaParams)
+
+  final def createStreamMulData(): DStream[(String, String)] = {
+
+    val partitionsE = mKC.getPartitions(mTopicsSet)
+    logInfo("Init Direct Kafka Stream : brokers->" + mDsConf.get(DataSourceConstant.BROKER_LIST_KEY)
+      + "; topic->" + mTopicsSet + " ! " + "group.id->" + mGroupId)
+
+    if (partitionsE.isLeft)
+      throw new Exception(s"get kafka partition failed: ${partitionsE.left.get}")
+    val partitions = partitionsE.right.get
+
+    val consumerOffsets = getFromOffsets(mKC, mKafkaParams, mTopicsSet)
+
+    consumerOffsets.foreach{ case (tp, lo) =>
+      logInfo("using offset : " + lo)
+    }
+
+    KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder, (String, String)](
+      mSSC, mKafkaParams, consumerOffsets, (m: MessageAndMetadata[String, String]) => (m.topic, m.message()))
+  }
 
   final def createStream(): DStream[String] = {
 
@@ -59,6 +83,7 @@ class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf) extends Stream
     KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder, String](
       mSSC, mKafkaParams, consumerOffsets, (m: MessageAndMetadata[String, String]) => m.message())
   }
+
 
   def TestOffsets(
       kc: KafkaCluster,

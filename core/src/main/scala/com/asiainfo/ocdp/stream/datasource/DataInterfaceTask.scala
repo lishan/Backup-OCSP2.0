@@ -4,9 +4,9 @@ import java.text.SimpleDateFormat
 import java.util.NoSuchElementException
 import java.util.concurrent._
 
-import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, MainFrameConf, DataSchema, TaskConf}
+import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, DataSchema, MainFrameConf, TaskConf}
 import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, EventCycleLife, StreamingCache}
-import com.asiainfo.ocdp.stream.constant.{DataSourceConstant, LabelConstant}
+import com.asiainfo.ocdp.stream.constant.{CommonConstant, DataSourceConstant, LabelConstant}
 import com.asiainfo.ocdp.stream.event.Event
 import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.service.DataInterfaceServer
@@ -21,6 +21,7 @@ import org.apache.spark.{Accumulator, SparkContext}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{immutable, mutable}
+import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -40,17 +41,34 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
   // 原始信令字段个数
   //  val baseItemSize = conf.getBaseItemsSize
 
-  protected def transform(source: String, dataSchema: DataSchema , conf: DataInterfaceConf, totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): Option[Row] = {
+  protected def transform[T: ClassTag](input: T, dataSchema: DataSchema,
+          totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): Option[Row] = {
+
     val delim = dataSchema.getDelim
+    var topic = ""
+    val source = {
+      if (CommonConstant.MulTopic) {
+        val tup = input.asInstanceOf[Tuple2[String,String]]
+        topic = tup._1
+        tup._2
+      } else {
+        input.asInstanceOf[String]
+      }
+    }
     val inputArr = source.split(delim, -1)
 
 		totalRecordsCounter.add(1)
 
-    if (inputArr.size != dataSchema.getRawSchemaSize) {
-      None
-    } else {
+    val valid = {
+      if (CommonConstant.MulTopic) topic == dataSchema.getTopic && inputArr.size == dataSchema.getRawSchemaSize
+      else inputArr.size == dataSchema.getRawSchemaSize
+    }
+
+    if (valid) {
       reservedRecordsCounter.add(1)
       Some(Row.fromSeq(inputArr))
+    } else {
+      None
     }
   }
 
@@ -87,6 +105,49 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     }
   }
 
+  private def toDataFrame[R: ClassTag](rdd: RDD[R], sqlc: SQLContext, totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): DataFrame = {
+
+    val t0 = System.currentTimeMillis()
+    var mixDF : DataFrame = null
+    val broadDiConf = BroadcastManager.getBroadDiConf()
+    val dataSchemas = broadDiConf.value.getDataSchemas
+
+    for (dataSchema <- dataSchemas) {
+
+      val rowRDD = rdd.map( input => {
+        transform(input, dataSchema, totalRecordsCounter, reservedRecordsCounter)
+      }).collect { case Some(row) => row }
+
+      if (rowRDD.partitions.size > 0) {
+        val t1 = System.currentTimeMillis()
+        println("1.kafka RDD 转换成 rowRDD 耗时 (millis):" + (t1 - t0))
+        val schema = dataSchema.getRawSchema()
+        val commonSchema = dataSchema.getAllItemsSchema
+        val rawFrame: DataFrame = sqlc.createDataFrame(rowRDD, schema)
+        val t2 = System.currentTimeMillis
+        println("2.rowRDD 转换成 DataFrame 耗时 (millis):" + (t2 - t1))
+
+        val filter_expr = conf.get("filter_expr")
+        val tDF =
+          if (filter_expr != null && filter_expr.trim != "")
+            rawFrame.selectExpr(commonSchema.fieldNames: _*).filter(filter_expr)
+          else
+            rawFrame.selectExpr(commonSchema.fieldNames: _*)
+
+        val t3 = System.currentTimeMillis
+        println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
+
+        if (null == mixDF)
+          mixDF = tDF
+        else
+          mixDF = mixDF.unionAll(tDF)
+
+      } else
+        println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
+    }
+    mixDF
+  }
+
   final def process(ssc: StreamingContext) = {
 
     // check the config first
@@ -98,7 +159,10 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
     //1 根据输入数据接口配置，生成数据流 DStream
     val dataSource = StreamingSourceFactory.createDataSource(ssc, conf)
-    val inputStream = dataSource.createStream()
+    val inputStream = {
+      if (CommonConstant.MulTopic) dataSource.createStreamMulData()
+      else dataSource.createStream()
+    }
 
     //1.2 根据输入数据接口配置，生成构造 sparkSQL DataFrame 的 structType
     // 全量字段: baseItems + udfItems
@@ -116,48 +180,13 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
     //2 流数据处理
     inputStream.foreachRDD(rdd => {
-      val t0 = System.currentTimeMillis()
       //2.1 流数据转换
       val broadDiConf = BroadcastManager.getBroadDiConf()
       val dataSchemas = broadDiConf.value.getDataSchemas
-
-      var mixDF : DataFrame = null
       val recover_mode = DataSourceConstant.AT_MOST_ONCE
 
-      for (dataSchema <- dataSchemas) {
-
-        val rowRDD = rdd.map(inputArr => {
-          val diConf = broadDiConf.value
-          transform(inputArr, dataSchema, diConf, totalRecordsCounter, reservedRecordsCounter)
-        }).collect { case Some(row) => row }
-
-        if (rowRDD.partitions.size > 0) {
-          val t1 = System.currentTimeMillis()
-          println("1.kafka RDD 转换成 rowRDD 耗时 (millis):" + (t1 - t0))
-          val schema = dataSchema.getRawSchema()
-          val commonSchema = dataSchema.getAllItemsSchema
-          val rawFrame: DataFrame = sqlc.createDataFrame(rowRDD, schema)
-          val t2 = System.currentTimeMillis
-          println("2.rowRDD 转换成 DataFrame 耗时 (millis):" + (t2 - t1))
-
-          val filter_expr = conf.get("filter_expr")
-          val tDF =
-            if (filter_expr != null && filter_expr.trim != "")
-              rawFrame.selectExpr(commonSchema.fieldNames: _*).filter(filter_expr)
-            else
-              rawFrame.selectExpr(commonSchema.fieldNames: _*)
-
-          val t3 = System.currentTimeMillis
-          println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
-
-          if (null == mixDF)
-            mixDF = tDF
-          else
-            mixDF = mixDF.unionAll(tDF)
-
-        } else
-          println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
-      }
+      //2.1 流数据转换
+      val mixDF = toDataFrame(rdd, sqlc, totalRecordsCounter, reservedRecordsCounter)
 
       if (null != mixDF) {
 

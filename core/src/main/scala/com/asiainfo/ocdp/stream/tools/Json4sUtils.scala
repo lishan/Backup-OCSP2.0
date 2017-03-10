@@ -80,10 +80,12 @@ object Json4sUtils extends Logging {
       JObject(obj) <- objList
       JField("pname", JString(name)) <- obj
       JField("delim", JString(delim)) <- obj
+      JField("topic", JString(topic)) <- obj
     } {
       val dataSchema = new DataSchema
       dataSchema.setName(name.toString)
       dataSchema.setDelim(delim.toString)
+      dataSchema.setTopic(topic.toString)
       dataSchema.setRawSchema(jsonStr2BaseStructType(compact(obj), "fields"))
       dataSchema.setRawSchemaSize((jsonStr2ArrMap(compact(obj), "fields")).size)
       dataSchema.setAllItemsSchema(jsonStr2UserStructType(compact(obj), "userFields", commonSchema))

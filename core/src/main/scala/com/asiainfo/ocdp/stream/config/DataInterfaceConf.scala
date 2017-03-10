@@ -3,7 +3,6 @@ package com.asiainfo.ocdp.stream.config
 import org.apache.spark.sql.types.StructType
 
 import scala.beans.BeanProperty
-import scala.collection.mutable.ArrayBuffer
 
 class DataSchema extends Serializable {
   @BeanProperty var name: String = ""
@@ -12,16 +11,7 @@ class DataSchema extends Serializable {
   @BeanProperty var rawSchema: StructType = null
   @BeanProperty var rawSchemaSize: Int = 0
   @BeanProperty var allItemsSchema: StructType = null
-}
-
-class DataSchemas extends Serializable {
-  /*
-  override def toString() = {
-    var str = ""
-    confs.foreach(str += _.delim + ",")
-    str
-  }
-  */
+  @BeanProperty var topic : String = ""
 }
 
 /**
@@ -40,4 +30,8 @@ class DataInterfaceConf extends BaseConf {
   @BeanProperty var commonSchema: StructType = null
   @BeanProperty var dataSchemas: Array[DataSchema] = null
   @BeanProperty var interval: Int = 1
+
+  def getTopicSet(): Set[String] = {
+    dataSchemas.map(dataSchema => dataSchema.getTopic).toSet
+  }
 }

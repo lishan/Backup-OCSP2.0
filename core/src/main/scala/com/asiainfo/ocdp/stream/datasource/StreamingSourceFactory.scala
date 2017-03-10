@@ -7,6 +7,8 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.kafka.HasOffsetRanges
 
+import scala.reflect.ClassTag
+
 /**
   * Created by rainday on 2/15/17.
   */
@@ -22,7 +24,7 @@ object StreamingSourceFactory extends Logging {
     }
   }
 
-  def updateDataSource(conf: DataInterfaceConf, rdd: RDD[String]) : Boolean = {
+  def updateDataSource[R: ClassTag](conf: DataInterfaceConf, rdd: RDD[R]) : Boolean = {
     conf.getDsConf.getDsType match  {
       case "kafka" => updateKafkaSource(conf, rdd)
       case "hdfs" => true
@@ -31,7 +33,7 @@ object StreamingSourceFactory extends Logging {
     }
   }
 
-  private def updateKafkaSource(conf: DataInterfaceConf, rdd: RDD[String]) : Boolean = {
+  private def updateKafkaSource[R: ClassTag](conf: DataInterfaceConf, rdd: RDD[R]) : Boolean = {
 
     val offsetList = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
