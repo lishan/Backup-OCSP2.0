@@ -3,7 +3,7 @@ package com.asiainfo.ocdp.stream.tools
 import java.util.{Properties, Random}
 
 import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
-import org.apache.commons.lang3._
+import org.apache.commons.lang3.{RandomUtils, _}
 
 /**
   * run the producer as
@@ -93,7 +93,7 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
           msg.append(separator)
           msg.append("00000000000")
           msg.append(separator)
-          msg.append("1")
+          msg.append(RandomUtils.nextInt(1, 6))
 
           if (is_long) {
             msg.append(separator)
@@ -102,7 +102,7 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
 
           val flag = RandomUtils.nextInt(1, 100)
 
-          if(flag > 80){
+          if(flag > 90){
             msg.append(separator)
             msg.append("redundancy")
             msg.append(separator)
@@ -110,6 +110,11 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
 
           //println(msg.toString())
           //send the generated message to broker
+
+          if(flag > 80 && rand.nextBoolean()){
+            println(msg)
+          }
+
           sendMessage(msg.toString(), long_imsi)
           msgNo = msgNo + 1
         //}

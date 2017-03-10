@@ -36,7 +36,7 @@ class Event extends Serializable with Logging{
     if (conf.get("ext_fields", null) != null)
       mix_sel_expr = mix_sel_expr ++ conf.get("ext_fields", null).split(",")
 
-    val filter_expr = conf.filte_expr;
+    val filter_expr = conf.filte_expr
 
     try {
       // 根据业务条件过滤，并查询出输出字段
@@ -49,7 +49,11 @@ class Event extends Serializable with Logging{
       else eventDF.toJSON
       outputEvent(jsonRDD.rdd, uniqKeys)
     } catch {
-      case e: AnalysisException => logError(s"Make event [${conf.getId}] failed", e)
+      case e: AnalysisException => {
+        logInfo(s"mix_sel_expr is ${mix_sel_expr.toList}")
+        logInfo(s"The current schema is ${df.schema.toList}")
+        logError(s"Make event [${conf.getId}] failed", e)
+      }
     }
 
   }
