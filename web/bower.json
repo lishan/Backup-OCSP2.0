@@ -28,9 +28,9 @@
     "angular-hotkeys": "chieffancypants/angular-hotkeys#^1.7.0",
     "bootstrap-ui-datetime-picker": "^2.5.4",
     "angular-moment": "^1.0.1",
-    "highcharts": "^5.0.7",
     "bootstrap-tokenfield": "bootstrap-tokenfield-ocsp#^0.12.2",
-    "bootstrap-application-wizard": "bootstrap-application-wizard-ocsp#^1.0.3"
+    "bootstrap-application-wizard": "bootstrap-application-wizard-ocsp#^1.0.3",
+    "angular-chart.js": "^1.1.1"
   },
   "devDependencies": {
     "angular-mocks": "1.4.5"

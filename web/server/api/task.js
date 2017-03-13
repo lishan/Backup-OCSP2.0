@@ -111,7 +111,7 @@ function dealDataInterfaceProperties(dataInterface, dsid, type) {
     for (let i in splits) {
       if (splits[i] !== undefined && splits[i] !== "") {
         properties[name].push({
-          "pname": splits[i],
+          "pname": splits[i].trim(),
           "ptype": "String"
         });
       }

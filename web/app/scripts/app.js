@@ -30,7 +30,8 @@ angular
     'toggle-switch',
     'cfp.hotkeys',
     'ui.bootstrap.datetimepicker',
-    'angularMoment'
+    'angularMoment',
+    'chart.js'
   ])
   .config(function ($routeProvider) {
     $routeProvider
