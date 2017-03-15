@@ -103,35 +103,33 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
   private def toDataFrame[R: ClassTag](rdd: RDD[R], sqlc: SQLContext, totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): DataFrame = {
 
-    val t0 = System.currentTimeMillis()
     var mixDF : DataFrame = null
     val broadDiConf = BroadcastManager.getBroadDiConf()
     val dataSchemas = broadDiConf.value.getDataSchemas
 
     for (dataSchema <- dataSchemas) {
 
-      val rowRDD = rdd.map( input => {
-        transform(input, dataSchema, totalRecordsCounter, reservedRecordsCounter)
-      }).collect { case Some(row) => row }
+      val rowRDD = withUptime("1.kafka RDD 转换成 rowRDD"){
+        rdd.map( input => {
+          transform(input, dataSchema, totalRecordsCounter, reservedRecordsCounter)
+        }).collect { case Some(row) => row }
+      }
 
       if (rowRDD.partitions.size > 0) {
-        val t1 = System.currentTimeMillis()
-        println("1.kafka RDD 转换成 rowRDD 耗时 (millis):" + (t1 - t0))
+
         val schema = dataSchema.getRawSchema()
         val commonSchema = dataSchema.getUsedItemsSchema
-        val rawFrame: DataFrame = sqlc.createDataFrame(rowRDD, schema)
-        val t2 = System.currentTimeMillis
-        println("2.rowRDD 转换成 DataFrame 耗时 (millis):" + (t2 - t1))
+        val rawFrame: DataFrame = withUptime("2.rowRDD 转换成 DataFrame"){
+          sqlc.createDataFrame(rowRDD, schema)
+        }
 
         val filter_expr = conf.get("filter_expr")
-        val tDF =
+        val tDF = withUptime("3.DataFrame 最初过滤不规则数据"){
           if (filter_expr != null && filter_expr.trim != "")
             rawFrame.selectExpr(commonSchema.fieldNames: _*).filter(filter_expr)
           else
             rawFrame.selectExpr(commonSchema.fieldNames: _*)
-
-        val t3 = System.currentTimeMillis
-        println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
+        }
 
         if (null == mixDF)
           mixDF = tDF
@@ -182,9 +180,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       val mixDF = toDataFrame(rdd, sqlc, totalRecordsCounter, reservedRecordsCounter)
 
       if (null != mixDF) {
-
-        val tUnion = System.currentTimeMillis()
-
         /**
           * update offset BEFORE output the result for AT MOST ONCE
           */
@@ -192,36 +187,30 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
           StreamingSourceFactory.updateDataSource(broadDiConf.value, rdd)
 
         if (labels.size > 0) {
-          val labelRDD = LabelManager.execLabels(mixDF)
-          val t4 = System.currentTimeMillis
-          println("4.dataframe 转成rdd打标签耗时(millis):" + (t4 - tUnion))
+          val labelRDD = withUptime("4.dataframe 转成rdd打标"){
+            LabelManager.execLabels(mixDF)
+          }
 
           labelRDD.persist()
           // read.json为spark sql 动作类提交job
-          val enhancedDF = sqlc.read.json(labelRDD)
+          val enhancedDF = withUptime("5.RDD 转换成 DataFrame"){
+            sqlc.read.json(labelRDD)
+          }
 
-          val t5 = System.currentTimeMillis
-          println("5.RDD 转换成 DataFrame 耗时(millis):" + (t5 - t4))
-
-          makeEvents(enhancedDF, conf.get("uniqKeys"))
+          withUptime("6.所有业务营销"){
+            makeEvents(enhancedDF, conf.get("uniqKeys"))
+          }
 
           labelRDD.unpersist()
-
-          println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t5))
         }
         else {
-
-          val t3 = System.currentTimeMillis
-
           mixDF.persist()
           mixDF.count()
-          val t4 = System.currentTimeMillis
-          println("4.mixDF count耗时(millis):" + (t4 - t3))
 
-          makeEvents(mixDF, conf.get("uniqKeys"))
+          withUptime("4.所有业务营销"){
+            makeEvents(mixDF, conf.get("uniqKeys"))
+          }
           mixDF.unpersist()
-          println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t4))
-
         }
 
         val droppedCount = totalRecordsCounter.value/dataSchemas.length - reservedRecordsCounter.value
@@ -265,6 +254,13 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     threadPool.shutdown()
   }
 
+  def withUptime[U](description: String)(fun: => U): U ={
+    val start = System.currentTimeMillis
+    val result = fun
+    val end = System.currentTimeMillis
+    println(s"${description}耗时(millis): ${end-start}")
+    result
+  }
 }
 
 class BuildEvent(event: Event, df: DataFrame, uniqKeys: String) extends Callable[String] {
