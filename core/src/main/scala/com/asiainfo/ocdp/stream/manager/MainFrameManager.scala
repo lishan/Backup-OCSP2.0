@@ -160,7 +160,9 @@ object MainFrameManager extends Logging {
     })
   }
 
-  def makeCMD(conf: TaskConf): (String, String) = {
+  case class TaskCommand(taskId: String, cmd: String)
+
+  def makeCMD(conf: TaskConf): TaskCommand = {
     val owner = conf.owner
     MainFrameConf.flushSystemProps
     val spark_home = MainFrameConf.systemProps.get("SPARK_HOME")
@@ -224,7 +226,7 @@ object MainFrameManager extends Logging {
 			cmd += streamClass + master + deploy_mode + executor_memory + num_executors + queue + jars + " " + appJars + " " + tid
     }
     logInfo("Executor submit shell : " + cmd)
-    (tid, cmd)
+    TaskCommand(tid, cmd)
   }
 
   private def checkRecordsCorrectness(taskId: String) = {
