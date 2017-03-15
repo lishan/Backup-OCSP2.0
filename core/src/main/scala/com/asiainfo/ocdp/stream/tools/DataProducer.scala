@@ -36,18 +36,15 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
 
   def run(): Unit = {
     val rand = new Random()
-    var msgNo = 0
+    var msgNo: Long = 0L
     val imsi = 1019400
     while (true) {
-      //val msgNum = rand.nextInt(MSGNUM_MAX)
+      val beginTime = System.currentTimeMillis()
+      val timeStr = DateFormatUtils.dateMs2Str(beginTime, "yyyyMMddHHmmssSSS")
+      val msg = new StringBuilder(timeStr)
+
       try {
-        //for (i <- 0 to msgNum) {
 
-          //begin time & end time
-
-          val beginTime = System.currentTimeMillis()
-          val timeStr = DateFormatUtils.dateMs2Str(beginTime, "yyyyMMddHHmmssSSS")
-          val msg = new StringBuilder(timeStr)
           msg.append(separator)
           val endTime = beginTime + 1000 * 60
           val endtimeStr = DateFormatUtils.dateMs2Str(endTime, "yyyyMMddHHmmssSSS")
@@ -102,31 +99,28 @@ class DataProducer(brokers: String, topic: String) extends Runnable {
 
           val flag = RandomUtils.nextInt(1, 100)
 
-          if(flag > 90){
+          if(flag > RandomUtils.nextInt(90, 100)){
             msg.append(separator)
             msg.append("redundancy")
             msg.append(separator)
           }
 
-          //println(msg.toString())
-          //send the generated message to broker
-
-          if(flag > 80 && rand.nextBoolean()){
-            println(msg)
-          }
 
           sendMessage(msg.toString(), long_imsi)
           msgNo = msgNo + 1
-        //}
       } catch {
         case e: Exception => println(e)
       }
       try {
         //sleep for 10 seconds after send a micro batch of message
 
-        if(msgNo%10000 == 0){
+        val num = RandomUtils.nextInt(10000, 90000)
+
+        if(msgNo%num == 0){
           println(s"${msgNo} records have been sent...")
-          Thread.sleep(10000)
+          println(msg)
+          val sleepTime = RandomUtils.nextInt(10000, 30000)
+          Thread.sleep(sleepTime)
         }
       } catch {
         case e: Exception => println(e)
