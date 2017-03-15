@@ -5,7 +5,6 @@ import java.io.File
 import akka.actor.Actor
 import com.asiainfo.ocdp.stream.common.Logging
 import com.asiainfo.ocdp.stream.constant.CommonConstant
-import com.asiainfo.ocdp.stream.manager.MainFrameManager.TaskCommand
 
 import scala.sys.process._
 

@@ -160,8 +160,6 @@ object MainFrameManager extends Logging {
     })
   }
 
-  case class TaskCommand(taskId: String, cmd: String)
-
   def makeCMD(conf: TaskConf): TaskCommand = {
     val owner = conf.owner
     MainFrameConf.flushSystemProps
@@ -244,3 +242,5 @@ object MainFrameManager extends Logging {
     }
   }
 }
+
+case class TaskCommand(taskId: String, cmd: String)
