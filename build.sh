@@ -3,9 +3,9 @@
 set -e
 
 HOME_PATH=$(cd `dirname $0`; pwd)
-version=2.0.1
 
 cd ${HOME_PATH}
+version=`awk '/<ocsp.version>[^<]+<\/ocsp.version>/{gsub(/<ocsp.version>|<\/ocsp.version>/,"",$1);print $1;exit;}' pom.xml`
 spark_version=$1
 if [[ -z ${spark_version} ]];then
     echo "Build based on spark 1.6"
