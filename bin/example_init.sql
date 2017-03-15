@@ -154,7 +154,8 @@ CREATE TABLE `STREAM_LABEL_DEFINITION` (
   `name` varchar(30) NOT NULL,
   `class_name` varchar(100) NOT NULL,
   `properties` text,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

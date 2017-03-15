@@ -1,6 +1,6 @@
 "use strict";
 var express = require('express');
-var router = express.Router();
+let router = express.Router();
 var multer  = require('multer');
 var fs = require('fs');
 var unzip = require('unzip2');
@@ -15,7 +15,7 @@ var trans = config[config.trans || 'zh'];
 var storage = multer.diskStorage({
   destination: './uploads/',
   filename: function (req, file, cb) {
-    cb(null, file.originalname);
+    cb(null, "tmpOran.jar");
   }
 });
 var upload = multer({ storage: storage });
@@ -58,33 +58,71 @@ router.get('/diid/:id', function(req, res){
 });
 
 router.post('/upload', upload.single('file'), function(req, res){
-  var promises = [];
-  if(!req.file.originalname.endsWith('.jar')){
-    promises.push(sequelize.Promise.reject("Upload file type wrong"));
-  }
-  fs.createReadStream('./uploads/' + req.file.originalname)
-    .pipe(unzip.Parse())
-    .once('error', function () {
-      promises.push(sequelize.Promise.reject("Cannot parse file " + req.file.originalname));
-    })
-    .on('entry', function (entry) {
-      var fileName = entry.path;
-      if (fileName.endsWith('.class') && fileName.indexOf("$") === -1) {
-        fileName = fileName.replace(/\.class/g, "");
-        fileName = fileName.replace(/\//g, "\.");
-        var index = fileName.lastIndexOf(".");
-        promises.push(Label.findOrCreate({
-          where: {name: fileName.substr(index + 1)},
-          defaults: {class_name: fileName}
-        }));
-      }
+  let result = [];
+  let promise = new sequelize.Promise((resolve, reject) => {
+    fs.createReadStream('./uploads/tmpOran.jar')
+      .pipe(unzip.Parse())
+      .once('error', function () {
+        reject("Cannot parse file " + req.file.originalname);
+      })
+      .on('entry', function (entry) {
+        let filename = entry.path;
+        let filetype = entry.type;
+        if (filetype === 'File' && filename.endsWith('.class') && !filename.includes("$")) {
+          filename = filename.replace(/\.class/g, "");
+          filename = filename.replace(/\//g, "\.");
+          let index = filename.lastIndexOf(".");
+          if(index > 0) {
+            result.push({
+              name: filename.substr(index + 1),
+              classname: filename
+            });
+          }else{
+            reject("Filename error " + filename);
+          }
+        }
+        entry.autodrain();
+      })
+      .on('close', ()=> {
+        resolve();
+      });
+  });
+  promise.then(() => {
+    if(result.length > 0){
+      sequelize.transaction(function(t) {
+        let promises = [];
+        for(let i in result){
+          promises.push(Label.create({
+            name: result[i].name,
+            class_name: result[i].classname
+          },{
+            transaction: t
+          }));
+        }
+        return sequelize.Promise.all(promises);
+      }).then(() => {
+        fs.rename('./uploads/tmpOran.jar','./uploads/' + req.file.originalname, (err) => {
+          if(err){
+            fs.unlink('./uploads/tmpOran.jar', () => {
+              res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
+            });
+          }
+          res.send({success: true});
+        });
+      }).catch(() => {
+        fs.unlink('./uploads/tmpOran.jar', () => {
+          res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
+        });
+      });
+    }else{
+      fs.unlink('./uploads/tmpOran.jar', () => {
+        res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
+      });
+    }
+  },() => {
+    fs.unlink('./uploads/tmpOran.jar', () => {
+      res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
     });
-  sequelize.Promise.all(promises).then(function(){
-    res.send({success: true});
-  }, function(){
-    res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
-  }).catch(function(){
-    res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
   });
 });
 
