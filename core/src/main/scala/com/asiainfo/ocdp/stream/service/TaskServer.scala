@@ -74,7 +74,6 @@ class TaskServer extends Logging {
         */
     val date=new SimpleDateFormat("yyyy-MM-dd H:mm:ss")
     val curTime = date.format(new Date())
-    println("time: " + curTime)
       s"insert into ${TableInfoConstant.ExceptionTableName} (taskID,appID,exception_type,exception_info,level,begin_time,end_time) " +
         s"VALUES ('${id}','${appID}',${exceptionType}, '${exceptionInfo}', ${ExceptionConstant.EXCEPTION_ERROR}, '${curTime}', '${curTime}');"
   }

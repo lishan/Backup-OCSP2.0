@@ -90,7 +90,7 @@ object MainFrameManager extends Logging {
             }
           } else {
             // create the task actor to submit a new app and shutdown itself
-            val task = system.actorOf(Props[Task], name = "task_" + taskId)
+            val task = system.actorOf(Props[Task], name = "task_" + taskId + "time_" +System.currentTimeMillis())
             task ! makeCMD(taskConf)
             pre_start_tasks.put(taskId, System.currentTimeMillis())
             if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_RECORDS_CORRECTNESS_ENABLE, false)){

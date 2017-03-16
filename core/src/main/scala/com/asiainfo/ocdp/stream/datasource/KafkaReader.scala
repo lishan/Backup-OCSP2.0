@@ -76,10 +76,6 @@ class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf) extends Stream
     */
     val consumerOffsets = getFromOffsets(mKC, mKafkaParams, mTopicsSet)
 
-    consumerOffsets.foreach{ case (tp, lo) =>
-      logInfo("using offset : " + lo)
-    }
-
     KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder, String](
       mSSC, mKafkaParams, consumerOffsets, (m: MessageAndMetadata[String, String]) => m.message())
   }

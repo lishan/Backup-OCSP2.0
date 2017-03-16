@@ -31,8 +31,6 @@ object StreamApp extends Logging {
     sparkConf.setAppName("OCDP_Streaming")
 
     val sc = new SparkContext(sparkConf)
-    val listener = new AppStatusUpdateListener(taskConf.getId)
-    sc.addSparkListener(listener)
 
     //2 启动 streamingContext
     val ssc = new StreamingContext(sc, Seconds(taskConf.getReceive_interval))
