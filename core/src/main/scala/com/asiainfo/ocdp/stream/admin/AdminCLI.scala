@@ -36,15 +36,15 @@ object AdminCLI {
         val labelName = jname.replace("/", ".").substring(0, jname.length - suffix.length)
         val className = labelName.substring(labelName.lastIndexOf(".")).replace(".","")
 
-        val querysql = s"select * from ${TableInfoConstant.LabelDefinitionTableName} where name='${className}' or class_name='${labelName}'"
+        val querysql = s"select * from ${TableInfoConstant.LabelDefinitionTableName} where name='${className}'"
         val res = JDBCUtil.query(querysql)
 
         if (res.isEmpty) {
           val sql = s"insert into ${TableInfoConstant.LabelDefinitionTableName}(name, class_name) values('${className}','${labelName}')"
           JDBCUtil.execute(sql)
           println("load label " + labelName + "successfully")
-        } else {
-          println("ERROR: label already exist! class name: " + labelName)
+        } else if (className.compareTo(res.head.get("class_name").get) == 0 ) {
+          println("ERROR: label already exist! class name: " + className + "lablename: " + labelName)
           sys.exit(-1)
         }
       }
