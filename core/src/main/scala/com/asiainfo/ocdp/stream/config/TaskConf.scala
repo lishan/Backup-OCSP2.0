@@ -7,6 +7,7 @@ import scala.beans.BeanProperty
  */
 class TaskConf() extends BaseConf{
   @BeanProperty var id: String = ""
+  @BeanProperty var appID: String = ""
   @BeanProperty var task_type: Int = 0
   @BeanProperty var name: String = ""
   @BeanProperty var receive_interval: Int = 0

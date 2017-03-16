@@ -1,7 +1,7 @@
 package com.asiainfo.ocdp.stream.manager
 
 import com.asiainfo.ocdp.stream.common.{Logging, SscManager}
-import com.asiainfo.ocdp.stream.constant.TaskConstant
+import com.asiainfo.ocdp.stream.constant.{ExceptionConstant, TaskConstant}
 import com.asiainfo.ocdp.stream.service.TaskServer
 import org.apache.spark.streaming.{Seconds, StreamingContext, StreamingContextState}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -47,7 +47,7 @@ object StreamApp extends Logging {
       ssc.start()
       //4 update task status in db
       if (StreamingContextState.ACTIVE == ssc.getState()) {
-        taskServer.startTask(taskConf.getId)
+        taskServer.startTask(taskConf.getId, sc.applicationId)
         logInfo("Start task " + taskConf.getId + " sucess !")
       }
       ssc.awaitTermination()
@@ -58,6 +58,8 @@ object StreamApp extends Logging {
           logInfo("task : " + taskConf.getId + " got exception, task will retry")
           taskServer.RetryTask(taskConf.getId)
         }
+        val exception_code = ExceptionConstant.ERR_JOB_EXCEPTION
+        taskServer.insertExcepiton(taskId, taskConf.appID, exception_code, ExceptionConstant.getExceptionInfo(exception_code))
       }
     } finally {
 //    ssc.awaitTermination()

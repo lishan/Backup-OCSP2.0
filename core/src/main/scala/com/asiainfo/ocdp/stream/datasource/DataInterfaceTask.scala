@@ -9,7 +9,7 @@ import com.asiainfo.ocdp.stream.constant.{CommonConstant, DataSourceConstant}
 import com.asiainfo.ocdp.stream.event.Event
 import com.asiainfo.ocdp.stream.label.LabelManager
 import com.asiainfo.ocdp.stream.manager.StreamTask
-import com.asiainfo.ocdp.stream.service.DataInterfaceServer
+import com.asiainfo.ocdp.stream.service.{DataInterfaceServer, TaskServer}
 import com.asiainfo.ocdp.stream.tools._
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
@@ -26,6 +26,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
   val taskDiid = taskConf.getDiid
   val interval = taskConf.getReceive_interval
+  val taskID = taskConf.getId
 
   val dataInterfaceService = new DataInterfaceServer
 
@@ -71,12 +72,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
      * try to get the conf we needed
      * */
 
-    val topic = conf.get(DataSourceConstant.TOPIC_KEY)
-
-    if (StringUtils.isEmpty(topic)) {
-      throw new Exception("kafka topic is not set!!!")
-    }
-
     val uniqKeys = conf.get("uniqKeys")
 
     if (StringUtils.isEmpty(uniqKeys))
@@ -88,7 +83,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         dsconf.get(DataSourceConstant.GROUP_ID_KEY)
       } catch {
         case ex: NoSuchElementException => {
-          logError(s"Can not find ${DataSourceConstant.GROUP_ID_KEY}", ex)
+          logWarning(s"Can not find ${DataSourceConstant.GROUP_ID_KEY}")
           StringUtils.EMPTY
         }
       }
@@ -169,12 +164,15 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     val totalRecordsCounter = TotalRecordsCounter.getInstance(ssc.sparkContext)
     val reservedRecordsCounter = ReservedRecordsCounter.getInstance(ssc.sparkContext)
 
+    val taskServer = new TaskServer
     //2 流数据处理
     inputStream.foreachRDD(rdd => {
       //2.1 流数据转换
       val broadDiConf = BroadcastManager.getBroadDiConf()
       val dataSchemas = broadDiConf.value.getDataSchemas
       val recover_mode = DataSourceConstant.AT_MOST_ONCE
+
+      taskServer.updateHeartbeat(taskID)
 
       //2.1 流数据转换
       val mixDF = toDataFrame(rdd, sqlc, totalRecordsCounter, reservedRecordsCounter)

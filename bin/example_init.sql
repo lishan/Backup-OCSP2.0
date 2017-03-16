@@ -207,6 +207,7 @@ DROP TABLE IF EXISTS `STREAM_TASK`;
 CREATE TABLE `STREAM_TASK` (
   `id` int(16) NOT NULL AUTO_INCREMENT,
   `name` varchar(16) DEFAULT NULL,
+  `appID` varchar(256) DEFAULT NULL,
   `type` int(11) NOT NULL,
   `receive_interval` int(11) NOT NULL DEFAULT '5',
   `num_executors` int(11) NOT NULL DEFAULT '2',
@@ -222,6 +223,7 @@ CREATE TABLE `STREAM_TASK` (
   `cur_retry` int(11) NOT NULL DEFAULT '0',
   `diid` int(16) NOT NULL,
   `owner` varchar(255) DEFAULT NULL,
+  `heartbeat` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `STREAM_TASK_ibfk_1` (`diid`),
   CONSTRAINT `STREAM_TASK_ibfk_1` FOREIGN KEY (`diid`) REFERENCES `STREAM_DATAINTERFACE` (`id`)
@@ -234,7 +236,7 @@ CREATE TABLE `STREAM_TASK` (
 
 LOCK TABLES `STREAM_TASK` WRITE;
 /*!40000 ALTER TABLE `STREAM_TASK` DISABLE KEYS */;
-INSERT INTO `STREAM_TASK` VALUES (1,'Stream Demo',1,30,10,'1g','1g',2,'default',0,NULL,NULL,NULL,0,0,1,NULL);
+INSERT INTO `STREAM_TASK` VALUES (1,'Stream Demo','',1,30,10,'1g','1g',2,'default',0,NULL,NULL,NULL,0,0,1,NULL,'');
 /*!40000 ALTER TABLE `STREAM_TASK` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -289,4 +291,25 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+
+--
+-- Table structure for table `STREAM_EXCEPTION`
+--
+--id | taskID | appID | exception_type | exception_info | level | begin_time | end_time
+DROP TABLE IF EXISTS `STREAM_EXCEPTION`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `STREAM_EXCEPTION` (
+  `id` int(16) NOT NULL AUTO_INCREMENT,
+  `taskID` int(16) NOT NULL ,
+  `appID` varchar(256) DEFAULT NULL,
+  `exception_type` int(16) NOT NULL ,
+  `exception_info` varchar(500) DEFAULT NULL,
+  `level` int(11) NOT NULL DEFAULT '0',
+  `begin_time` DATETIME NOT NULL, 
+  `end_time` DATETIME NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 

@@ -6,7 +6,7 @@ import java.util.{Timer, TimerTask}
 import akka.actor.{ActorSystem, Props}
 import com.asiainfo.ocdp.stream.common.Logging
 import com.asiainfo.ocdp.stream.config.{MainFrameConf, TaskConf}
-import com.asiainfo.ocdp.stream.constant.{CommonConstant, TaskConstant}
+import com.asiainfo.ocdp.stream.constant.{CommonConstant, TaskConstant, ExceptionConstant}
 import com.asiainfo.ocdp.stream.service.TaskServer
 import com.asiainfo.ocdp.stream.tools.{DateFormatUtils, ListFileWalker, MonitorUtils}
 import org.apache.commons.io.filefilter.{FileFilterUtils, HiddenFileFilter}
@@ -96,13 +96,13 @@ object MainFrameManager extends Logging {
             if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_RECORDS_CORRECTNESS_ENABLE, false)){
               MonitorUtils.updateRecordsCorrectnessHistoryStatus(taskId)
             }
-
             logInfo("Task " + taskId + " prepare to start !")
           }
         }
 
         case TaskConstant.RUNNING => {
           checkRecordsCorrectness(taskId)
+          checkHearbeat(taskId,taskConf)
           if (pre_start_tasks.contains(taskId)) {
             pre_start_tasks.remove(taskId)
             logInfo("Task " + taskId + " start successfully !")
@@ -232,13 +232,22 @@ object MainFrameManager extends Logging {
       val currentTime = System.currentTimeMillis()
       val intervalMins = MainFrameConf.systemProps.getLong("ocsp.monitor.records-correctness.retain-check-interval-mins", 2880L)
 
-      if ((currentTime - lastCheckTime) > intervalMins * 60 * 1000){
+      if ((currentTime - lastCheckTime) > intervalMins * 60 * 1000) {
         logInfo(s"CurrentTime is ${DateFormatUtils.dateMs2Str(currentTime)} and lastCheckTime is ${DateFormatUtils.dateMs2Str(lastCheckTime)}")
 
         MonitorUtils.deleteRecordsCorrectnessHistory(MainFrameConf.systemProps.getLong("ocsp.monitor.records-correctness.retain-mins", 10080L))
 
         lastCheckTime = currentTime
       }
+    }
+  }
+
+  private def checkHearbeat(taskId: String, taskConf: TaskConf) {
+    val TASK_TIMEDOUT = (taskConf.receive_interval * 2 + 30)*1000
+    val curTime = System.currentTimeMillis()
+    val heartbeat = taskServer.getHeartbeat(taskId)
+    if (curTime - heartbeat > TASK_TIMEDOUT) {
+      taskServer.updateException(taskId, taskConf.appID, ExceptionConstant.ERR_SPARK_JOB_FINISHED, ExceptionConstant.getExceptionInfo(ExceptionConstant.ERR_SPARK_JOB_FINISHED))
     }
   }
 }

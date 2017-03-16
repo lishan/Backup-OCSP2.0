@@ -11,10 +11,14 @@ import org.apache.spark.scheduler.{SparkListener, SparkListenerApplicationEnd, S
 class AppStatusUpdateListener(id: String) extends SparkListener with Logging {
   val taskServer = new TaskServer
 
+  /*
+   * this method need spark.extraListeners config to take effect
+   * do not need this
   override def onApplicationStart(applicationStart: SparkListenerApplicationStart) {
     taskServer.startTask(id)
     logInfo("Start task " + id + " successfully !")
   }
+  */
 
   override def onApplicationEnd(applicationEnd: SparkListenerApplicationEnd) {
     //若task的状态是PRE_RESTART 则将数据库中的task status设为1,准备启动;
