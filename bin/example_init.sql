@@ -296,7 +296,6 @@ UNLOCK TABLES;
 --
 -- Table structure for table `STREAM_EXCEPTION`
 --
---id | taskID | appID | exception_type | exception_info | level | begin_time | end_time
 DROP TABLE IF EXISTS `STREAM_EXCEPTION`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
