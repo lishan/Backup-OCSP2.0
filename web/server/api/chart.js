@@ -5,7 +5,7 @@ import sequelize from '../sequelize';
 import Sequelize from 'sequelize';
 import config from '../config';
 let Task = require('../model/STREAM_TASK')(sequelize, Sequelize);
-let Event = require('../model/STREAM_EVENT')(sequelize, Sequelize);
+let EventDef = require('../model/STREAM_EVENT')(sequelize, Sequelize);
 let Record = require('../model/STREAM_MONITOR_RECORDS_CORRECTNESS')(sequelize, Sequelize);
 let router = express.Router();
 let trans = config[config.trans || 'zh'];
@@ -39,21 +39,28 @@ router.get('/status', (req,res) => {
     let count = [[], []];
     let promises = [];
     let records = [[], []];
+    let _getData = function (i) {
+      promises.push(EventDef.count({where: {diid: tasks[i].diid, status: 1}}).then((data) => {
+        tasks[i].dataValues.count1 = data;
+      }));
+      promises.push(EventDef.count({where: {diid: tasks[i].diid, status: 0}}).then((data) => {
+        tasks[i].dataValues.count2 = data;
+      }));
+      promises.push(Record.find({
+        attributes: ["reserved_records", "dropped_records"],
+        where: {task_id: tasks[i].id, archived: 0},
+        order: 'timestamp DESC'
+      }).then((data) => {
+        if (data !== null && data !== undefined && data.dataValues !== undefined) {
+          tasks[i].dataValues.reserved = data.dataValues.reserved_records;
+          tasks[i].dataValues.dropped = data.dataValues.dropped_records;
+        }
+      }));
+    };
     if(tasks !== undefined && tasks.length > 0){
       _getRunningTime(tasks);
       for(let i in tasks) {
-        promises.push(Event.count({where: {diid: tasks[i].diid, status: 1}}).then((data)=>{
-          tasks[i].dataValues.count1 = data;
-        }));
-        promises.push(Event.count({where: {diid: tasks[i].diid, status: 0}}).then((data)=>{
-          tasks[i].dataValues.count2 = data;
-        }));
-        promises.push(Record.find({attributes: ["reserved_records", "dropped_records"],where: {task_id: tasks[i].id, archived: 0},order: 'timestamp DESC'}).then((data) =>{
-          if(data !== null && data !== undefined && data.dataValues !== undefined){
-            tasks[i].dataValues.reserved = data.dataValues.reserved_records;
-            tasks[i].dataValues.dropped = data.dataValues.dropped_records;
-          }
-        }));
+        _getData(i);
       }
     }
     sequelize.Promise.all(promises).then(()=>{
