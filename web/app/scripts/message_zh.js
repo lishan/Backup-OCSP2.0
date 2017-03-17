@@ -128,7 +128,9 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_dashboard3' : '丢掉数据和处理数据量',
     'ocsp_web_dashboard4' : '事件数量',
     'ocsp_web_dashboard_dropped': '丢掉数据',
-    'ocsp_web_dashboard_reserved': '处理数据'
+    'ocsp_web_dashboard_reserved': '处理数据',
+    'ocsp_web_dashboard_enabled_events': '启用事件',
+    'ocsp_web_dashboard_disabled_events': '未启用事件'
 
   });
 }]);

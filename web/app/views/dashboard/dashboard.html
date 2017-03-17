@@ -3,7 +3,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">{{'ocsp_web_dashboard1' | translate}}</div>
       <div class="panel-body">
-        <canvas class="chart chart-pie" chart-data="status" chart-labels="labels" chart-options="options" height="161">
+        <canvas class="chart chart-pie" chart-data="status" chart-labels="labels" height="161" chart-options="{legend:{display:true}}">
         </canvas>
       </div>
     </div>
@@ -23,7 +23,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">{{'ocsp_web_dashboard3' | translate}}</div>
       <div class="panel-body">
-        <canvas class="chart chart-bar" chart-data="records" chart-labels="names" chart-series="series" height="161" chart-options="{legend:{display:true}}">
+        <canvas class="chart chart-bar" chart-data="records" chart-labels="names" chart-series="series1" height="161" chart-options="{legend:{display:true}}">
         </canvas>
       </div>
     </div>
@@ -31,7 +31,7 @@
   <div class="col-md-6">
     <div class="panel panel-default">
       <div class="panel-heading">{{'ocsp_web_dashboard4' | translate}}</div>
-        <canvas class="chart chart-bar" chart-data="count" chart-labels="names" height="161">
+        <canvas class="chart chart-bar" chart-data="count" chart-labels="names" chart-series="series2" height="161" chart-options="{legend:{display:true}}">
         </canvas>
       <div class="panel-body">
       </div>
