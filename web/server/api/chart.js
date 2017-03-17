@@ -36,14 +36,17 @@ router.get('/status', (req,res) => {
     let status = [0, 0, 0, 0, 0, 0];
     let names = [];
     let running = [];
-    let count = [];
+    let count = [[], []];
     let promises = [];
     let records = [[], []];
     if(tasks !== undefined && tasks.length > 0){
       _getRunningTime(tasks);
       for(let i in tasks) {
         promises.push(Event.count({where: {diid: tasks[i].diid, status: 1}}).then((data)=>{
-          tasks[i].dataValues.count = data;
+          tasks[i].dataValues.count1 = data;
+        }));
+        promises.push(Event.count({where: {diid: tasks[i].diid, status: 0}}).then((data)=>{
+          tasks[i].dataValues.count2 = data;
         }));
         promises.push(Record.find({attributes: ["reserved_records", "dropped_records"],where: {task_id: tasks[i].id, archived: 0},order: 'timestamp DESC'}).then((data) =>{
           if(data !== null && data !== undefined && data.dataValues !== undefined){
@@ -58,7 +61,8 @@ router.get('/status', (req,res) => {
         let tmp = tasks[i].dataValues;
         running.push(tmp.running_time?  tmp.running_time/ 60000: 0);
         names.push(tmp.name? tmp.name : 0);
-        count.push(tmp.count? tmp.count : 0);
+        count[0].push(tmp.count1? tmp.count1 : 0);
+        count[1].push(tmp.count2? tmp.count2 : 0);
         records[0].push(tmp.reserved? tmp.reserved: 0);
         records[1].push(tmp.dropped? tmp.dropped: 0);
         if (tmp.status >= 0 && tmp.status < 6) {

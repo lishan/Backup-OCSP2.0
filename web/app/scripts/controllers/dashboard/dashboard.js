@@ -19,12 +19,12 @@ angular.module('ocspApp')
       $scope.running = data.running;
       $scope.count = data.count;
       $scope.records = data.records;
-      $scope.series = [$filter('translate')('ocsp_web_dashboard_reserved'), $filter('translate')('ocsp_web_dashboard_dropped')];
+      $scope.series1 = [$filter('translate')('ocsp_web_dashboard_reserved'), $filter('translate')('ocsp_web_dashboard_dropped')];
+      $scope.series2 = [$filter('translate')('ocsp_web_dashboard_enabled_events'), $filter('translate')('ocsp_web_dashboard_disabled_events')];
       usSpinnerService.stop('spinner');
     }, (err)=> {
       Notification.error(err.data);
       usSpinnerService.stop('spinner');
     });
 
-    $scope.test = 123;
   }]);
