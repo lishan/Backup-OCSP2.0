@@ -14,7 +14,7 @@ import com.asiainfo.ocdp.stream.tools._
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
-import org.apache.spark.streaming.StreamingContext
+import org.apache.spark.streaming.{StreamingContext, Time}
 import org.apache.spark.{Accumulator, SparkContext}
 
 import scala.reflect.ClassTag
@@ -166,7 +166,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
     val taskServer = new TaskServer
     //2 流数据处理
-    inputStream.foreachRDD(rdd => {
+    inputStream.foreachRDD((rdd, time: Time) => {
       //2.1 流数据转换
       val broadDiConf = BroadcastManager.getBroadDiConf()
       val dataSchemas = broadDiConf.value.getDataSchemas
@@ -215,8 +215,25 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         logInfo(s"Dropped ${droppedCount} records since their schema size do not matching records field size.")
         logInfo(s"Reserved ${reservedRecordsCounter.value} records successfully.")
 
-        if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_RECORDS_CORRECTNESS_ENABLE, false)){
-          MonitorUtils.outputRecordsCorrectness(taskConf.id,reservedRecordsCounter.value, droppedCount, ssc.sparkContext.applicationId)
+        var maxMem = 0L
+        var memUsed = 0L
+        var memRemaining = 0L
+
+        ssc.sparkContext.getExecutorStorageStatus.foreach(mem => {
+          maxMem = maxMem + mem.maxMem
+          memUsed = memUsed + mem.memUsed
+          memRemaining = memRemaining + mem.memRemaining
+        })
+
+        if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_TASK_MONITOR_ENABLE, false)){
+          MonitorUtils.outputTaskStatistics(taskConf.id,
+            reservedRecordsCounter.value,
+            droppedCount,
+            ssc.sparkContext.applicationId,
+            maxMem,
+            memUsed,
+            memRemaining,
+            (System.currentTimeMillis() - time.milliseconds))
         }
       }
       /**
