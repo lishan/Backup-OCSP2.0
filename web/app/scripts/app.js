@@ -55,13 +55,18 @@ angular
         templateUrl: 'views/user/management.html',
         controller: 'UserManagementCtrl'
       })
+      .when('/dashboard',{
+        templateUrl: 'views/dashboard/dashboard.html',
+        controller: 'DashboardCtrl'
+      })
       .otherwise({
         controller : function(){
           window.location.replace('/404');
         },
         template : "<div></div>"
       });
-  }).config(function (NotificationProvider){
+  })
+  .config(['NotificationProvider','usSpinnerConfigProvider', '$httpProvider', function (NotificationProvider, usSpinnerConfigProvider, $httpProvider) {
     NotificationProvider.setOptions({
       delay: 10000,
       startTop: 20,
@@ -71,16 +76,12 @@ angular
       positionX: 'right',
       positionY: 'bottom'
     });
-  })
-  .config(['usSpinnerConfigProvider', function (usSpinnerConfigProvider) {
     usSpinnerConfigProvider.setDefaults({color: 'orange', radius: 20});
-  }])
-  .config(['$httpProvider', function($httpProvider){
     $httpProvider.interceptors.push('UrlRewriteInterceptor');
   }])
   .config(['$translateProvider', '$windowProvider', function($translateProvider, $windowProvider){
-    var window = $windowProvider.$get();
-    var lang = window.navigator.userLanguage || window.navigator.language;
+    let window = $windowProvider.$get();
+    let lang = window.navigator.userLanguage || window.navigator.language;
     if(lang){
       lang = lang.substr(0,2);
       $translateProvider.preferredLanguage(lang);

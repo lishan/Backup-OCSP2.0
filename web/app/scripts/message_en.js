@@ -120,7 +120,15 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_property_executorMemory': 'The memory of executor',
     'ocsp_web_common_property_queue': 'The queue for running spark application on Yarn',
     'ocsp_web_common_property_filter': 'The condition expression for DataFrame',
-    'ocsp_web_common_property_retry': 'Number of retries after stream crashed'
+    'ocsp_web_common_property_retry': 'Number of retries after stream crashed',
+
+    'ocsp_web_dashboard_name' : 'Dashboard',
+    'ocsp_web_dashboard1' : 'Running Status',
+    'ocsp_web_dashboard2' : 'Time Statistics(minute)',
+    'ocsp_web_dashboard3' : 'Dropped and Reserved Data',
+    'ocsp_web_dashboard4' : 'Number of Events',
+    'ocsp_web_dashboard_dropped': 'Dropped',
+    'ocsp_web_dashboard_reserved': 'Reserved'
 
   });
 }]);
