@@ -19,7 +19,7 @@ object MainFrameConf {
   val systemProps = new SystemProps()
   val codisProps = new DataSourceConf()
 
-  val MONITOR_RECORDS_CORRECTNESS_ENABLE = "ocsp.monitor.records-correctness.enable"
+  val MONITOR_TASK_MONITOR_ENABLE = "ocsp.monitor.task-monitor.enable"
 
   initMainFrameConf()
 

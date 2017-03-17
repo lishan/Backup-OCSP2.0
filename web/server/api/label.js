@@ -88,35 +88,62 @@ router.post('/upload', upload.single('file'), function(req, res){
       });
   });
   promise.then(() => {
-    if(result.length > 0){
-      sequelize.transaction(function(t) {
+    if(fs.existsSync('./uploads/' + req.file.originalname)){
+      sequelize.transaction(function (t) {
         let promises = [];
-        for(let i in result){
-          promises.push(Label.create({
-            name: result[i].name,
-            class_name: result[i].classname
-          },{
+        for (let i in result) {
+          promises.push(Label.findOrCreate({
+            where:{name: result[i].name},
+            defaults:{class_name: result[i].classname},
             transaction: t
           }));
         }
         return sequelize.Promise.all(promises);
       }).then(() => {
-        fs.rename('./uploads/tmpOran.jar','./uploads/' + req.file.originalname, (err) => {
-          if(err){
+        fs.rename('./uploads/tmpOran.jar', './uploads/' + req.file.originalname, (err) => {
+          if (err) {
             fs.unlink('./uploads/tmpOran.jar', () => {
-              res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
+              res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
+            });
+          } else {
+            fs.unlink('./uploads/tmpOran.jar', () => {
+              res.status(200).send({success: true});
             });
           }
-          res.send({success: true});
         });
       }).catch(() => {
         fs.unlink('./uploads/tmpOran.jar', () => {
-          res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
+          res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
         });
       });
-    }else{
-      fs.unlink('./uploads/tmpOran.jar', () => {
-        res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
+    }else {
+      sequelize.transaction(function (t) {
+        let promises = [];
+        for (let i in result) {
+          promises.push(Label.create({
+            name: result[i].name,
+            class_name: result[i].classname
+          }, {
+            transaction: t
+          }));
+        }
+        return sequelize.Promise.all(promises);
+      }).then(() => {
+        fs.rename('./uploads/tmpOran.jar', './uploads/' + req.file.originalname, (err) => {
+          if (err) {
+            fs.unlink('./uploads/tmpOran.jar', () => {
+              res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
+            });
+          } else {
+            fs.unlink('./uploads/tmpOran.jar', () => {
+              res.status(200).send({success: true});
+            });
+          }
+        });
+      }).catch(() => {
+        fs.unlink('./uploads/tmpOran.jar', () => {
+          res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
+        });
       });
     }
   },() => {

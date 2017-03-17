@@ -129,7 +129,9 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_dashboard4' : 'Number of Events',
     'ocsp_web_dashboard5' : 'Task Batch Running Time',
     'ocsp_web_dashboard_dropped': 'Dropped',
-    'ocsp_web_dashboard_reserved': 'Reserved'
+    'ocsp_web_dashboard_reserved': 'Reserved',
+    'ocsp_web_dashboard_enabled_events': 'Enabled events',
+    'ocsp_web_dashboard_disabled_events': 'Disabled events'
 
   });
 }]);

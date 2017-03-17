@@ -193,7 +193,7 @@ CREATE TABLE `STREAM_SYSTEMPROP` (
 
 LOCK TABLES `STREAM_SYSTEMPROP` WRITE;
 /*!40000 ALTER TABLE `STREAM_SYSTEMPROP` DISABLE KEYS */;
-INSERT INTO `STREAM_SYSTEMPROP` VALUES (1,'cacheManager','JodisCacheManager',0,NULL),(2,'ocsp.monitor.records-correctness.enable','true',0,''),(3,'ocsp.monitor.records-correctness.retain-check-interval-mins','2880',0,''),(4,'ocsp.monitor.records-correctness.retain-mins','10080',0,''),(7,'checkpoint_dir','streaming/checkpoint',0,NULL),(11,'SPARK_HOME','/usr/hdp/2.4.0.0-169/spark',1,'Spark安装路径'),(12,'master','yarn',1,'Spark应用程序的运行模式'),(13,'supervise','false',0,NULL),(17,'delaySeconds','20',0,NULL),(18,'periodSeconds','10',0,NULL),(21,'cacheQryBatchSizeLimit','1000',0,NULL),(27,'cacheQryTaskSizeLimit','1000',0,NULL);
+INSERT INTO `STREAM_SYSTEMPROP` VALUES (1,'cacheManager','JodisCacheManager',0,NULL),(2,'ocsp.monitor.task-monitor.enable','true',0,''),(3,'ocsp.monitor.task-monitor.retain-check-interval-mins','2880',0,''),(4,'ocsp.monitor.task-monitor.retain-mins','10080',0,''),(7,'checkpoint_dir','streaming/checkpoint',0,NULL),(11,'SPARK_HOME','/usr/hdp/2.4.0.0-169/spark',1,'Spark安装路径'),(12,'master','yarn',1,'Spark应用程序的运行模式'),(13,'supervise','false',0,NULL),(17,'delaySeconds','20',0,NULL),(18,'periodSeconds','10',0,NULL),(21,'cacheQryBatchSizeLimit','1000',0,NULL),(27,'cacheQryTaskSizeLimit','1000',0,NULL);
 /*!40000 ALTER TABLE `STREAM_SYSTEMPROP` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -241,19 +241,25 @@ INSERT INTO `STREAM_TASK` VALUES (1,'Stream Demo','',1,30,10,'1g','1g',2,'defaul
 UNLOCK TABLES;
 
 --
--- Table structure for table `STREAM_MONITOR_RECORDS_CORRECTNESS`
+-- Table structure for table `STREAM_TASK_MONITOR`
 --
 
-DROP TABLE IF EXISTS `STREAM_MONITOR_RECORDS_CORRECTNESS`;
+DROP TABLE IF EXISTS `STREAM_TASK_MONITOR`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `STREAM_MONITOR_RECORDS_CORRECTNESS` (
+CREATE TABLE `STREAM_TASK_MONITOR` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `task_id` int(16) NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `reserved_records` bigint(20) NOT NULL,
   `dropped_records` bigint(20) NOT NULL,
   `archived` int(11) NOT NULL DEFAULT '0',
-  `application_id` varchar(255) NOT NULL
+  `application_id` varchar(255) NOT NULL,
+  `batch_running_time_ms` varchar(500) DEFAULT NULL,
+  `max_storage_memory` bigint(20) NOT NULL,
+  `used_storage_memory` bigint(20) NOT NULL,
+  `remaining_storage_memory` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -296,7 +302,6 @@ UNLOCK TABLES;
 --
 -- Table structure for table `STREAM_EXCEPTION`
 --
---id | taskID | appID | exception_type | exception_info | level | begin_time | end_time
 DROP TABLE IF EXISTS `STREAM_EXCEPTION`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;

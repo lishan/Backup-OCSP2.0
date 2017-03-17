@@ -315,7 +315,7 @@ angular.module('ocspApp')
     function _drawGraph(item, labels){
       var graphDefinition = 'graph LR;';
       graphDefinition += "task[" + item.name + "];";
-      graphDefinition += "input((" + item.input.topic + "));";
+      graphDefinition += "input((" + item.input.name + "));";
       graphDefinition += "task-->input;";
       var last = "input";
       if(labels.length > 0) {

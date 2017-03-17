@@ -93,15 +93,15 @@ object MainFrameManager extends Logging {
             val task = system.actorOf(Props[Task], name = "task_" + taskId + "time_" +System.currentTimeMillis())
             task ! makeCMD(taskConf)
             pre_start_tasks.put(taskId, System.currentTimeMillis())
-            if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_RECORDS_CORRECTNESS_ENABLE, false)){
-              MonitorUtils.updateRecordsCorrectnessHistoryStatus(taskId)
+            if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_TASK_MONITOR_ENABLE, false)){
+              MonitorUtils.updateTaskStatisticsHistoryStatus(taskId)
             }
             logInfo("Task " + taskId + " prepare to start !")
           }
         }
 
         case TaskConstant.RUNNING => {
-          checkRecordsCorrectness(taskId)
+          checkTaskMonitor(taskId)
           checkHearbeat(taskId,taskConf)
           if (pre_start_tasks.contains(taskId)) {
             pre_start_tasks.remove(taskId)
@@ -227,15 +227,15 @@ object MainFrameManager extends Logging {
     TaskCommand(tid, cmd)
   }
 
-  private def checkRecordsCorrectness(taskId: String) = {
-    if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_RECORDS_CORRECTNESS_ENABLE, false)){
+  private def checkTaskMonitor(taskId: String) = {
+    if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_TASK_MONITOR_ENABLE, false)){
       val currentTime = System.currentTimeMillis()
-      val intervalMins = MainFrameConf.systemProps.getLong("ocsp.monitor.records-correctness.retain-check-interval-mins", 2880L)
+      val intervalMins = MainFrameConf.systemProps.getLong("ocsp.monitor.task-monitor.retain-check-interval-mins", 2880L)
 
       if ((currentTime - lastCheckTime) > intervalMins * 60 * 1000) {
         logInfo(s"CurrentTime is ${DateFormatUtils.dateMs2Str(currentTime)} and lastCheckTime is ${DateFormatUtils.dateMs2Str(lastCheckTime)}")
 
-        MonitorUtils.deleteRecordsCorrectnessHistory(MainFrameConf.systemProps.getLong("ocsp.monitor.records-correctness.retain-mins", 10080L))
+        MonitorUtils.deleteTaskStatisticsHistory(MainFrameConf.systemProps.getLong("ocsp.monitor.task-monitor.retain-mins", 10080L))
 
         lastCheckTime = currentTime
       }
