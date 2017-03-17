@@ -6,7 +6,7 @@ import Sequelize from 'sequelize';
 import config from '../config';
 let Task = require('../model/STREAM_TASK')(sequelize, Sequelize);
 let EventDef = require('../model/STREAM_EVENT')(sequelize, Sequelize);
-let Record = require('../model/STREAM_MONITOR_RECORDS_CORRECTNESS')(sequelize, Sequelize);
+let Record = require('../model/STREAM_TASK_MONITOR')(sequelize, Sequelize);
 let router = express.Router();
 let trans = config[config.trans || 'zh'];
 
@@ -76,6 +76,10 @@ router.get('/status', (req,res) => {
           status[tmp.status]++;
         }
       }
+      count[0].push(0);
+      count[1].push(1);
+      records[0].push(0);
+      records[1].push(0);
       res.status(200).send({status,names,running,count,records});
     },()=>{
       res.status(500).send(trans.databaseError);
