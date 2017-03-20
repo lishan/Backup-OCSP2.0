@@ -35,10 +35,11 @@ object LabelManager extends Logging{
       // 装载整个批次打标签操作时，所需要的跟codis数据库交互的key
       val labelQryKeysSet = mutable.Set[String]()
       val cachemap_new = mutable.Map[String, Any]()
-      val ukUnion = broadDiConf.value.get("uniqKeys").split(":")
+
+      val ukUnion = broadDiConf.value.get("uniqKeys").split(broadDiConf.value.uniqKeysDelim)
       iter.toList.map(jsonStr => {
         val currentLine = Json4sUtils.jsonStr2Map(jsonStr)
-        val uk = ukUnion.map(currentLine(_)).mkString(",")
+        val uk = ukUnion.map(currentLine(_)).mkString(broadDiConf.value.uniqKeyValuesDelim)
         busnessKeyList += (s"${LabelConstant.LABEL_CACHE_PREFIX_NAME}_${broadTaskConf.value.name}:${uk}" -> currentLine)
         // 取出本条数据在打所有标签时所用的查询cache用到的key放入labelQryKeysSet
         labels.foreach(label => {
