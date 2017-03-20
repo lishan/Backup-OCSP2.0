@@ -1,12 +1,12 @@
 //app.js
 "use strict";
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
-var config = require('./config');
-var env = config.env || 'dev';
-var path = require('path');
-var favicon = require('serve-favicon');
+let express = require('express');
+let app = express();
+let bodyParser = require('body-parser');
+let config = require('./config');
+let env = config.env || 'dev';
+let path = require('path');
+let favicon = require('serve-favicon');
 
 if(env === 'dev') {
   app.use(require('connect-livereload')());

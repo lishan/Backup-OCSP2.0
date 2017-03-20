@@ -133,16 +133,6 @@ CREATE TABLE `STREAM_LABEL` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `STREAM_LABEL`
---
-
-LOCK TABLES `STREAM_LABEL` WRITE;
-/*!40000 ALTER TABLE `STREAM_LABEL` DISABLE KEYS */;
-INSERT INTO `STREAM_LABEL` VALUES (1,1,NULL,1,'',1,NULL),(2,1,NULL,1,'',2,NULL),(3,1,NULL,1,'',3,NULL),(4,1,2,1,NULL,4,NULL);
-/*!40000 ALTER TABLE `STREAM_LABEL` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `STREAM_LABEL_DEFINITION`
 --
 
@@ -158,16 +148,6 @@ CREATE TABLE `STREAM_LABEL_DEFINITION` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `STREAM_LABEL_DEFINITION`
---
-
-LOCK TABLES `STREAM_LABEL_DEFINITION` WRITE;
-/*!40000 ALTER TABLE `STREAM_LABEL_DEFINITION` DISABLE KEYS */;
-INSERT INTO `STREAM_LABEL_DEFINITION` VALUES (1,'SiteLabel','com.asiainfo.ocdp.stream.label.examples.SiteLabel','{\"props\":[{\"pname\":\"userKeyIdx\", \"pvalue\":\"2\"}],\"labelItems\":[{\"pname\":\"phone_no\", \"pvalue\":\"product_no\"}]}'),(2,'AreaLabel','com.asiainfo.ocdp.stream.label.examples.AreaLabel','{\"props\":[{\"pname\":\"user_info_cols\", \"pvalue\":\"phone_no,user_id,phone_area\"}],\"labelItems\":[{\"pname\":\"phone_no\", \"pvalue\":\"product_no\"}]}'),(3,'UserBaseInfoLabel','com.asiainfo.ocdp.stream.label.examples.UserBaseInfoLabel','{\"props\":[{\"pname\":\"user_info_cols\", \"pvalue\":\"acyc_id,live_lac,area_code,work_lac,work_cellid,stat_date,serial_number,age_level,sex,eparchy_id,city_code,pspt_prov_code,pspt_eparchy_id,fee_level\"}],\"labelItems\":[{\"pname\":\"phone_no\", \"pvalue\":\"product_no\"}]}'),(4,'AccumulateLabel','com.asiainfo.ocdp.stream.label.examples.AccumulateLabel','{\"props\":[{\"pname\":\"interval\", \"pvalue\":\"10\"}],\"labelItems\":[{\"pname\":\"interval\", \"pvalue\":\"10\"}]}');
-/*!40000 ALTER TABLE `STREAM_LABEL_DEFINITION` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `STREAM_SYSTEMPROP`
@@ -193,7 +173,7 @@ CREATE TABLE `STREAM_SYSTEMPROP` (
 
 LOCK TABLES `STREAM_SYSTEMPROP` WRITE;
 /*!40000 ALTER TABLE `STREAM_SYSTEMPROP` DISABLE KEYS */;
-INSERT INTO `STREAM_SYSTEMPROP` VALUES (1,'cacheManager','JodisCacheManager',0,NULL),(2,'ocsp.monitor.records-correctness.enable','true',0,''),(3,'ocsp.monitor.records-correctness.retain-check-interval-mins','2880',0,''),(4,'ocsp.monitor.records-correctness.retain-mins','10080',0,''),(7,'checkpoint_dir','streaming/checkpoint',0,NULL),(11,'SPARK_HOME','/usr/hdp/2.4.0.0-169/spark',1,'Spark安装路径'),(12,'master','yarn',1,'Spark应用程序的运行模式'),(13,'supervise','false',0,NULL),(17,'delaySeconds','20',0,NULL),(18,'periodSeconds','10',0,NULL),(21,'cacheQryBatchSizeLimit','1000',0,NULL),(27,'cacheQryTaskSizeLimit','1000',0,NULL);
+INSERT INTO `STREAM_SYSTEMPROP` VALUES (1,'cacheManager','JodisCacheManager',0,NULL),(2,'ocsp.monitor.task-monitor.enable','true',0,''),(3,'ocsp.monitor.task-monitor.retain-check-interval-mins','2880',0,''),(4,'ocsp.monitor.task-monitor.retain-mins','10080',0,''),(7,'checkpoint_dir','streaming/checkpoint',0,NULL),(11,'SPARK_HOME','/usr/hdp/2.4.0.0-169/spark',1,'Spark安装路径'),(12,'master','yarn',1,'Spark应用程序的运行模式'),(13,'supervise','false',0,NULL),(17,'delaySeconds','20',0,NULL),(18,'periodSeconds','10',0,NULL),(21,'cacheQryBatchSizeLimit','1000',0,NULL),(27,'cacheQryTaskSizeLimit','1000',0,NULL);
 /*!40000 ALTER TABLE `STREAM_SYSTEMPROP` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -241,19 +221,25 @@ INSERT INTO `STREAM_TASK` VALUES (1,'Stream Demo','',1,30,10,'1g','1g',2,'defaul
 UNLOCK TABLES;
 
 --
--- Table structure for table `STREAM_MONITOR_RECORDS_CORRECTNESS`
+-- Table structure for table `STREAM_TASK_MONITOR`
 --
 
-DROP TABLE IF EXISTS `STREAM_MONITOR_RECORDS_CORRECTNESS`;
+DROP TABLE IF EXISTS `STREAM_TASK_MONITOR`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `STREAM_MONITOR_RECORDS_CORRECTNESS` (
+CREATE TABLE `STREAM_TASK_MONITOR` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `task_id` int(16) NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `reserved_records` bigint(20) NOT NULL,
   `dropped_records` bigint(20) NOT NULL,
   `archived` int(11) NOT NULL DEFAULT '0',
-  `application_id` varchar(255) NOT NULL
+  `application_id` varchar(255) NOT NULL,
+  `batch_running_time_ms` varchar(500) DEFAULT NULL,
+  `max_storage_memory` bigint(20) NOT NULL,
+  `used_storage_memory` bigint(20) NOT NULL,
+  `remaining_storage_memory` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

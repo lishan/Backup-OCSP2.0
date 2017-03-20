@@ -4,7 +4,8 @@
  * For job management main page controller
  */
 angular.module('ocspApp')
-  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', 'usSpinnerService', 'loginService', '$interval', '$uibModal', '$filter', 'moment', 'strService', function ($scope, $http, Notification, $q, usSpinnerService, loginService, $interval, $uibModal, $filter, moment, strService) {
+  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', 'usSpinnerService', 'loginService', '$interval', '$uibModal', '$filter', 'moment', 'strService',
+    function ($scope, $http, Notification, $q, usSpinnerService, loginService, $interval, $uibModal, $filter, moment, strService) {
     loginService.init('task');
     //i18n
     $scope.localLang = {
@@ -50,6 +51,15 @@ angular.module('ocspApp')
     $scope._showModal = function(){
       $scope.$broadcast('openModal',{});
     };
+
+    function _graphs(charts){
+      $scope.chartSeries = [$filter('translate')('ocsp_web_dashboard_reserved'), $filter('translate')('ocsp_web_dashboard_dropped')];
+      $scope.chartData = charts.result;
+      $scope.chartLabels = [];
+      for(let i in charts.timestamps){
+        $scope.chartLabels.push(moment(charts.timestamps[i]).format('YYYY-MM-DD HH:mm:ss'));
+      }
+    }
 
     //Actions and change
     $scope.actions = [
@@ -166,7 +176,7 @@ angular.module('ocspApp')
     };
 
     // Globale timer
-    var taskInterval = $interval(function () {
+    let taskInterval = $interval(function () {
       $http.get('/api/task/status').success(function(tasks){
         if($scope.jobs !== undefined && $scope.jobs.length > 0){
           for(let i in $scope.jobs){
@@ -181,6 +191,11 @@ angular.module('ocspApp')
         }
         _dealWith($scope.selectedJob.status);
       });
+      if($scope.selectedJob.id !== undefined) {
+        $http.get('/api/chart/taskData/' + $scope.selectedJob.id).success((data) => {
+          _graphs(data);
+        });
+      }
     }, 3000);
     $scope.$on('$destroy', function(){
       if(taskInterval) {
@@ -248,7 +263,7 @@ angular.module('ocspApp')
     };
 
     //Basic functions for page operation
-    var _parseProperties = function (datainterface, prop, type = "output"){
+    function _parseProperties(datainterface, prop, type = "output"){
       if(datainterface.delim === "\\|"){
         datainterface.delim = "|";
       }
@@ -310,12 +325,12 @@ angular.module('ocspApp')
           }
         }
       }
-    };
+    }
 
     function _drawGraph(item, labels){
       var graphDefinition = 'graph LR;';
       graphDefinition += "task[" + item.name + "];";
-      graphDefinition += "input((" + item.input.topic + "));";
+      graphDefinition += "input((" + item.input.name + "));";
       graphDefinition += "task-->input;";
       var last = "input";
       if(labels.length > 0) {
@@ -361,14 +376,14 @@ angular.module('ocspApp')
       mermaidAPI.render('graphDiv', graphDefinition, insertSvg);
     }
 
-    var _parseDatasource = function (dataInterface){
-      for(var i in $scope.datasources){
+    function _parseDatasource(dataInterface){
+      for(let i in $scope.datasources){
         if($scope.datasources[i].id === dataInterface.dsid){
           dataInterface.datasource = $scope.datasources[i];
           break;
         }
       }
-    };
+    }
 
     $scope.changeItem = function(item){
       $scope.selectedJob = item;
@@ -377,7 +392,8 @@ angular.module('ocspApp')
         datainterface: $http.get('/api/datainterface/' + item.diid),
         labels: $http.get('/api/label/diid/' + item.diid),
         outputinterface: $http.get('/api/datainterface/output'),
-        events: $http.get('/api/event/diid/' + item.diid)})
+        events: $http.get('/api/event/diid/' + item.diid),
+        charts: $http.get('/api/chart/taskData/' + item.id)})
         .then(function(arr){
           $scope.selectedJob.input = arr.datainterface.data[0];
           $scope.selectedJob.output = arr.outputinterface.data;
@@ -469,6 +485,7 @@ angular.module('ocspApp')
           }
           _dealWith($scope.selectedJob.status);
           _drawGraph($scope.selectedJob, labels);
+          _graphs(arr.charts.data);
           usSpinnerService.stop('spinner');
         }, function(err){
           Notification.error(err.data);

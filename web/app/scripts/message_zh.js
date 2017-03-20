@@ -109,6 +109,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_046':'用户自定义字段',
     'ocsp_web_streams_manage_047':'可用字段',
     'ocsp_web_streams_manage_048':'生成可用字段',
+    'ocsp_web_streams_manage_049':'流程图',
 
     'ocsp_web_common_property_zookeeper_connect': 'zookeeper的连接地址',
     'ocsp_web_common_property_zk': 'zookeeper的连接地址',
@@ -128,7 +129,9 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_dashboard3' : '丢掉数据和处理数据量',
     'ocsp_web_dashboard4' : '事件数量',
     'ocsp_web_dashboard_dropped': '丢掉数据',
-    'ocsp_web_dashboard_reserved': '处理数据'
+    'ocsp_web_dashboard_reserved': '处理数据',
+    'ocsp_web_dashboard_enabled_events': '启用事件',
+    'ocsp_web_dashboard_disabled_events': '未启用事件'
 
   });
 }]);

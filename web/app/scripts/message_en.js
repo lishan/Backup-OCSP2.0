@@ -109,6 +109,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_046':'User fields',
     'ocsp_web_streams_manage_047':'Available fields',
     'ocsp_web_streams_manage_048':'Generate available fields',
+    'ocsp_web_streams_manage_049':'Architecture',
 
     'ocsp_web_common_property_zookeeper_connect': 'Zookeeper address',
     'ocsp_web_common_property_zk': 'Zookeeper address',
@@ -128,7 +129,9 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_dashboard3' : 'Dropped and Reserved Data',
     'ocsp_web_dashboard4' : 'Number of Events',
     'ocsp_web_dashboard_dropped': 'Dropped',
-    'ocsp_web_dashboard_reserved': 'Reserved'
+    'ocsp_web_dashboard_reserved': 'Reserved',
+    'ocsp_web_dashboard_enabled_events': 'Enabled events',
+    'ocsp_web_dashboard_disabled_events': 'Disabled events'
 
   });
 }]);

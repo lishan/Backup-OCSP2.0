@@ -1,7 +1,13 @@
 /* jshint indent: 2 */
 "use strict";
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('STREAM_MONITOR_RECORDS_CORRECTNESS', {
+  return sequelize.define('STREAM_TASK_MONITOR', {
+    id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      primaryKey: true,
+      autoIncrement: true
+    },
     task_id: {
       type: DataTypes.INTEGER(16),
       allowNull: false
@@ -27,10 +33,26 @@ module.exports = function(sequelize, DataTypes) {
     application_id: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    batch_running_time_ms: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    max_storage_memory: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
+    used_storage_memory: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
+    remaining_storage_memory: {
+      type: DataTypes.BIGINT,
+      allowNull: false
     }
   }, {
     createdAt: false,
     updatedAt: false,
-    tableName: 'STREAM_MONITOR_RECORDS_CORRECTNESS'
+    tableName: 'STREAM_TASK_MONITOR'
   });
 };
