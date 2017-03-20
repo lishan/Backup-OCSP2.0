@@ -133,16 +133,6 @@ CREATE TABLE `STREAM_LABEL` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `STREAM_LABEL`
---
-
-LOCK TABLES `STREAM_LABEL` WRITE;
-/*!40000 ALTER TABLE `STREAM_LABEL` DISABLE KEYS */;
-INSERT INTO `STREAM_LABEL` VALUES (1,1,NULL,1,'',1,NULL),(2,1,NULL,1,'',2,NULL),(3,1,NULL,1,'',3,NULL),(4,1,2,1,NULL,4,NULL);
-/*!40000 ALTER TABLE `STREAM_LABEL` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `STREAM_LABEL_DEFINITION`
 --
 
@@ -158,16 +148,6 @@ CREATE TABLE `STREAM_LABEL_DEFINITION` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `STREAM_LABEL_DEFINITION`
---
-
-LOCK TABLES `STREAM_LABEL_DEFINITION` WRITE;
-/*!40000 ALTER TABLE `STREAM_LABEL_DEFINITION` DISABLE KEYS */;
-INSERT INTO `STREAM_LABEL_DEFINITION` VALUES (1,'SiteLabel','com.asiainfo.ocdp.stream.label.examples.SiteLabel','{\"props\":[{\"pname\":\"userKeyIdx\", \"pvalue\":\"2\"}],\"labelItems\":[{\"pname\":\"phone_no\", \"pvalue\":\"product_no\"}]}'),(2,'AreaLabel','com.asiainfo.ocdp.stream.label.examples.AreaLabel','{\"props\":[{\"pname\":\"user_info_cols\", \"pvalue\":\"phone_no,user_id,phone_area\"}],\"labelItems\":[{\"pname\":\"phone_no\", \"pvalue\":\"product_no\"}]}'),(3,'UserBaseInfoLabel','com.asiainfo.ocdp.stream.label.examples.UserBaseInfoLabel','{\"props\":[{\"pname\":\"user_info_cols\", \"pvalue\":\"acyc_id,live_lac,area_code,work_lac,work_cellid,stat_date,serial_number,age_level,sex,eparchy_id,city_code,pspt_prov_code,pspt_eparchy_id,fee_level\"}],\"labelItems\":[{\"pname\":\"phone_no\", \"pvalue\":\"product_no\"}]}'),(4,'AccumulateLabel','com.asiainfo.ocdp.stream.label.examples.AccumulateLabel','{\"props\":[{\"pname\":\"interval\", \"pvalue\":\"10\"}],\"labelItems\":[{\"pname\":\"interval\", \"pvalue\":\"10\"}]}');
-/*!40000 ALTER TABLE `STREAM_LABEL_DEFINITION` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `STREAM_SYSTEMPROP`
