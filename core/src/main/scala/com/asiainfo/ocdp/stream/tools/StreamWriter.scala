@@ -77,8 +77,13 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
           val key = line._1
           val msg_json = line._2
           val msg_head = Json4sUtils.jsonStr2String(msg_json, fildList, delim)
-          // 加入当前msg输出时间戳
-          val msg = msg_head + delim + sdf.format(System.currentTimeMillis)
+          val msg = {
+            // 加入当前msg输出时间戳
+            if (conf.get("extraID").toBoolean)
+              conf.id + delim + msg_head + delim + sdf.format(System.currentTimeMillis)
+            else
+              msg_head + delim + sdf.format(System.currentTimeMillis)
+          }
           if (key == null) messages.append(new KeyedMessage[String, String](topic, msg))
           else messages.append(new KeyedMessage[String, String](topic, key, msg))
           key
