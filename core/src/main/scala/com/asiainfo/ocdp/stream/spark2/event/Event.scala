@@ -114,10 +114,16 @@ class Event extends Serializable with Logging{
   /**
    * rdd格式流输出
    */
-  def outputEvent(rdd: RDD[String], uniqKeys: String) = {
+  def outputEvent(rdd: RDD[String], inputResourceUniqKeys: String) = {
     conf.outIFIds.map(ifconf => {
       val writer = StreamWriterFactory.getWriter(ifconf)
-      writer.push(rdd, conf, uniqKeys)
+      val eventUniqKeys = ifconf.get("uniqKeys")
+      if (StringUtils.isEmpty(eventUniqKeys)){
+        writer.push(rdd, conf, inputResourceUniqKeys)
+      }
+      else{
+        writer.push(rdd, conf, eventUniqKeys)
+      }
     })
   }
 
