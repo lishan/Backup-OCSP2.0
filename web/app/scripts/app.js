@@ -86,11 +86,12 @@ angular
       lang = lang.substr(0,2);
       $translateProvider.preferredLanguage(lang);
     }
-  }]).run(['$rootScope', 'loginService', function($rootScope, loginService){
+  }]).run(['$rootScope', 'loginService', '$filter', function($rootScope, loginService, $filter){
     $rootScope.username = null;
     $rootScope.tab = null;
     $rootScope.message = null;
     $rootScope.styles = null;
+    $rootScope.title = $filter('translate')('ocsp_web_common_000');
     $rootScope.logout = function(){
       loginService.logout();
     };
