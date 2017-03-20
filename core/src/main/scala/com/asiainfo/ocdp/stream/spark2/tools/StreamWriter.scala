@@ -69,46 +69,24 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
 
     logInfo(s"The number of partitions is $numPartitions")
 
-    val resultRDD: RDD[(String, String)] = transforEvent2KafkaMessage(jsonRDD, uniqKeys).coalesce(numPartitions)
-
-    logInfo(s"The result with ${resultRDD.count()} records send to ${topic}")
-
-    resultRDD.mapPartitions(iter => {
+    jsonRDD.coalesce(numPartitions).mapPartitions(iter => {
       val diConf = broadDiconf.value
       val messages = ArrayBuffer[KeyedMessage[String, String]]()
-      val it = iter.toList.map(line =>
-        {
-          val key = line._1
-          val msg_json = line._2
-          val msg_head = Json4sUtils.jsonStr2String(msg_json, fildList, delim)
-          // 加入当前msg输出时间戳
-          val msg = msg_head + delim + sdf.format(System.currentTimeMillis)
-          if (key == null) messages.append(new KeyedMessage[String, String](topic, msg))
-          else messages.append(new KeyedMessage[String, String](topic, key, msg))
-          key
-        })
+      val it = iter.toList.map(jsonstr =>
+      {
+        val line = Json4sUtils.jsonStr2Map(jsonstr)
+        val key = uniqKeys.split(diConf.uniqKeysDelim).map(line(_)).mkString(diConf.uniqKeyValuesDelim)
+        //val msg_json = line._2
+        val msg_head = Json4sUtils.jsonStr2String(jsonstr, fildList, delim)
+        // 加入当前msg输出时间戳
+        val msg = msg_head + delim + sdf.format(System.currentTimeMillis)
+        if (key == null) messages.append(new KeyedMessage[String, String](topic, msg))
+        else messages.append(new KeyedMessage[String, String](topic, key, msg))
+        key
+      })
       val msgList = messages.toList
-      if (msgList.size > 0) {
-        logInfo(s"The final result with ${msgList.size} records send to ${topic}")
-        KafkaSendTool.sendMessage(diConf.dsConf, msgList)
-      }else{
-        logError(s"There are not any records to ${topic}")
-      }
+      if (msgList.size > 0) KafkaSendTool.sendMessage(diConf.dsConf, msgList)
       it.iterator
-    })
-  }
-
-  /**
-   *
-   * @param jsonRDD
-   * @param uniqKeys
-   * @return 返回输出到kafka的(key, message)元组的数组
-   */
-  def transforEvent2KafkaMessage(jsonRDD: RDD[String], uniqKeys: String): RDD[(String, String)] = {
-    jsonRDD.map(jsonstr => {
-      val data = Json4sUtils.jsonStr2Map(jsonstr)
-      val key = uniqKeys.split(",").map(data(_)).mkString(",")
-      (key, jsonstr)
     })
   }
 }

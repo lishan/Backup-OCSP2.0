@@ -37,9 +37,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
   val labels = dataInterfaceService.getLabelsByIFId(taskDiid)
 
   conf.setInterval(interval)
-  // 原始信令字段个数
-  val baseItemSize = conf.getBaseItemsSize
-
 
   protected def transform(source: String, schema: StructType, conf: DataInterfaceConf, droppedRecordsCounter: LongAccumulator, reservedRecordsCounter: LongAccumulator): Option[Row] = {
     val delim = conf.get("delim", ",")
@@ -334,7 +331,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
    * 业务处理
    */
   final def makeEvents(df: DataFrame, uniqKeys: String) = {
-    println(" Begin exec evets : " + System.currentTimeMillis())
 
     val threadPool: ExecutorService = Executors.newCachedThreadPool
 
