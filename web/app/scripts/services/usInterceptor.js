@@ -3,7 +3,7 @@ angular.module('ocspApp').factory('UsInterceptor', ['$q', 'usSpinnerService', '$
   return {
     'request': (config) => {
       let url = config.url;
-      if(!url.startsWith("/api/task/status")) {
+      if(!url.startsWith("/api/task/status") && !url.startsWith("/api/chart/taskData/")) {
         usSpinnerService.spin('spinner');
       }
       return config;
