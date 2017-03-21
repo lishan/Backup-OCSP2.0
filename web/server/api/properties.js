@@ -9,16 +9,11 @@ let trans = config[config.trans || 'zh'];
 let router = express.Router();
 
 router.get('/', function(req, res){
-  let user = req.query.user;
-  if(user === "admin") {
-    Prop.findAll({where: {status: 1}}).then(function (properties) {
-      res.send(properties);
-    }, function () {
-      res.status(500).send(trans.databaseError);
-    });
-  }else{
-    res.status(500).send(trans.authError);
-  }
+  Prop.findAll({where: {status: 1}}).then(function (properties) {
+    res.send(properties);
+  }, function () {
+    res.status(500).send(trans.databaseError);
+  });
 });
 
 router.get('/spark', function(req,res){
