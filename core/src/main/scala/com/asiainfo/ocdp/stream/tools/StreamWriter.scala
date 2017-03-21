@@ -75,7 +75,7 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
       val it = iter.toList.map(jsonstr =>
         {
           val line = Json4sUtils.jsonStr2Map(jsonstr)
-          val key = uniqKeys.split(diConf.uniqKeysDelim).map(line(_)).mkString(diConf.uniqKeyValuesDelim)
+          val key = uniqKeys.split(diConf.uniqKeysDelim).map(item=>line(item.trim)).mkString(diConf.uniqKeyValuesDelim)
           //val msg_json = line._2
           val msg_head = Json4sUtils.jsonStr2String(jsonstr, fildList, delim)
           // 加入当前msg输出时间戳
