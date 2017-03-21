@@ -105,7 +105,6 @@ CREATE TABLE `STREAM_LABEL` (
   `status` int(11) DEFAULT '0',
   `description` varchar(500) DEFAULT NULL,
   `label_id` int(16) NOT NULL,
-  `owner` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `STREAM_LABEL_ibfk_1` (`diid`),
   CONSTRAINT `STREAM_LABEL_ibfk_1` FOREIGN KEY (`diid`) REFERENCES `STREAM_DATAINTERFACE` (`id`)
@@ -124,6 +123,7 @@ CREATE TABLE `STREAM_LABEL_DEFINITION` (
   `name` varchar(30) NOT NULL,
   `class_name` varchar(100) NOT NULL,
   `properties` text,
+  `owner` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
