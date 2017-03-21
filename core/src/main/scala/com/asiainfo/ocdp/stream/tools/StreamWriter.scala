@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Properties
 
 import com.asiainfo.ocdp.stream.common.{BroadcastManager, Logging}
-import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, EventConf}
+import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, EventConf, MainFrameConf}
 import kafka.producer.KeyedMessage
 import org.apache.commons.lang.math.NumberUtils
 import org.apache.spark.rdd.RDD
@@ -67,6 +67,7 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
 
 
     logInfo(s"The number of partitions is $numPartitions")
+    val extraID = MainFrameConf.systemProps.getBoolean(MainFrameConf.EXTRAID, false)
 
     jsonRDD.coalesce(numPartitions).mapPartitions(iter => {
       val diConf = broadDiconf.value
@@ -78,7 +79,7 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
           //val msg_json = line._2
           val msg_head = Json4sUtils.jsonStr2String(jsonstr, fildList, delim)
           // 加入当前msg输出时间戳
-          val msg = { if (conf.get("extraID", "false").toBoolean)
+          val msg = { if (extraID)
               conf.id + delim + msg_head + delim + sdf.format(System.currentTimeMillis)
             else
               msg_head + delim + sdf.format(System.currentTimeMillis) }
