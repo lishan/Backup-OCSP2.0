@@ -9,11 +9,16 @@ let trans = config[config.trans || 'zh'];
 let router = express.Router();
 
 router.get('/', function(req, res){
-  Prop.findAll({where : {status: 1}}).then(function (properties){
-    res.send(properties);
-  }, function(){
-    res.status(500).send(trans.databaseError);
-  });
+  let user = req.query.user;
+  if(user === "admin") {
+    Prop.findAll({where: {status: 1}}).then(function (properties) {
+      res.send(properties);
+    }, function () {
+      res.status(500).send(trans.databaseError);
+    });
+  }else{
+    res.status(500).send(trans.authError);
+  }
 });
 
 router.get('/spark', function(req,res){
@@ -46,18 +51,23 @@ router.post('/spark', function(req, res){
 });
 
 router.post('/', function(req, res){
-  let properties = req.body.data;
-  let promises = [];
-  for(let i in properties){
-    promises.push(Prop.update(properties[i], {where : {id: properties[i].id}}));
+  let user = req.query.user;
+  if(user === "admin") {
+    let properties = req.body.data;
+    let promises = [];
+    for (let i in properties) {
+      promises.push(Prop.update(properties[i], {where: {id: properties[i].id}}));
+    }
+    sequelize.Promise.all(promises).then(function () {
+      res.send({success: true});
+    }, function () {
+      res.status(500).send(trans.databaseError);
+    }).catch(function () {
+      res.status(500).send(trans.databaseError);
+    });
+  }else{
+    res.status(500).send(trans.authError);
   }
-  sequelize.Promise.all(promises).then(function(){
-    res.send({success: true});
-  },function(){
-    res.status(500).send(trans.databaseError);
-  }).catch(function(){
-    res.status(500).send(trans.databaseError);
-  });
 });
 
 

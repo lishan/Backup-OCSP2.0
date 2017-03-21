@@ -23,22 +23,27 @@ router.post('/login/:name', function (req, res) {
 });
 
 router.post('/change', function(req, res){
-  let user = req.body.user;
-  let pass = crypto.createHash('md5').update(user.oldPassword).digest("hex");
-  User.find({where: {name: user.name, password: pass}}).then(function(data){
-    if(data !== null && data !== undefined && data.dataValues !== undefined){
-      user.password = crypto.createHash('md5').update(user.password).digest("hex");
-      User.update(user, {where: {id: data.dataValues.id}}).then(function(){
-        res.send({status: true});
-      }, function(){
+  let admin = req.query.user;
+  if(admin === "admin") {
+    let user = req.body.user;
+    let pass = crypto.createHash('md5').update(user.oldPassword).digest("hex");
+    User.find({where: {name: user.name, password: pass}}).then(function (data) {
+      if (data !== null && data !== undefined && data.dataValues !== undefined) {
+        user.password = crypto.createHash('md5').update(user.password).digest("hex");
+        User.update(user, {where: {id: data.dataValues.id}}).then(function () {
+          res.send({status: true});
+        }, function () {
+          res.send({status: false});
+        });
+      } else {
         res.send({status: false});
-      });
-    }else{
-      res.send({status: false});
-    }
-  }, function(){
-    res.status(500).send(trans.databaseError);
-  });
+      }
+    }, function () {
+      res.status(500).send(trans.databaseError);
+    });
+  }else{
+    res.status(500).send(trans.authError);
+  }
 });
 
 router.get('/md5/:str', function(req,res){

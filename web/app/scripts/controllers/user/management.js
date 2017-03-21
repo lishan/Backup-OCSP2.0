@@ -15,9 +15,11 @@ angular.module('ocspApp')
       if($scope.user.password !== undefined && $scope.user.password2 !== undefined && $scope.user.password === $scope.user.password2){
         $scope.message = null;
         $scope.styles = null;
+        return true;
       }else{
         $scope.message = $filter('translate')('ocsp_web_user_manage_006');
         $scope.styles = "redBlock";
+        return false;
       }
     };
     hotkeys.bindTo($scope).add({
@@ -28,8 +30,7 @@ angular.module('ocspApp')
       }
     });
     $scope.save = function(){
-      $scope.checkPassword();
-      if($scope.message === null) {
+      if ($scope.checkPassword() && !$scope.mainForm.$invalid) {
         $http.post('/api/user/change', {"user": $scope.user}).success(function (data) {
           if(data.status) {
             $scope.user = {

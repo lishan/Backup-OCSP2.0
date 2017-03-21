@@ -41,4 +41,9 @@ angular.module('ocspApp')
         });
     };
 
+    $scope.owner = (label) => {
+      return label.owner !== $rootScope.getUsername();
+
+    };
+
   }]);

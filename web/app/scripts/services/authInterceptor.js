@@ -4,7 +4,6 @@ angular.module('ocspApp').factory('AuthInterceptor', ['$q', '$rootScope', '$filt
     'request': function(config) {
       function htmlRequest(url){
         return !!(url.endsWith(".html") || url.endsWith(".htm"));
-
       }
       let url = config.url;
       if(!htmlRequest(url) && config.method !== 'GET') {

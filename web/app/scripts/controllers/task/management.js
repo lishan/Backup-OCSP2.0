@@ -173,32 +173,32 @@ angular.module('ocspApp')
     };
 
     // Global timer
-    // let taskInterval = $interval(function () {
-    //   $http.get('/api/task/status').success(function(tasks){
-    //     if($scope.jobs !== undefined && $scope.jobs.length > 0){
-    //       for(let i in $scope.jobs){
-    //         for(let j in tasks){
-    //           if($scope.jobs[i].id === tasks[j].id){
-    //             $scope.jobs[i].status = tasks[j].status;
-    //             $scope.jobs[i].running_time = tasks[j].running_time;
-    //             break;
-    //           }
-    //         }
-    //       }
-    //     }
-    //     _dealWith($scope.selectedJob.status);
-    //   });
-    //   if($scope.selectedJob.id !== undefined) {
-    //     $http.get('/api/chart/taskData/' + $scope.selectedJob.id).success((data) => {
-    //       _graphs(data);
-    //     });
-    //   }
-    // }, 3000);
-    // $scope.$on('$destroy', function(){
-    //   if(taskInterval) {
-    //     $interval.cancel(taskInterval);
-    //   }
-    // });
+    let taskInterval = $interval(function () {
+      $http.get('/api/task/status').success(function(tasks){
+        if($scope.jobs !== undefined && $scope.jobs.length > 0){
+          for(let i in $scope.jobs){
+            for(let j in tasks){
+              if($scope.jobs[i].id === tasks[j].id){
+                $scope.jobs[i].status = tasks[j].status;
+                $scope.jobs[i].running_time = tasks[j].running_time;
+                break;
+              }
+            }
+          }
+        }
+        _dealWith($scope.selectedJob.status);
+      });
+      if($scope.selectedJob.id !== undefined) {
+        $http.get('/api/chart/taskData/' + $scope.selectedJob.id).success((data) => {
+          _graphs(data);
+        });
+      }
+    }, 3000);
+    $scope.$on('$destroy', function(){
+      if(taskInterval) {
+        $interval.cancel(taskInterval);
+      }
+    });
 
     $scope.selectedJob = {
       input: {

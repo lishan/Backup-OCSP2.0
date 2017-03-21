@@ -2,7 +2,10 @@
 angular.module('ocspApp').factory('UsInterceptor', ['$q', 'usSpinnerService', '$injector' ,($q, usSpinnerService, $injector)=>{
   return {
     'request': (config) => {
-      usSpinnerService.spin('spinner');
+      let url = config.url;
+      if(!url.startsWith("/api/task/status")) {
+        usSpinnerService.spin('spinner');
+      }
       return config;
     },
     'response': (response) => {
