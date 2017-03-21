@@ -95,13 +95,24 @@ class Event extends Serializable with Logging{
         // 解析json数据，拼凑eventKey
         val line = jsonList(index)
         val current = Json4sUtils.jsonStr2Map(line)
-        val eventKeyValue = uniqKeys.split(":").map(current(_)).mkString(":")
-        // (eventCache:eventKeyValue,jsonValue)
-        batchArrayBuffer += ((s"${EventConstant.EVENT_CACHE_PREFIX_NAME}_${broadTaskConf.value.name}:${eventKeyValue}", line))
+
+        broadEventConf.value.outIFIds.foreach(diConf =>{
+          val eventUniqKeys = diConf.get("uniqKeys")
+          var eventKeyValue = ""
+          if (StringUtils.isEmpty((eventUniqKeys))){
+            eventKeyValue = uniqKeys.split(diConf.uniqKeysDelim).map(item=>current(item.trim)).mkString(diConf.uniqKeyValuesDelim)
+          }
+          else{
+            eventKeyValue = eventUniqKeys.split(diConf.uniqKeysDelim).map(item=>current(item.trim)).mkString(diConf.uniqKeyValuesDelim)
+          }
+
+          batchArrayBuffer += ((s"${EventConstant.EVENT_CACHE_PREFIX_NAME}_${broadTaskConf.value.name}:${eventKeyValue}", line))
+        })
 
         // 把list放入线程池更新codis
         if (index == size - 1) batchList += batchArrayBuffer.toArray
       }
+
       val outPutJsonList = eventServer.getEventCache(eventCacheService, batchList.toArray, time_EventId, conf.getInterval)
 
       outPutJsonList.iterator
