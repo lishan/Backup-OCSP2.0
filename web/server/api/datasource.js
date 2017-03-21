@@ -1,12 +1,12 @@
 "use strict";
-var express = require('express');
-var sequelize = require('../sequelize');
-var Sequelize = require('sequelize');
-var Datasource = require('../model/STREAM_DATASOURCE')(sequelize, Sequelize);
-var config = require('../config');
-var trans = config[config.trans || 'zh'];
+let express = require('express');
+let sequelize = require('../sequelize');
+let Sequelize = require('sequelize');
+let Datasource = require('../model/STREAM_DATASOURCE')(sequelize, Sequelize);
+let config = require('../config');
+let trans = config[config.trans || 'zh'];
 
-var router = express.Router();
+let router = express.Router();
 
 router.get('/', function(req, res){
   Datasource.findAll({where: {status : {'$gt' : 0}}}).then(function (datasource){
@@ -17,13 +17,13 @@ router.get('/', function(req, res){
 });
 
 router.post('/', function (req, res) {
-  var datasource = req.body.data;
+  let datasource = req.body.data;
   sequelize.transaction(function(t) {
     datasource.status = 2;//can be deleted
     if (datasource.type === 'kafka') {
       return Datasource.find({where: {id: 1}, transaction: t}).then(function (data) {
         datasource.properties = JSON.parse(data.properties);
-        for(var i in datasource.properties){
+        for(let i in datasource.properties){
           if(datasource.properties[i].pname === 'zookeeper.connect'){
             datasource.properties[i].pvalue = datasource.zk;
           }else if(datasource.properties[i].pname === 'metadata.broker.list'){
@@ -36,7 +36,7 @@ router.post('/', function (req, res) {
     } else if (datasource.type === 'codis') {
       return Datasource.find({where: {id: 2}, transaction: t}).then(function (data) {
         datasource.properties = JSON.parse(data.properties);
-        for(var i in datasource.properties){
+        for(let i in datasource.properties){
           if(datasource.properties[i].pname === 'zk'){
             datasource.properties[i].pvalue = datasource.zk;
           }else if(datasource.properties[i].pname === 'zkpath'){
@@ -57,11 +57,11 @@ router.post('/', function (req, res) {
 });
 
 router.put('/', function (req, res) {
-  var datasources = req.body.data;
+  let datasources = req.body.data;
   sequelize.transaction(function(t) {
-    var promises = [];
+    let promises = [];
     return Datasource.findAll({where: {status: 2}, transaction: t}).then(function () {
-      for (var i in datasources) {
+      for (let i in datasources) {
         promises.push(Datasource.update(datasources[i], {where: {id: datasources[i].id}, transaction: t}));
       }
       return sequelize.Promise.all(promises);

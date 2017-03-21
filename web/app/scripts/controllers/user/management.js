@@ -4,8 +4,8 @@
  * For label management main page controller
  */
 angular.module('ocspApp')
-  .controller('UserManagementCtrl', ['$scope', '$http', 'loginService', '$rootScope', '$filter', 'Notification', 'usSpinnerService', 'hotkeys', function ($scope, $http, loginService, $rootScope, $filter, Notification, usSpinnerService, hotkeys) {
-    loginService.init('user');
+  .controller('UserManagementCtrl', ['$scope', '$http', '$rootScope', '$filter', 'Notification', 'hotkeys', function ($scope, $http, $rootScope, $filter, Notification, hotkeys) {
+    $rootScope.init('user', true);
     $scope.message = null;
     $scope.styles = null;
     $scope.user = {
@@ -30,7 +30,6 @@ angular.module('ocspApp')
     $scope.save = function(){
       $scope.checkPassword();
       if($scope.message === null) {
-        usSpinnerService.spin('spinner');
         $http.post('/api/user/change', {"user": $scope.user}).success(function (data) {
           if(data.status) {
             $scope.user = {
@@ -40,10 +39,6 @@ angular.module('ocspApp')
           }else{
             Notification.error($filter('translate')('ocsp_web_common_030'));
           }
-          usSpinnerService.stop('spinner');
-        }).error(function (err) {
-          usSpinnerService.stop('spinner');
-          Notification.error(err);
         });
       }
     };

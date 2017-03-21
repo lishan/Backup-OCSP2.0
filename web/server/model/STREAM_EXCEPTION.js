@@ -1,37 +1,45 @@
 /* jshint indent: 2 */
 "use strict";
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('STREAM_DATASOURCE', {
+  return sequelize.define('STREAM_EXCEPTION', {
     id: {
       type: DataTypes.INTEGER(16),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    name: {
-      type: DataTypes.STRING,
+    taskID: {
+      type: DataTypes.INTEGER(16),
       allowNull: false
     },
-    type: {
+    appID: {
       type: DataTypes.STRING,
+      allowNull: true
+    },
+    exception_type: {
+      type: DataTypes.INTEGER(16),
       allowNull: false
     },
-    status: {
+    exception_info: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    level: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       defaultValue: "0"
     },
-    description: {
-      type: DataTypes.STRING,
-      allowNull: true
+    begin_time: {
+      type: DataTypes.DATE,
+      allowNull: false
     },
-    properties: {
-      type: DataTypes.TEXT,
+    end_time: {
+      type: DataTypes.DATE,
       allowNull: false
     }
   }, {
     createdAt: false,
     updatedAt: false,
-    tableName: 'STREAM_DATASOURCE'
+    tableName: 'STREAM_EXCEPTION'
   });
 };

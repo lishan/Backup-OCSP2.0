@@ -1,10 +1,9 @@
 'use strict';
 
 angular.module('ocspApp')
-  .controller('DashboardCtrl',['$scope', 'loginService', '$http', 'Notification', 'usSpinnerService', '$filter', ($scope, loginService, $http, Notification, usSpinnerService, $filter)=>{
-    loginService.init('dashboard');
+  .controller('DashboardCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', ($scope, $rootScope, $http, Notification, $filter)=>{
+    $rootScope.init('dashboard', true);
 
-    usSpinnerService.spin('spinner');
     $scope.labels = [
       $filter('translate')('ocsp_web_streams_manage_032'),
       $filter('translate')('ocsp_web_streams_manage_033'),
@@ -21,10 +20,6 @@ angular.module('ocspApp')
       $scope.records = data.records;
       $scope.series1 = [$filter('translate')('ocsp_web_dashboard_reserved'), $filter('translate')('ocsp_web_dashboard_dropped')];
       $scope.series2 = [$filter('translate')('ocsp_web_dashboard_enabled_events'), $filter('translate')('ocsp_web_dashboard_disabled_events')];
-      usSpinnerService.stop('spinner');
-    }, (err)=> {
-      Notification.error(err.data);
-      usSpinnerService.stop('spinner');
     });
 
   }]);

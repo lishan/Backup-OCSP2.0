@@ -48,6 +48,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_user_manage_004':'Retype new password',
     'ocsp_web_user_manage_005':'Password is wrong, please retry',
     'ocsp_web_user_manage_006':'The two passwords you entered did not match',
+    'ocsp_web_user_manage_007':'Session expired',
+    'ocsp_web_user_manage_008':'No permission',
 
     'ocsp_web_system_manage_000':'System Management',
     'ocsp_web_system_manage_001':'System configuration',

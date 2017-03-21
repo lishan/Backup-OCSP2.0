@@ -4,9 +4,9 @@
  * For job management main page controller
  */
 angular.module('ocspApp')
-  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', 'usSpinnerService', 'loginService', '$interval', '$uibModal', '$filter', 'moment', 'strService',
-    function ($scope, $http, Notification, $q, usSpinnerService, loginService, $interval, $uibModal, $filter, moment, strService) {
-    loginService.init('task');
+  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', '$rootScope', '$interval', '$uibModal', '$filter', 'moment', 'strService',
+    function ($scope, $http, Notification, $q, $rootScope, $interval, $uibModal, $filter, moment, strService) {
+    $rootScope.init('task');
     //i18n
     $scope.localLang = {
       search: $filter('translate')('ocsp_web_common_014'),
@@ -23,30 +23,31 @@ angular.module('ocspApp')
 
     //Check spark_home properties
     function _openSparkModal(){
-      var modal = $uibModal.open({
+      let modal = $uibModal.open({
         animation: true,
         ariaLabelledBy: 'modal-title-bottom',
         ariaDescribedBy: 'modal-body-bottom',
         templateUrl: 'stackedModal.html',
         size: 'md',
         scope: $scope,
-        controller: ['$scope', 'Notification', function($scope, Notification) {
+        controller: ['$scope', function($scope) {
           $scope.inputSpark = function(){
             $http.post("/api/prop/spark", {spark: $scope.spark}).success(function(){
               modal.close();
               $scope._showModal();
-            }).error(function(err){
-              Notification.error(err);
             });
           };
         }]
       });
     }
-    $http.get("/api/prop/spark").success(function(result){
-      if(result === null || result === "" || result.value === ""){
-        _openSparkModal();
-      }
-    });
+
+    if($rootScope.isAdmin()) {
+      $http.get("/api/prop/spark").success(function (result) {
+        if (result === null || result === "" || result.value === "") {
+          _openSparkModal();
+        }
+      });
+    }
 
     $scope._showModal = function(){
       $scope.$broadcast('openModal',{});
@@ -70,7 +71,19 @@ angular.module('ocspApp')
     ];
 
     function _dealWith(status) {
-      if(status === 0){
+      if(status === "delete"){
+        if($scope.selectedJob && $scope.jobs){
+          let i;
+          for(i in $scope.jobs){
+            if($scope.jobs[i].id === $scope.selectedJob.id){
+              break;
+            }
+          }
+          if(i < $scope.jobs.length) {
+            $scope.jobs.splice(i, 1);
+          }
+        }
+      }else if(status === 0){
         $scope.actions = [
           {name: $filter('translate')('ocsp_web_streams_manage_024'), enable: true, icon : "glyphicon glyphicon-play success"},
           {name: $filter('translate')('ocsp_web_streams_manage_025'), enable: false, icon: "glyphicon glyphicon-stop"},
@@ -130,11 +143,11 @@ angular.module('ocspApp')
     };
 
     $scope.changeStatus = function(item){
-      var name = item.name;
+      let name = item.name;
       if(!item.enable){
         return;
       }
-      var status = 0;
+      let status = 0;
       if(name === $filter('translate')('ocsp_web_streams_manage_024')){
         status = 1;
       }else if(name === $filter('translate')('ocsp_web_streams_manage_025')){
@@ -143,65 +156,49 @@ angular.module('ocspApp')
         status = 4;
       }else if(name === $filter('translate')('ocsp_web_streams_manage_027')){
         if(confirm("Are you sure?")){
-          if($scope.selectedJob.id === undefined || $scope.selectedJob.id === null){
-            Notification.error("Cannot delete null task");
-          }else{
-            usSpinnerService.spin('spinner');
-            $http.post("/api/task/delete/" + $scope.selectedJob.id, {type: 0}).success(function(){
-              $scope.selectedJob.type = 0;
-              Notification.success($filter('translate')('ocsp_web_common_029'));
-              usSpinnerService.stop('spinner');
-            }).error(function(err){
-              usSpinnerService.stop('spinner');
-              Notification.error(err);
-            });
-          }
+          status = "delete";
+        }else{
+          return;
         }
-        return;
       }
       if($scope.selectedJob.id === undefined || $scope.selectedJob.id === null){
         Notification.error("Cannot update null task");
       }else{
-        usSpinnerService.spin('spinner');
         $http.post("/api/task/change/" + $scope.selectedJob.id, {status: status}).success(function(){
           $scope.selectedJob.status = status;
           _dealWith(status);
           Notification.success($filter('translate')('ocsp_web_common_026'));
-          usSpinnerService.stop('spinner');
-        }).error(function(err){
-          usSpinnerService.stop('spinner');
-          Notification.error(err);
         });
       }
     };
 
-    // Globale timer
-    let taskInterval = $interval(function () {
-      $http.get('/api/task/status').success(function(tasks){
-        if($scope.jobs !== undefined && $scope.jobs.length > 0){
-          for(let i in $scope.jobs){
-            for(let j in tasks){
-              if($scope.jobs[i].id === tasks[j].id){
-                $scope.jobs[i].status = tasks[j].status;
-                $scope.jobs[i].running_time = tasks[j].running_time;
-                break;
-              }
-            }
-          }
-        }
-        _dealWith($scope.selectedJob.status);
-      });
-      if($scope.selectedJob.id !== undefined) {
-        $http.get('/api/chart/taskData/' + $scope.selectedJob.id).success((data) => {
-          _graphs(data);
-        });
-      }
-    }, 3000);
-    $scope.$on('$destroy', function(){
-      if(taskInterval) {
-        $interval.cancel(taskInterval);
-      }
-    });
+    // Global timer
+    // let taskInterval = $interval(function () {
+    //   $http.get('/api/task/status').success(function(tasks){
+    //     if($scope.jobs !== undefined && $scope.jobs.length > 0){
+    //       for(let i in $scope.jobs){
+    //         for(let j in tasks){
+    //           if($scope.jobs[i].id === tasks[j].id){
+    //             $scope.jobs[i].status = tasks[j].status;
+    //             $scope.jobs[i].running_time = tasks[j].running_time;
+    //             break;
+    //           }
+    //         }
+    //       }
+    //     }
+    //     _dealWith($scope.selectedJob.status);
+    //   });
+    //   if($scope.selectedJob.id !== undefined) {
+    //     $http.get('/api/chart/taskData/' + $scope.selectedJob.id).success((data) => {
+    //       _graphs(data);
+    //     });
+    //   }
+    // }, 3000);
+    // $scope.$on('$destroy', function(){
+    //   if(taskInterval) {
+    //     $interval.cancel(taskInterval);
+    //   }
+    // });
 
     $scope.selectedJob = {
       input: {
@@ -218,7 +215,6 @@ angular.module('ocspApp')
         },
         events: []
       };
-      usSpinnerService.spin('spinner');
       $q.all({job: $http.get('/api/task'), datasource: $http.get('/api/datasource'), labels: $http.get('/api/label')}).then(function(arr){
         $scope.jobs = arr.job.data;
         $scope.datasources = arr.datasource.data;
@@ -229,10 +225,6 @@ angular.module('ocspApp')
           }
         }
         $scope.inputLabels = arr.labels.data;
-        usSpinnerService.stop('spinner');
-      },function(err){
-        Notification.error(err.data);
-        usSpinnerService.stop('spinner');
       });
     }
 
@@ -250,13 +242,8 @@ angular.module('ocspApp')
           });
           Notification.error($filter('translate')('ocsp_web_common_032'));
         }else {
-          usSpinnerService.spin('spinner');
           $http.put("/api/task", {task: $scope.selectedJob}).success(function () {
             Notification.success($filter('translate')('ocsp_web_common_026'));
-            usSpinnerService.stop('spinner');
-          }).error(function (err) {
-            usSpinnerService.stop('spinner');
-            Notification.error(err);
           });
         }
       }
@@ -328,15 +315,15 @@ angular.module('ocspApp')
     }
 
     function _drawGraph(item, labels){
-      var graphDefinition = 'graph LR;';
+      let graphDefinition = 'graph LR;';
       graphDefinition += "task[" + item.name + "];";
       graphDefinition += "input((" + item.input.name + "));";
       graphDefinition += "task-->input;";
-      var last = "input";
+      let last = "input";
       if(labels.length > 0) {
         graphDefinition += "subgraph " + $filter('translate')('ocsp_web_common_024') + ";";
         if (labels.length > 1){
-          for (var i = 0 ; i < labels.length - 1 ; i++) {
+          for (let i = 0 ; i < labels.length - 1 ; i++) {
             graphDefinition += labels[i].name + "-->" + labels[i + 1].name + ";";
           }
         }else{
@@ -352,7 +339,7 @@ angular.module('ocspApp')
       }
       if(item.events.length > 0) {
         graphDefinition += "subgraph " + $filter('translate')('ocsp_web_common_025') + ";";
-        for(var j in item.events){
+        for(let j in item.events){
           if(item.events[j].output === undefined){
             graphDefinition += item.events[j].name + "((\"" + item.events[j].name + "\"));";
           }else {
@@ -368,9 +355,9 @@ angular.module('ocspApp')
           graphDefinition += last + "-->" + item.events[j].name + ";";
         }
       }
-      var element = document.querySelector("#mermaid");
+      let element = document.querySelector("#mermaid");
       element.innerHTML= "";
-      var insertSvg = function(svgCode){
+      let insertSvg = function(svgCode){
         element.innerHTML = svgCode;
       };
       mermaidAPI.render('graphDiv', graphDefinition, insertSvg);
@@ -387,7 +374,6 @@ angular.module('ocspApp')
 
     $scope.changeItem = function(item){
       $scope.selectedJob = item;
-      usSpinnerService.spin('spinner');
       $q.all({
         datainterface: $http.get('/api/datainterface/' + item.diid),
         labels: $http.get('/api/label/diid/' + item.diid),
@@ -398,7 +384,7 @@ angular.module('ocspApp')
           $scope.selectedJob.input = arr.datainterface.data[0];
           $scope.selectedJob.output = arr.outputinterface.data;
           $scope.selectedJob.events = arr.events.data;
-          var labels = [];
+          let labels = [];
           //Deal with input properties
           _parseDatasource($scope.selectedJob.input);
           _parseProperties($scope.selectedJob.input, $scope.selectedJob.input.properties, "input");
@@ -414,13 +400,13 @@ angular.module('ocspApp')
               }
             }
           }
-          var temp = $scope.inputLabels;
+          let temp = $scope.inputLabels;
           $scope.inputLabels = [];
           for(let j in labels){
             $scope.inputLabels.push(labels[j]);
           }
           for(let i in temp){
-            var flag = true;
+            let flag = true;
             for(let j in labels){
               if(temp[i].id === labels[j].id){
                 flag = false;
@@ -486,10 +472,6 @@ angular.module('ocspApp')
           _dealWith($scope.selectedJob.status);
           _drawGraph($scope.selectedJob, labels);
           _graphs(arr.charts.data);
-          usSpinnerService.stop('spinner');
-        }, function(err){
-          Notification.error(err.data);
-          usSpinnerService.stop('spinner');
         });
     };
 
@@ -538,8 +520,7 @@ angular.module('ocspApp')
     };
 
     $scope.submitMethod = function(){
-      var defer = $q.defer();
-      usSpinnerService.spin('spinner');
+      let defer = $q.defer();
       if(confirm("Save task?")) {
         $http.post("/api/task", {task: $scope.task}).success(function(){
           $scope.task = {
@@ -549,10 +530,6 @@ angular.module('ocspApp')
           Notification.success($filter('translate')('ocsp_web_common_026'));
           init();
           defer.resolve();
-        }).error(function(err){
-          usSpinnerService.stop('spinner');
-          Notification.error(err);
-          defer.reject();
         });
       }
       return defer.promise;
@@ -585,11 +562,11 @@ angular.module('ocspApp')
     };
 
     $scope.sortLabels = function(arr, index){
-      var temp = $scope.inputLabels;
+      let temp = $scope.inputLabels;
       arr.splice(index, 1);
       $scope.inputLabels = arr;
       for(let i in temp){
-        var flag = true;
+        let flag = true;
         for(let j in arr){
           if(temp[i].id === arr[j].id){
             flag = false;

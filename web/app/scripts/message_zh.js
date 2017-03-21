@@ -48,6 +48,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_user_manage_004':'再次输入',
     'ocsp_web_user_manage_005':'密码错误，请重试',
     'ocsp_web_user_manage_006':'两次输入的密码不一致',
+    'ocsp_web_user_manage_007':'用户登录过期',
+    'ocsp_web_user_manage_008':'没有操作权限',
 
     'ocsp_web_system_manage_000':'系统管理',
     'ocsp_web_system_manage_001':'系统配置',

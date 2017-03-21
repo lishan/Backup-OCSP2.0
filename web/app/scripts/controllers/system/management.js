@@ -4,22 +4,17 @@
  * For label management main page controller
  */
 angular.module('ocspApp')
-  .controller('SystemManagementCtrl', ['$scope', '$http', 'Notification', '$q', 'usSpinnerService', 'loginService', '$filter', '$uibModal', function ($scope, $http, Notification, $q, usSpinnerService, loginService, $filter, $uibModal) {
-    loginService.init('system');
+  .controller('SystemManagementCtrl', ['$scope', '$http', 'Notification', '$q', '$rootScope', '$filter', '$uibModal', function ($scope, $http, Notification, $q, $rootScope, $filter, $uibModal) {
+    $rootScope.init('system');
     function init() {
-      usSpinnerService.spin('spinner');
       $q.all({prop: $http.get('/api/prop'), datasource: $http.get('/api/datasource')}).then(function(arr){
         $scope.prop = arr.prop.data;
         $scope.datasource = arr.datasource.data;
         if($scope.datasource !== undefined && $scope.datasource.length > 0) {
-          for (var i in $scope.datasource) {
+          for (let i in $scope.datasource) {
             $scope.datasource[i].props = JSON.parse($scope.datasource[i].properties);
           }
         }
-        usSpinnerService.stop('spinner');
-      },function(err){
-        Notification.error(err.data);
-        usSpinnerService.stop('spinner');
       });
     }
 
@@ -33,7 +28,7 @@ angular.module('ocspApp')
       return str.replace(/\./g, '_');
     };
     $scope.openSparkModal = function(){
-      var modal = $uibModal.open({
+      let modal = $uibModal.open({
         animation: true,
         ariaLabelledBy: 'modal-title-bottom',
         ariaDescribedBy: 'modal-body-bottom',
@@ -49,8 +44,6 @@ angular.module('ocspApp')
                   $scope.newDatasource = {};
                   Notification.success($filter('translate')('ocsp_web_common_026'));
                   init();
-                }).error(function (err) {
-                  Notification.error(err);
                 });
               }
             }
@@ -60,7 +53,7 @@ angular.module('ocspApp')
     };
 
     $scope.save = function(){
-      for (var i in $scope.datasource) {
+      for (let i in $scope.datasource) {
         $scope.datasource[i].properties = JSON.stringify($scope.datasource[i].props);
       }
       $q.all({
@@ -69,9 +62,6 @@ angular.module('ocspApp')
         })
         .then(function () {
           Notification.success($filter('translate')('ocsp_web_common_026'));
-        }, function (err) {
-          usSpinnerService.stop('spinner');
-          Notification.error(err.data);
         });
     };
 

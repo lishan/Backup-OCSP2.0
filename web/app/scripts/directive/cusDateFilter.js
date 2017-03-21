@@ -12,9 +12,9 @@ angular.module('ocspApp').filter('cusDate',['$filter', function($filter) {
       return "";
     }
     input = Math.floor(input / 1000);
-    var h = Math.floor(input / 3600);
+    let h = Math.floor(input / 3600);
     input = input % 3600;
-    var m = Math.floor(input / 60);
+    let m = Math.floor(input / 60);
     if(h === 0){
       return m + $filter('translate')('ocsp_web_common_006');
     }else {

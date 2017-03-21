@@ -77,7 +77,7 @@ angular
       positionY: 'bottom'
     });
     usSpinnerConfigProvider.setDefaults({color: 'orange', radius: 20});
-    $httpProvider.interceptors.push('UrlRewriteInterceptor');
+    $httpProvider.interceptors.push('AuthInterceptor', 'UsInterceptor');
   }])
   .config(['$translateProvider', '$windowProvider', function($translateProvider, $windowProvider){
     let window = $windowProvider.$get();
@@ -86,16 +86,68 @@ angular
       lang = lang.substr(0,2);
       $translateProvider.preferredLanguage(lang);
     }
-  }]).run(['$rootScope', 'loginService', '$filter', function($rootScope, loginService, $filter){
+  }]).run(['$rootScope', '$filter', '$cookies', '$location', '$http',
+  ($rootScope, $filter, $cookies, $location, $http) => {
+    $rootScope.title = $filter('translate')('ocsp_web_common_000');
     $rootScope.username = null;
     $rootScope.tab = null;
     $rootScope.message = null;
     $rootScope.styles = null;
-    $rootScope.title = $filter('translate')('ocsp_web_common_000');
-    $rootScope.logout = function(){
-      loginService.logout();
-    };
-    $rootScope.changeTab = function(tab){
+    $rootScope.changeTab = (tab) => {
       $rootScope.tab = tab;
+    };
+    $rootScope.logout = () => {
+      $cookies.remove("username");
+      $rootScope.username = null;
+      $rootScope.message = null;
+      $rootScope.styles = null;
+      $location.path("/");
+    };
+    $rootScope.isAdmin = () => {
+      let name = $cookies.get("username");
+      return name === "ocspadmin";
+    };
+    $rootScope.login = (username ,password) => {
+      $http.post("/api/user/login/" + username, {pass: password}).success(function (user) {
+        if (user.status) {
+          $cookies.put("username", username);
+          if($rootScope.isAdmin()) {
+            $location.path("/dashboard");
+          }else{
+            $location.path("/task_management");
+          }
+          $rootScope.styles = null;
+          $rootScope.message = null;
+          $rootScope.changeTab('task');
+        } else {
+          $rootScope.message = $filter('translate')('ocsp_web_user_manage_005');
+          $rootScope.styles = "redBlock";
+          $cookies.remove("username");
+        }
+      }).error(function(err){
+        $rootScope.message = err;
+      });
+    };
+    $rootScope.getUsername = () => {
+      return $cookies.get("username");
+    };
+    $rootScope.init = (tab, adminGuard = false) => {
+      let name = $cookies.get("username");
+      if(name === null || name === undefined){
+        $rootScope.username = null;
+        $rootScope.message = $filter('translate')('ocsp_web_user_manage_007');
+        $rootScope.styles = "redBlock";
+        $location.path("/");
+      }else {
+        if(adminGuard && !$rootScope.isAdmin()){
+          $rootScope.username = null;
+          $rootScope.message = $filter('translate')('ocsp_web_user_manage_008');
+          $rootScope.styles = "redBlock";
+          $location.path("/");
+        }else {
+          $rootScope.changeTab(tab);
+          $rootScope.username = name;
+        }
+      }
     };
   }]);

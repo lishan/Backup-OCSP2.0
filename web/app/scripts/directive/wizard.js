@@ -2,7 +2,7 @@
 /**
  * Wizard directive
  */
-angular.module('ocspApp').directive('wizard',['$filter', function($filter){
+angular.module('ocspApp').directive('wizard',['$filter', '$rootScope', function($filter, $rootScope){
   return {
     restrict: 'E',
     templateUrl: 'views/directive/wizard.html',
@@ -13,7 +13,7 @@ angular.module('ocspApp').directive('wizard',['$filter', function($filter){
       task: "="
     },
     link : function(scope, element, attrs) {
-      var options = {
+      let options = {
         contentWidth : attrs.width,
         contentHeight : 600,
         backdrop: 'static',
@@ -28,11 +28,14 @@ angular.module('ocspApp').directive('wizard',['$filter', function($filter){
       let wizardel = element.find(".wizard");
       wizardel.attr("data-title",attrs.title);
       wizardel.find("div.wizard-card").each(function(){
-        var cardname = $(this).attr("data-cardname");
+        let cardname = $(this).attr("data-cardname");
         $(this).prepend("<h3 style='display: none'>" + $filter('translate')(cardname) + "</h3>");
       });
       element.find("button.wizard-button").text($filter('translate')(attrs.name));
-      var wizardModal = wizardel.wizard(options);
+      if($rootScope.isAdmin()){
+        element.find("button.wizard-button").attr("disabled", true);
+      }
+      let wizardModal = wizardel.wizard(options);
       scope.showModal = function(){
         wizardModal.show();
       };
@@ -62,7 +65,7 @@ angular.module('ocspApp').directive('wizard',['$filter', function($filter){
         return flag;
       });
       wizardModal.on("submit", function() {
-        var promise = scope.submitMethod();
+        let promise = scope.submitMethod();
         promise.then(function () {
           wizardModal.submitSuccess();
           wizardModal.reset();

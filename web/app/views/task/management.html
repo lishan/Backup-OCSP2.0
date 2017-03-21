@@ -33,7 +33,7 @@
       </li>
       <li class="dropdown pull-right" ng-show="selectedJob.id !== undefined">
         <div class="btn-group">
-          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-disabled="isAdmin()">
             {{'ocsp_web_streams_manage_023' | translate}} <span class="caret"></span>
           </button>
           <ul id="actions" class="dropdown-menu pull-right">
@@ -559,7 +559,7 @@
                     </uib-accordion>
                   </div>
                 </uib-accordion>
-                <button type="submit" class="btn btn-primary" ng-click="update()">{{'ocsp_web_common_009' | translate}}</button>
+                <button type="submit" class="btn btn-primary" ng-click="update()" ng-disabled="isAdmin()">{{'ocsp_web_common_009' | translate}}</button>
               </div>
             </div>
           </div>

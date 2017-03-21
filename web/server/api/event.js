@@ -1,15 +1,15 @@
 "use strict";
-var express = require('express');
-var sequelize = require('../sequelize');
-var Sequelize = require('sequelize');
-var Event = require('../model/STREAM_EVENT')(sequelize, Sequelize);
-var config = require('../config');
-var trans = config[config.trans || 'zh'];
+let express = require('express');
+let sequelize = require('../sequelize');
+let Sequelize = require('sequelize');
+let EventDef = require('../model/STREAM_EVENT')(sequelize, Sequelize);
+let config = require('../config');
+let trans = config[config.trans || 'zh'];
 
-var router = express.Router();
+let router = express.Router();
 
 router.get('/diid/:id', function(req, res){
-  Event.findAll({
+  EventDef.findAll({
     where:{
       diid : req.params.id
     }

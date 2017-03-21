@@ -1,24 +1,24 @@
 "use strict";
-var express = require('express');
+let express = require('express');
 let router = express.Router();
-var multer  = require('multer');
-var fs = require('fs');
-var unzip = require('unzip2');
-var sequelize = require('../sequelize');
-var Sequelize = require('sequelize');
-var Label = require('../model/STREAM_LABEL_DEFINITION')(sequelize, Sequelize);
-var LabelRefer = require('../model/STREAM_LABEL')(sequelize, Sequelize);
-var config = require('../config');
-var path = require('path');
-var trans = config[config.trans || 'zh'];
+let multer  = require('multer');
+let fs = require('fs');
+let unzip = require('unzip2');
+let sequelize = require('../sequelize');
+let Sequelize = require('sequelize');
+let Label = require('../model/STREAM_LABEL_DEFINITION')(sequelize, Sequelize);
+let LabelRefer = require('../model/STREAM_LABEL')(sequelize, Sequelize);
+let config = require('../config');
+let path = require('path');
+let trans = config[config.trans || 'zh'];
 
-var storage = multer.diskStorage({
+let storage = multer.diskStorage({
   destination: './uploads/',
   filename: function (req, file, cb) {
     cb(null, "tmpOran.jar");
   }
 });
-var upload = multer({ storage: storage });
+let upload = multer({ storage: storage });
 
 router.get('/', function(req, res){
   Label.findAll().then(function (labels){
@@ -29,9 +29,9 @@ router.get('/', function(req, res){
 });
 
 router.post('/', function(req, res){
-  var labels = req.body.labels;
-  var promises = [];
-  for(var i in labels){
+  let labels = req.body.labels;
+  let promises = [];
+  for(let i in labels){
     promises.push(Label.update(labels[i], {where : {id : labels[i].id}}));
   }
   sequelize.Promise.all(promises).then(function(){

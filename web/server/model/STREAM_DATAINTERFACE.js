@@ -33,13 +33,13 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     delim: {
-      type: DataTypes.STRING,
+    type: DataTypes.STRING,
       allowNull: false
-    },
+  },
     status: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
-      defaultValue: '0'
+      defaultValue: "0"
     },
     properties: {
       type: DataTypes.TEXT,
