@@ -34,18 +34,25 @@ let _getRunningTime = function (tasks) {
 router.get('/taskData/:id',(req,res)=>{
   let taskid = req.params.id;
   Record.findAll({
-    attributes: ["reserved_records", "dropped_records","timestamp"],
+    attributes: ["reserved_records", "dropped_records","timestamp", "application_id"],
     where: {task_id: taskid, archived: 0},
     order: 'timestamp ASC'
   }).then((data) => {
-    let timestamps= [];
-    let result = [[],[]];
-    for(let i in data){
-      result[0].push(data[i].dataValues.reserved_records);
-      result[1].push(data[i].dataValues.dropped_records);
-      timestamps.push(data[i].dataValues.timestamp);
+    if(data !== null && data !== undefined && data.length > 0) {
+      let timestamps= [];
+      let result = [[],[]];
+      let appId = data[data.length-1].dataValues.application_id;
+      for (let i in data) {
+        if(data[i].application_id === appId) {
+          result[0].push(data[i].dataValues.reserved_records);
+          result[1].push(data[i].dataValues.dropped_records);
+          timestamps.push(data[i].dataValues.timestamp);
+        }
+      }
+      res.status(200).send({result,timestamps});
+    }else{
+      res.status(500).send(trans.databaseError);
     }
-    res.status(200).send({result,timestamps});
   },()=>{
     res.status(500).send(trans.databaseError);
   });
