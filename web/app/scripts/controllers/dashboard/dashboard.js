@@ -15,7 +15,7 @@ angular.module('ocspApp')
     $http.get('/api/chart/status').success((data)=>{
       $scope.status = data.status;
       $scope.names = data.names;
-      $scope.running = data.running;
+      $scope.running = [data.running];
       $scope.count = data.count;
       $scope.records = data.records;
       $scope.series1 = [$filter('translate')('ocsp_web_dashboard_reserved'), $filter('translate')('ocsp_web_dashboard_dropped')];
