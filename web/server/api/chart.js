@@ -38,9 +38,9 @@ router.get('/taskData/:id',(req,res)=>{
     where: {task_id: taskid, archived: 0},
     order: 'timestamp ASC'
   }).then((data) => {
+    let timestamps= [];
+    let result = [[],[]];
     if(data !== null && data !== undefined && data.length > 0) {
-      let timestamps= [];
-      let result = [[],[]];
       let appId = data[data.length-1].dataValues.application_id;
       for (let i in data) {
         if(data[i].application_id === appId) {
@@ -49,10 +49,10 @@ router.get('/taskData/:id',(req,res)=>{
           timestamps.push(data[i].dataValues.timestamp);
         }
       }
-      res.status(200).send({result,timestamps});
-    }else{
-      res.status(500).send(trans.databaseError);
     }
+    result[0].push(0);
+    result[1].push(0);
+    res.status(200).send({result,timestamps});
   },()=>{
     res.status(500).send(trans.databaseError);
   });
@@ -93,7 +93,7 @@ router.get('/status', (req,res) => {
     sequelize.Promise.all(promises).then(()=>{
       for(let i in tasks) {
         let tmp = tasks[i].dataValues;
-        running.push(tmp.running_time?  tmp.running_time/ 60000: 0);
+        running.push(tmp.running_time?  (tmp.running_time/ 60000).toFixed(2): 0);
         names.push(tmp.name? tmp.name : 0);
         count[0].push(tmp.count1? tmp.count1 : 0);
         count[1].push(tmp.count2? tmp.count2 : 0);
@@ -103,6 +103,7 @@ router.get('/status', (req,res) => {
           status[tmp.status]++;
         }
       }
+      running.push(0);
       count[0].push(0);
       count[1].push(0);
       records[0].push(0);

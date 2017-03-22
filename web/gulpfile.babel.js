@@ -86,7 +86,7 @@ gulp.task('lint:serverScripts', function () {
 });
 
 gulp.task('start:client', ['start:server'], function () {
-  openURL("http://localhost:9000","firefox");
+  openURL("http://localhost:9000","chrome");
 });
 
 gulp.task('start:server', ['styles', 'es6:frontend', 'es6:server', 'bower'], function(cb) {
@@ -236,7 +236,11 @@ gulp.task('pageNotFound', function(){
 
 gulp.task('config', () => {
   return gulp.src("server/config.js.template")
-    .pipe(gulp.dest("build-server"))
+    .pipe(gulp.dest("build-server"));
+});
+
+gulp.task('lib', ()=> {
+  return gulp.src("server/lib/*.jar").pipe(gulp.dest("build-server/lib"));
 });
 
 gulp.task('copy:extras', function () {
@@ -250,7 +254,7 @@ gulp.task('copy:fonts', function () {
 });
 
 gulp.task('build', ['clean:dist', 'clean:server', 'clean:client'], function (cb) {
-  runSequence(['config', 'images', 'favicon', 'copy:extras', 'copy:fonts', 'client:rename', 'pageNotFound'], cb);
+  runSequence(['config', 'lib', 'images', 'favicon', 'copy:extras', 'copy:fonts', 'client:rename', 'pageNotFound'], cb);
 });
 
 gulp.task('war', ['build'], () => {

@@ -66,7 +66,7 @@ angular
         template : "<div></div>"
       });
   })
-  .config(['NotificationProvider','usSpinnerConfigProvider', '$httpProvider', function (NotificationProvider, usSpinnerConfigProvider, $httpProvider) {
+  .config(['NotificationProvider','usSpinnerConfigProvider', '$httpProvider', 'ChartJsProvider', function (NotificationProvider, usSpinnerConfigProvider, $httpProvider, ChartJsProvider) {
     NotificationProvider.setOptions({
       delay: 10000,
       startTop: 20,
@@ -78,6 +78,9 @@ angular
     });
     usSpinnerConfigProvider.setDefaults({color: 'orange', radius: 20});
     $httpProvider.interceptors.push('AuthInterceptor', 'UsInterceptor');
+    ChartJsProvider.setOptions({
+      chartColors: ['#4da9ff','#ff704d','#79d2a6','#4d0000','#ff9900','#669999']
+    });
   }])
   .config(['$translateProvider', '$windowProvider', function($translateProvider, $windowProvider){
     let window = $windowProvider.$get();
