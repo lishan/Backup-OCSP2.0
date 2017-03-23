@@ -18,7 +18,7 @@ angular.module('ocspApp').factory('AuthInterceptor', ['$q', '$rootScope', '$filt
         }
       }
       if(!htmlRequest(url)) {
-        config.url+=`?username=${$rootScope.getUsername()}&user=${$rootScope.isAdmin()? "admin": "user"}`;
+        config.url+=`?username=${$rootScope.getUsername()}&user=${$rootScope.isAdmin()? "admin": "user"}&token=${$rootScope.getToken()}`;
       }
       return config;
     }

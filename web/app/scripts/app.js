@@ -89,7 +89,12 @@ angular
       lang = lang.substr(0,2);
       $translateProvider.preferredLanguage(lang);
     }
-  }]).run(['$rootScope', '$filter', '$cookies', '$location', '$http',
+  }])
+  .constant('CONFIGS', {
+    taskInterval: 5000,
+    chartRefreshInterval: 20000
+  })
+  .run(['$rootScope', '$filter', '$cookies', '$location', '$http',
   ($rootScope, $filter, $cookies, $location, $http) => {
     $rootScope.title = $filter('translate')('ocsp_web_common_000');
     $rootScope.username = null;
@@ -111,9 +116,11 @@ angular
       return name === "ocspadmin";
     };
     $rootScope.login = (username ,password) => {
-      $http.post("/api/user/login/" + username, {pass: password}).success(function (user) {
+      $http.post("/api/user/login/" ,{username,password}).success(function (user) {
+        console.log(user);
         if (user.status) {
           $cookies.put("username", username);
+          $cookies.put("token", user.token);
           if($rootScope.isAdmin()) {
             $location.path("/dashboard");
           }else{
@@ -133,6 +140,9 @@ angular
     };
     $rootScope.getUsername = () => {
       return $cookies.get("username");
+    };
+    $rootScope.getToken = () => {
+      return $cookies.get("token");
     };
     $rootScope.init = (tab, adminGuard = false) => {
       let name = $cookies.get("username");

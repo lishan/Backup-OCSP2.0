@@ -4,8 +4,8 @@
  * For job management main page controller
  */
 angular.module('ocspApp')
-  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', '$rootScope', '$interval', '$uibModal', '$filter', 'moment', 'strService',
-    function ($scope, $http, Notification, $q, $rootScope, $interval, $uibModal, $filter, moment, strService) {
+  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', '$rootScope', '$interval', '$uibModal', '$filter', 'moment', 'strService', 'CONFIGS',
+    function ($scope, $http, Notification, $q, $rootScope, $interval, $uibModal, $filter, moment, strService, CONFIGS) {
     $rootScope.init('task');
     //i18n
     $scope.localLang = {
@@ -188,15 +188,20 @@ angular.module('ocspApp')
         }
         _dealWith($scope.selectedJob.status);
       });
+    }, CONFIGS.taskInterval);
+    let chartRefreshInterval = $interval(function(){
       if($scope.selectedJob.id !== undefined) {
         $http.get('/api/chart/taskData/' + $scope.selectedJob.id).success((data) => {
           _graphs(data);
         });
       }
-    }, 3000);
+    }, CONFIGS.chartRefreshInterval);
     $scope.$on('$destroy', function(){
       if(taskInterval) {
         $interval.cancel(taskInterval);
+      }
+      if(chartRefreshInterval){
+        $interval.cancel(chartRefreshInterval);
       }
     });
 

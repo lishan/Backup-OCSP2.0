@@ -1,12 +1,14 @@
 //app.js
 "use strict";
-let express = require('express');
+import express from 'express';
+import bodyParser from 'body-parser';
+import config from './config';
+import path from 'path';
+import favicon from 'serve-favicon';
+import auth from './auth';
+
 let app = express();
-let bodyParser = require('body-parser');
-let config = require('./config');
 let env = config.env || 'dev';
-let path = require('path');
-let favicon = require('serve-favicon');
 
 if(env === 'dev') {
   app.use(require('connect-livereload')());
@@ -30,6 +32,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
 
+app.use(auth);
 // rest api
 app.use('/api/task', require('./api/task'));
 app.use('/api/label', require('./api/label'));

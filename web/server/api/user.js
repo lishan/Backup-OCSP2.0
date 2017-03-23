@@ -1,24 +1,41 @@
 "use strict";
+import {jarPack, shiroConfig, trans, enableAuth} from "../config";
 let express = require('express');
 let sequelize = require('../sequelize');
 let Sequelize = require('sequelize');
 let User = require('../model/STREAM_USER')(sequelize, Sequelize);
 let crypto = require('crypto');
-let config = require('../config');
-let trans = config[config.trans || 'zh'];
+let exec = require('child_process').exec;
 
 let router = express.Router();
 
-router.post('/login/:name', function (req, res) {
-  let pass = crypto.createHash('md5').update(req.body.pass).digest("hex");
-  User.find({where: {name: req.params.name, password: pass}}).then(function(user){
-    if(user === null || user === undefined){
-      res.send({status: false});
-    }else{
-      res.send({status: true});
-    }
-  }, function () {
-    res.status(500).send(trans.databaseError);
+router.post('/login', function (req, res) {
+  const prefix = "./server/lib/";
+  let username = req.body.username;
+  let pass = req.body.password;
+  exec(`java -Dconfig=${prefix}${shiroConfig} -Dtype=encrypt -Dusername=${username} -Dpassword=${pass} -jar ${prefix}${jarPack}`,
+    (error, token) => {
+      if(error === null){
+        token = token.trim();
+        if(enableAuth) {
+          exec(`java -Dconfig=${prefix}${shiroConfig} -Dtype=decrypt -Dtoken=${token} -jar ${prefix}${jarPack}`,
+            (err, message) => {
+              if (err === null) {
+                if(message.includes("Failed")) {
+                  res.send({status: false});
+                }else{
+                  res.send({status: true, token});
+                }
+              } else {
+                res.status(500).send(trans.authError);
+              }
+            });
+        }else{
+          res.send({status: true, token});
+        }
+      }else{
+        res.status(500).send(trans.authError);
+      }
   });
 });
 
