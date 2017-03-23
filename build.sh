@@ -6,15 +6,15 @@ HOME_PATH=$(cd `dirname $0`; pwd)
 
 cd ${HOME_PATH}
 version=`awk '/<ocsp.version>[^<]+<\/ocsp.version>/{gsub(/<ocsp.version>|<\/ocsp.version>/,"",$1);print $1;exit;}' pom.xml`
-spark_version=$1
-if [[ -z ${spark_version} ]];then
+spark_version=1.6.0
+if [[ -z ${1} ]];then
     echo "Build based on spark 1.6"
     mvn clean package -Dmaven.test.skip=true -Pspark-1.6
 else
-    case ${spark_version} in
+    case ${1} in
     1.6|2.1)
-        echo "Build based on spark ${spark_version}"
-        mvn clean package -Dmaven.test.skip=true -Pspark-${spark_version};;
+        echo "Build based on spark ${1}"
+        mvn clean package -Dmaven.test.skip=true -Pspark-${1};;
     *)
         echo "Invalid argument, only support to spark version 1.6 or 2.1"
         exit 2
@@ -36,8 +36,8 @@ mkdir -p build/OCDP_Stream/web
 cp -r bin build/OCDP_Stream
 cp -r conf build/OCDP_Stream
 
-cp core/target/core-${version}.jar build/OCDP_Stream/lib
-cp core/target/core-${version}-dist/lib/*.jar build/OCDP_Stream/lib
+cp core/target/ocsp-core_${spark_version}-${version}.jar build/OCDP_Stream/lib
+cp core/target/ocsp-core_${spark_version}-${version}-dist/lib/*.jar build/OCDP_Stream/lib
 
 tar -xzf web/target/web-${version}-bundle.tar.gz -C build/OCDP_Stream/web
 
