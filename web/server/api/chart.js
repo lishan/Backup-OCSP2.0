@@ -33,20 +33,36 @@ let _getRunningTime = function (tasks) {
 
 router.get('/taskData/:id',(req,res)=>{
   let taskid = req.params.id;
-  Record.findAll({
+  let promises = [];
+  let timestamps= [];
+  let result = [[],[]];
+  let batchtime = [[]];//for chart with type 'line' data must be in double array
+  let runtimetimestamps = [];
+  promises.push(Record.findAll({
     attributes: ["reserved_records", "dropped_records","timestamp"],
     where: {task_id: taskid, archived: 0},
     order: 'timestamp ASC'
   }).then((data) => {
-    let timestamps= [];
-    let result = [[],[]];
     for(let i in data){
       result[0].push(data[i].dataValues.reserved_records);
       result[1].push(data[i].dataValues.dropped_records);
       timestamps.push(data[i].dataValues.timestamp);
     }
-    res.status(200).send({result,timestamps});
-  },()=>{
+  }));
+  //task batch time
+  promises.push(sequelize.query('select task_id, timestamp, batch_running_time_ms  as run_time , STREAM_TASK_MONITOR.application_id from STREAM_TASK_MONITOR, (select application_id from STREAM_TASK_MONITOR where archived=0 and task_id='+ req.params.id +' ORDER BY timestamp DESC limit 1) tmp where archived=0 and tmp.application_id=STREAM_TASK_MONITOR.application_id limit 120;',{
+    type: sequelize.QueryTypes.SELECT
+    }).then((data) => {
+      for(let i in data) {
+        let tmp = data[i];
+        batchtime[0].push(tmp.run_time);
+        runtimetimestamps.push(tmp.timestamp);
+      }
+    }
+  ));
+  sequelize.Promise.all(promises).then(()=>{
+    res.status(200).send({result,timestamps,batchtime, runtimetimestamps});
+  }, () => {
     res.status(500).send(trans.databaseError);
   });
 });
@@ -55,10 +71,13 @@ router.get('/status', (req,res) => {
   Task.findAll({attributes: ['id', 'name', 'diid', 'status','start_time','stop_time']}).then((tasks) => {
     let status = [0, 0, 0, 0, 0, 0];
     let names = [];
+    let batchtime = [];
+    let tasknum = [];
     let running = [];
     let count = [[], []];
     let promises = [];
     let records = [[], []];
+    let taskname = [];
     let _getData = function (i) {
       promises.push(EventDef.count({where: {diid: tasks[i].diid, status: 1}}).then((data) => {
         tasks[i].dataValues.count1 = data;
@@ -77,12 +96,28 @@ router.get('/status', (req,res) => {
         }
       }));
     };
+
+    //dashboard batch time
+    let _getBatchTime = function () {
+      sequelize.query('select tmp.task_id, AVG(tmp.batch_running_time_ms) as run_time from (select * from STREAM_TASK_MONITOR where archived=0 ORDER BY timestamp DESC limit 10) tmp, (select application_id from STREAM_TASK_MONITOR where archived=0 ORDER BY timestamp DESC limit 1) tmp2 where tmp.application_id=tmp2.application_id group by tmp.task_id',{
+        type: sequelize.QueryTypes.SELECT}
+      ).then((data) => {
+        for(let i in data) {
+          let tmp = data[i];
+          batchtime.push(tmp.run_time);
+          tasknum.push(tmp.task_id);
+        }
+      });
+    };
+
     if(tasks !== undefined && tasks.length > 0){
       _getRunningTime(tasks);
+      _getBatchTime();
       for(let i in tasks) {
-        _getData(i);
+        _getData(i);        
       }
     }
+    
     sequelize.Promise.all(promises).then(()=>{
       for(let i in tasks) {
         let tmp = tasks[i].dataValues;
@@ -96,11 +131,16 @@ router.get('/status', (req,res) => {
           status[tmp.status]++;
         }
       }
+
+      for(let i in tasknum) {
+        let tmp = tasknum[i]-1;
+        taskname.push(tasks[tmp].dataValues.name);
+      }     
       count[0].push(0);
       count[1].push(0);
       records[0].push(0);
       records[1].push(0);
-      res.status(200).send({status,names,running,count,records});
+      res.status(200).send({status,names,batchtime,taskname,running,count,records});
     },()=>{
       res.status(500).send(trans.databaseError);
     });

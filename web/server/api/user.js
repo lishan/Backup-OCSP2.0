@@ -17,8 +17,7 @@ router.post('/login/:name', function (req, res) {
     }else{
       res.send({status: true});
     }
-  }, function (err) {
-    console.log('err', err)
+  }, function () {
     res.status(500).send(trans.databaseError);
 
   });
