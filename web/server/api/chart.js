@@ -61,11 +61,14 @@ router.get('/taskData/:id',(req,res)=>{
   promises.push(sequelize.query('select task_id, timestamp, batch_running_time_ms  as run_time , STREAM_TASK_MONITOR.application_id from STREAM_TASK_MONITOR, (select application_id from STREAM_TASK_MONITOR where archived=0 and task_id='+ req.params.id +' ORDER BY timestamp DESC limit 1) tmp where archived=0 and tmp.application_id=STREAM_TASK_MONITOR.application_id limit 120;',{
     type: sequelize.QueryTypes.SELECT
     }).then((data) => {
-      for(let i in data) {
-        let tmp = data[i];
-        batchtime[0].push(tmp.run_time);
-        runtimetimestamps.push(tmp.timestamp);
+      if(data !== null && data !== undefined && data.length > 0) {
+        for(let i in data) {
+          let tmp = data[i];
+          batchtime[0].push(tmp.run_time);
+          runtimetimestamps.push(tmp.timestamp);
+        }
       }
+      batchtime[0].push(0);
     }
   ));
 

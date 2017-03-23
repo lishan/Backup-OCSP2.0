@@ -63,7 +63,7 @@ angular.module('ocspApp')
       $scope.chartSeries = [$filter('translate')('ocsp_web_dashboard_reserved'), $filter('translate')('ocsp_web_dashboard_dropped')];
       $scope.chartData = charts.result;
       $scope.chartLabels = [];
-      $scope.chartSeries = [$filter('translate')('ocsp_web_dashboard5')];
+      $scope.chartRunTimeSeries = [$filter('translate')('ocsp_web_dashboard5')];
       $scope.chartRunTimeLabels = [];
       $scope.chartRunTimeData = charts.batchtime;
       for(let i in charts.runtimetimestamps){

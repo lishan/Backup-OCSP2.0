@@ -13,7 +13,6 @@ angular.module('ocspApp')
       $filter('translate')('ocsp_web_streams_manage_044')
     ];
     $http.get('/api/chart/status').success((data)=>{
-      console.log("data", data);
       $scope.status = data.status;
       $scope.names = data.names;
       $scope.running = [data.running];
