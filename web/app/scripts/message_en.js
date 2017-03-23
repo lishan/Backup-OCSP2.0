@@ -48,6 +48,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_user_manage_004':'Retype new password',
     'ocsp_web_user_manage_005':'Password is wrong, please retry',
     'ocsp_web_user_manage_006':'The two passwords you entered did not match',
+    'ocsp_web_user_manage_007':'Session expired',
+    'ocsp_web_user_manage_008':'No permission',
 
     'ocsp_web_system_manage_000':'System Management',
     'ocsp_web_system_manage_001':'System configuration',
@@ -110,6 +112,12 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_047':'Available fields',
     'ocsp_web_streams_manage_048':'Generate available fields',
     'ocsp_web_streams_manage_049':'Architecture',
+    'ocsp_web_streams_case_field_name':'Escape field name',
+    'ocsp_web_streams_case_expression':'Case when expression',
+    'ocsp_web_streams_subscribe_type_none':'Repeat: None',
+    'ocsp_web_streams_subscribe_type_day':'Repeat: Every Day',
+    'ocsp_web_streams_subscribe_type_week':'Repeat: Every Week',
+    'ocsp_web_streams_subscribe_type_month':'Repeat: Every Month',
 
     'ocsp_web_common_property_zookeeper_connect': 'Zookeeper address',
     'ocsp_web_common_property_zk': 'Zookeeper address',

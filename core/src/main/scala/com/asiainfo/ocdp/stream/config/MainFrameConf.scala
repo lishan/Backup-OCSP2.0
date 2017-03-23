@@ -20,6 +20,7 @@ object MainFrameConf {
   val codisProps = new DataSourceConf()
 
   val MONITOR_TASK_MONITOR_ENABLE = "ocsp.monitor.task-monitor.enable"
+  val EXTRAID = "ocsp.event.append-id.enable"
 
   initMainFrameConf()
 

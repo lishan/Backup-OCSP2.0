@@ -100,7 +100,7 @@ class Event extends Serializable with Logging{
         val current = Json4sUtils.jsonStr2Map(line)
         val eventKeyValue = uniqKeys.split(":").map(current(_)).mkString(":")
         // (eventCache:eventKeyValue,jsonValue)
-        batchArrayBuffer += ((s"${EventConstant.EVENT_CACHE_PREFIX_NAME}_${broadTaskConf.value.name}:${eventKeyValue}", line))
+        batchArrayBuffer += ((s"${EventConstant.EVENT_CACHE_PREFIX_NAME}_${broadTaskConf.value.id}:${eventKeyValue}", line))
 
         // 把list放入线程池更新codis
         if (index == size - 1) batchList += batchArrayBuffer.toArray
@@ -114,10 +114,16 @@ class Event extends Serializable with Logging{
   /**
    * rdd格式流输出
    */
-  def outputEvent(rdd: RDD[String], uniqKeys: String) = {
+  def outputEvent(rdd: RDD[String], inputResourceUniqKeys: String) = {
     conf.outIFIds.map(ifconf => {
       val writer = StreamWriterFactory.getWriter(ifconf)
-      writer.push(rdd, conf, uniqKeys)
+      val eventUniqKeys = ifconf.get("uniqKeys")
+      if (StringUtils.isEmpty(eventUniqKeys)){
+        writer.push(rdd, conf, inputResourceUniqKeys)
+      }
+      else{
+        writer.push(rdd, conf, eventUniqKeys)
+      }
     })
   }
 

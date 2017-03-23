@@ -39,9 +39,13 @@ module.exports = function(sequelize, DataTypes) {
     status: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
-      defaultValue: '0'
+      defaultValue: "0"
     },
     description: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    owner: {
       type: DataTypes.STRING,
       allowNull: true
     }

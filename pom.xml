@@ -17,8 +17,7 @@
     <properties>
         <scala.version>2.11.8</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
-        <spark.version>2.1.0</spark.version>
-        <ocsp.version>2.0.1</ocsp.version>
+        <ocsp.version>2.1.0-beta</ocsp.version>
     </properties>
 
     <repositories>

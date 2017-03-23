@@ -105,7 +105,6 @@ CREATE TABLE `STREAM_LABEL` (
   `status` int(11) DEFAULT '0',
   `description` varchar(500) DEFAULT NULL,
   `label_id` int(16) NOT NULL,
-  `owner` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `STREAM_LABEL_ibfk_1` (`diid`),
   CONSTRAINT `STREAM_LABEL_ibfk_1` FOREIGN KEY (`diid`) REFERENCES `STREAM_DATAINTERFACE` (`id`)
@@ -124,6 +123,7 @@ CREATE TABLE `STREAM_LABEL_DEFINITION` (
   `name` varchar(30) NOT NULL,
   `class_name` varchar(100) NOT NULL,
   `properties` text,
+  `owner` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
@@ -153,7 +153,7 @@ CREATE TABLE `STREAM_SYSTEMPROP` (
 
 LOCK TABLES `STREAM_SYSTEMPROP` WRITE;
 /*!40000 ALTER TABLE `STREAM_SYSTEMPROP` DISABLE KEYS */;
-INSERT INTO `STREAM_SYSTEMPROP` VALUES (1,'cacheManager','JodisCacheManager',0,NULL),(2,'ocsp.monitor.task-monitor.enable','true',0,''),(3,'ocsp.monitor.task-monitor.retain-check-interval-mins','2880',0,''),(4,'ocsp.monitor.task-monitor.retain-mins','10080',0,''),(7,'checkpoint_dir','streaming/checkpoint',0,NULL),(11,'SPARK_HOME','/usr/hdp/2.4.0.0-169/spark',1,'Spark安装路径'),(12,'master','yarn',1,'Spark应用程序的运行模式'),(13,'supervise','false',0,NULL),(17,'delaySeconds','20',0,NULL),(18,'periodSeconds','10',0,NULL),(21,'cacheQryBatchSizeLimit','1000',0,NULL),(27,'cacheQryTaskSizeLimit','1000',0,NULL);
+INSERT INTO `STREAM_SYSTEMPROP` VALUES (1,'cacheManager','JodisCacheManager',0,NULL),(2,'ocsp.monitor.task-monitor.enable','true',0,''),(3,'ocsp.monitor.task-monitor.retain-check-interval-mins','2880',0,''),(4,'ocsp.monitor.task-monitor.retain-mins','10080',0,''),(7,'checkpoint_dir','streaming/checkpoint',0,NULL),(11,'SPARK_HOME','/usr/hdp/2.4.0.0-169/spark',1,'Spark安装路径'),(12,'master','yarn',1,'Spark应用程序的运行模式'),(13,'supervise','false',0,NULL),(17,'delaySeconds','20',0,NULL),(18,'periodSeconds','10',0,NULL),(21,'cacheQryBatchSizeLimit','1000',0,NULL),(27,'cacheQryTaskSizeLimit','1000',0,NULL),(28,'ocsp.event.append-id.enable','false',0,NULL);
 /*!40000 ALTER TABLE `STREAM_SYSTEMPROP` ENABLE KEYS */;
 UNLOCK TABLES;
 

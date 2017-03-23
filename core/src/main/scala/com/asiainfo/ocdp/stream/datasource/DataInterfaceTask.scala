@@ -248,7 +248,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     * 业务处理
     */
   final def makeEvents(df: DataFrame, uniqKeys: String) = {
-    println(" Begin exec evets : " + System.currentTimeMillis())
 
     val threadPool: ExecutorService = Executors.newCachedThreadPool
 

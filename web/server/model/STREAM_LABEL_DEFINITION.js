@@ -19,6 +19,10 @@ module.exports = function(sequelize, DataTypes) {
     properties: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    owner: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     createdAt: false,

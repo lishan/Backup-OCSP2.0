@@ -12,39 +12,38 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
+    appID: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     type: {
       type: DataTypes.INTEGER(11),
       allowNull: false
     },
-    cur_retry: {
-      type: DataTypes.INTEGER(11),
-      allowNull: false,
-      defaultValue: '0'
-    },
     receive_interval: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
-      defaultValue: '5'
+      defaultValue: "5"
     },
     num_executors: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
-      defaultValue: '2'
+      defaultValue: "2"
     },
     driver_memory: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: '2g'
+      defaultValue: "2g"
     },
     executor_memory: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: '2g'
+      defaultValue: "2g"
     },
     total_executor_cores: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
-      defaultValue: '2'
+      defaultValue: "2"
     },
     queue: {
       type: DataTypes.STRING,
@@ -53,7 +52,7 @@ module.exports = function(sequelize, DataTypes) {
     status: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
-      defaultValue: '0'
+      defaultValue: "0"
     },
     start_time: {
       type: DataTypes.STRING,
@@ -67,6 +66,16 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
+    retry: {
+      type: DataTypes.INTEGER(11),
+      allowNull: false,
+      defaultValue: "0"
+    },
+    cur_retry: {
+      type: DataTypes.INTEGER(11),
+      allowNull: false,
+      defaultValue: "0"
+    },
     diid: {
       type: DataTypes.INTEGER(16),
       allowNull: false,
@@ -74,6 +83,14 @@ module.exports = function(sequelize, DataTypes) {
         model: 'STREAM_DATAINTERFACE',
         key: 'id'
       }
+    },
+    owner: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    heartbeat: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     createdAt: false,

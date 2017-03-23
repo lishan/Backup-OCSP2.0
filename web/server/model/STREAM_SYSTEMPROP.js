@@ -17,8 +17,9 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     status: {
-      type: DataTypes.INTEGER(16),
-      allowNull: false
+      type: DataTypes.INTEGER(11),
+      allowNull: false,
+      defaultValue: "0"
     },
     description: {
       type: DataTypes.STRING,

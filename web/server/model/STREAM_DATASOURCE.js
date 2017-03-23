@@ -8,11 +8,6 @@ module.exports = function(sequelize, DataTypes) {
       primaryKey: true,
       autoIncrement: true
     },
-    status: {
-      type: DataTypes.INTEGER(11),
-      allowNull: false,
-      defaultValue: '0'
-    },
     name: {
       type: DataTypes.STRING,
       allowNull: false
@@ -20,6 +15,11 @@ module.exports = function(sequelize, DataTypes) {
     type: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    status: {
+      type: DataTypes.INTEGER(11),
+      allowNull: false,
+      defaultValue: "0"
     },
     description: {
       type: DataTypes.STRING,

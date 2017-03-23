@@ -4,14 +4,12 @@
  * For label management main page controller
  */
 angular.module('ocspApp')
-  .controller('LabelManagementCtrl', ['$scope', '$http', 'Upload', 'Notification', '$timeout', 'loginService', '$filter', function ($scope, $http, Upload, Notification, $timeout, loginService, $filter) {
-    loginService.init('label');
+  .controller('LabelManagementCtrl', ['$scope', '$http', 'Upload', 'Notification', '$timeout', '$rootScope', '$filter', function ($scope, $http, Upload, Notification, $timeout, $rootScope, $filter) {
+    $rootScope.init('label');
     function init() {
       $scope.message = null;
       $http.get('/api/label').success(function (data) {
         $scope.labels = data;
-      }).error(function(err){
-        Notification.error(err);
       });
     }
 
@@ -25,10 +23,7 @@ angular.module('ocspApp')
 
     $scope.save = function(){
       $http.post("/api/label", {labels: $scope.labels}).success(function(){
-        init();
         Notification.success($filter('translate')('ocsp_web_common_026'));
-      }).error(function(err){
-        Notification.error(err);
       });
     };
 
@@ -44,6 +39,11 @@ angular.module('ocspApp')
         }, function (err) {
           $scope.message = err.data;
         });
+    };
+
+    $scope.owner = (label) => {
+      return label.owner !== $rootScope.getUsername();
+
     };
 
   }]);

@@ -1,23 +1,23 @@
 "use strict";
-var express = require('express');
-var sequelize = require('../sequelize');
-var Sequelize = require('sequelize');
-var Task = require('../model/STREAM_TASK')(sequelize, Sequelize);
-var Interface = require('../model/STREAM_DATAINTERFACE')(sequelize, Sequelize);
-var Label = require('../model/STREAM_LABEL')(sequelize, Sequelize);
-var Event = require('../model/STREAM_EVENT')(sequelize, Sequelize);
-var randomstring = require("randomstring");
-var config = require('../config');
-var trans = config[config.trans || 'zh'];
-var moment = require('moment');
+let express = require('express');
+let sequelize = require('../sequelize');
+let Sequelize = require('sequelize');
+let Task = require('../model/STREAM_TASK')(sequelize, Sequelize);
+let Interface = require('../model/STREAM_DATAINTERFACE')(sequelize, Sequelize);
+let Label = require('../model/STREAM_LABEL')(sequelize, Sequelize);
+let EventDef = require('../model/STREAM_EVENT')(sequelize, Sequelize);
+let randomstring = require("randomstring");
+let config = require('../config');
+let trans = config[config.trans || 'zh'];
+let moment = require('moment');
 
-var router = express.Router();
+let router = express.Router();
 
-var getRunningTime = function (tasks) {
+let getRunningTime = function (tasks) {
   if (tasks !== undefined && tasks.length > 0) {
-    var date = new Date();
-    var sss = date.getTime();
-    for (var i = 0; i < tasks.length; i++) {
+    let date = new Date();
+    let sss = date.getTime();
+    for (let i = 0; i < tasks.length; i++) {
       if(tasks[i].dataValues !== undefined && tasks[i].dataValues.start_time !== undefined &&
         tasks[i].dataValues.start_time !== null && tasks[i].dataValues.start_time !== "") {
         if(tasks[i].status === 2) {
@@ -35,32 +35,63 @@ var getRunningTime = function (tasks) {
 };
 
 router.get('/', function(req, res){
-  Task.findAll().then(function (tasks){
-    getRunningTime(tasks);
-    res.send(tasks);
-  }, function(){
-    res.status(500).send(trans.databaseError);
-  });
+  let username = req.query.username;
+  let user = req.query.user;
+  if(user === "admin") {
+    Task.findAll().then((tasks) => {
+      getRunningTime(tasks);
+      res.send(tasks);
+    }, () => {
+      res.status(500).send(trans.databaseError);
+    });
+  }else{
+    Task.findAll({where: {owner : username}}).then((tasks) => {
+      getRunningTime(tasks);
+      res.send(tasks);
+    }, () => {
+      res.status(500).send(trans.databaseError);
+    });
+  }
 });
 
 router.get('/status', function(req,res){
-  Task.findAll({attributes: ['id','status','start_time','stop_time']}).then(function (tasks){
-    getRunningTime(tasks);
-    res.send(tasks);
-  }, function(){
-    res.status(500).send(trans.databaseError);
-  });
+  let username = req.query.username;
+  let user = req.query.user;
+  if(user === "admin") {
+    Task.findAll({attributes: ['id', 'status', 'start_time', 'stop_time']}).then(function (tasks) {
+      getRunningTime(tasks);
+      res.send(tasks);
+    }, function () {
+      res.status(500).send(trans.databaseError);
+    });
+  }else{
+    Task.findAll({attributes: ['id', 'status', 'start_time', 'stop_time'], where: {owner : username}}).then(function (tasks) {
+      getRunningTime(tasks);
+      res.send(tasks);
+    }, function () {
+      res.status(500).send(trans.databaseError);
+    });
+  }
 });
 
 router.post('/change/:id', function(req, res){
-  var status = req.body.status;
+  let status = req.body.status;
+  let username = req.query.username;
+  let user = req.query.user;
   sequelize.transaction(function(t) {
     return Task.find({where: {id: req.params.id}, transaction: t}).then(function (task) {
-      var result = task.dataValues;
+      let result = task.dataValues;
       if(result.status === 0 && status === 4){// When task is in stop status, it cannot be restart.
         return sequelize.Promise.reject();
       }
-      result.status = status;
+      if(result.owner !== username || user === "admin"){
+        return sequelize.Promise.reject();// Only owner can change status
+      }
+      if(status === "delete"){
+        result.type = 0;
+      }else {
+        result.status = status;
+      }
       return Task.update(result, {where: {id: req.params.id}, transaction: t});
     });
   }).then(function(){
@@ -71,25 +102,6 @@ router.post('/change/:id', function(req, res){
     res.status(500).send(trans.databaseError);
   });
 });
-
-router.post('/delete/:id', function(req, res){
-  var type = req.body.type;
-  sequelize.transaction(function(t) {
-    return Task.find({where: {id: req.params.id}, transaction: t}).then(function (task) {
-      var result = task.dataValues;
-      result.type = type;
-      return Task.update(result, {where: {id: req.params.id}, transaction: t});
-    });
-  }).then(function(){
-    res.send({success: true});
-  },function(){
-    res.status(500).send(trans.databaseError);
-  }).catch(function () {
-    res.status(500).send(trans.databaseError);
-  });
-});
-
-
 
 function dealDataInterfaceProperties(dataInterface, dsid, type) {
   dataInterface.dsid = dsid;
@@ -178,7 +190,7 @@ function createLabel(labels, di, t, promises, value) {
   if(value === undefined || isNaN(value) || value === null){
     value = 0;
   }
-  for(var i in labels) {
+  for(let i in labels) {
     labels[i].label_id = labels[i].id;
     labels[i].id = parseInt(value) + parseInt(i) + 1;
     labels[i].diid = di.id;
@@ -251,8 +263,8 @@ function createEvents(events, i, diid, status) {
 }
 
 function createOrUpdateOutputDataInterface(events, t, promises) {
-  var promise = null;
-  for(var i in events){
+  let promise = null;
+  for(let i in events){
     events[i].output.name = events[i].name + "_" + randomstring.generate(10);
     if(events[i].output.datasource !== undefined && events[i].output.datasource.id !== undefined){
       dealDataInterfaceProperties(events[i].output, events[i].output.datasource.id, 1);
@@ -269,113 +281,127 @@ function createOrUpdateOutputDataInterface(events, t, promises) {
 }
 
 router.post("/", function(req, res){
-  var labels = req.body.task.outputLabels;
-  var task = req.body.task;
-  var inputInterface = req.body.task.input;
-  var events = req.body.task.events;
-  // create input data interface
-  sequelize.transaction(function(t) {
-    if(inputInterface.datasource !== undefined && inputInterface.datasource.id !== undefined){
-      dealDataInterfaceProperties(inputInterface, inputInterface.datasource.id, 0);
-    }else{
-      dealDataInterfaceProperties(inputInterface, null, 0);
-    }
-    inputInterface.name = task.name + "_" + randomstring.generate(10);
-    return sequelize.Promise.all([
-      Interface.create(inputInterface, {transaction: t}),
-      Label.max("id", {transaction: t})]).then(function (di) {
-      var promises = [];
-      // create outputs
-      createOrUpdateOutputDataInterface(events, t, promises);
-      // create labels
-      createLabel(labels, di[0], t, promises, di[1]);
-      // create task
-      task.diid = di[0].id;
-      task.type = 1;
-      task.status = 0;
-      task.queue = "default";
-      promises.push(Task.create(task, {transaction: t}));
-      return sequelize.Promise.all(promises).then(function (result) {
-        var eventPromises = [];
-        for (var i in events) {
-          events[i].output.id = result[i].dataValues.id;
-          createEvents(events, i, task.diid, 1);
-          eventPromises.push(Event.create(events[i], {transaction: t}));
-        }
-        return sequelize.Promise.all(eventPromises);
+  let labels = req.body.task.outputLabels;
+  let task = req.body.task;
+  let inputInterface = req.body.task.input;
+  let events = req.body.task.events;
+  if(req.query.user === "admin"){
+    //admin cannot create tasks
+    res.status(500).send(trans.authError);
+  }else {
+    // create input data interface
+    sequelize.transaction(function (t) {
+      if (inputInterface.datasource !== undefined && inputInterface.datasource.id !== undefined) {
+        dealDataInterfaceProperties(inputInterface, inputInterface.datasource.id, 0);
+      } else {
+        dealDataInterfaceProperties(inputInterface, null, 0);
+      }
+      inputInterface.name = task.name + "_" + randomstring.generate(10);
+      return sequelize.Promise.all([
+        Interface.create(inputInterface, {transaction: t}),
+        Label.max("id", {transaction: t})]).then(function (di) {
+        let promises = [];
+        // create outputs
+        createOrUpdateOutputDataInterface(events, t, promises);
+        // create labels
+        createLabel(labels, di[0], t, promises, di[1]);
+        // create task
+        task.diid = di[0].id;
+        task.type = 1;
+        task.status = 0;
+        task.queue = "default";
+        task.owner = req.query.username;
+        promises.push(Task.create(task, {transaction: t}));
+        return sequelize.Promise.all(promises).then(function (result) {
+          let eventPromises = [];
+          for (let i in events) {
+            events[i].output.id = result[i].dataValues.id;
+            createEvents(events, i, task.diid, 1);
+            eventPromises.push(EventDef.create(events[i], {transaction: t}));
+          }
+          return sequelize.Promise.all(eventPromises);
+        });
       });
+    }).then(function () {
+      res.send({success: true});
+    }, function () {
+      res.status(500).send(trans.databaseError);
+    }).catch(function () {
+      res.status(500).send(trans.databaseError);
     });
-  }).then(function(){
-    res.send({success: true});
-  },function(){
-    res.status(500).send(trans.databaseError);
-  }).catch(function () {
-    res.status(500).send(trans.databaseError);
-  });
+  }
 });
 
 router.put("/", function(req, res) {
-  var task = req.body.task;
-  var inputInterface = req.body.task.input;
-  var labels = req.body.task.labels;
-  var events = req.body.task.events;
-  sequelize.transaction(function(t) {
-    var promises = [];
-    promises.push(Label.max("id", {transaction: t}));
-    promises.push(Event.findAll({where:{diid : inputInterface.id}, transaction: t}));
-    if(inputInterface.datasource !== undefined && inputInterface.datasource.id !== undefined){
-      dealDataInterfaceProperties(inputInterface, inputInterface.datasource.id, 0);
-    }else{
-      dealDataInterfaceProperties(inputInterface, null, 0);
-    }
-    promises.push(Interface.update(inputInterface, {where: {id : inputInterface.id}, transaction: t}));
-    promises.push(Task.update(task, {where: {id: task.id}, transaction: t}));
-    promises.push(Label.destroy({where: {diid: inputInterface.id}, transaction: t}));
-    createOrUpdateOutputDataInterface(events, t, promises);
-    return sequelize.Promise.all(promises).then(function (result) {
-      var promises1 = [];
-      //create label after delete
-      createLabel(labels, inputInterface, t, promises1, result[0]);
-      //create or update events
-      for (let i = 0 ; i < events.length; i++) {
-        if(result[i+5].dataValues !== undefined && result[i+5].dataValues.id !== undefined){
-          events[i].output.id = result[i+5].dataValues.id;
+  let task = req.body.task;
+  let inputInterface = req.body.task.input;
+  let labels = req.body.task.labels;
+  let events = req.body.task.events;
+  Task.find({attributes: ["owner"], where: {id: task.id}}).then((owner)=> {
+    if(owner && owner.dataValues && owner.dataValues.owner === req.query.username) {
+      sequelize.transaction(function (t) {
+        let promises = [];
+        promises.push(Label.max("id", {transaction: t}));
+        promises.push(EventDef.findAll({where: {diid: inputInterface.id}, transaction: t}));
+        if (inputInterface.datasource !== undefined && inputInterface.datasource.id !== undefined) {
+          dealDataInterfaceProperties(inputInterface, inputInterface.datasource.id, 0);
+        } else {
+          dealDataInterfaceProperties(inputInterface, null, 0);
         }
-        createEvents(events, i, inputInterface.id, events[i].status?1:0);
-        if(events[i].id === undefined || events[i].id === null){
-          promises1.push(Event.create(events[i], {transaction: t}));
-        }else {
-          promises1.push(Event.update(events[i], {where: {id: events[i].id}, transaction: t}));
-        }
-      }
-      //deleted unused events
-      for(let i in result[1]){
-        if(result[1][i].dataValues !== undefined && result[1][i].dataValues.id !== undefined){
-          var flag = true;
-          for(let j in events){
-            if(events[j].id !== undefined && result[1][i].dataValues.id === events[j].id){
-              flag = false;
-              break;
+        promises.push(Interface.update(inputInterface, {where: {id: inputInterface.id}, transaction: t}));
+        promises.push(Task.update(task, {where: {id: task.id}, transaction: t}));
+        promises.push(Label.destroy({where: {diid: inputInterface.id}, transaction: t}));
+        createOrUpdateOutputDataInterface(events, t, promises);
+        return sequelize.Promise.all(promises).then(function (result) {
+          let promises1 = [];
+          //create label after delete
+          createLabel(labels, inputInterface, t, promises1, result[0]);
+          //create or update events
+          for (let i = 0; i < events.length; i++) {
+            if (result[i + 5].dataValues !== undefined && result[i + 5].dataValues.id !== undefined) {
+              events[i].output.id = result[i + 5].dataValues.id;
+            }
+            createEvents(events, i, inputInterface.id, events[i].status ? 1 : 0);
+            if (events[i].id === undefined || events[i].id === null) {
+              promises1.push(EventDef.create(events[i], {transaction: t}));
+            } else {
+              promises1.push(EventDef.update(events[i], {where: {id: events[i].id}, transaction: t}));
             }
           }
-          if(flag){
-            promises1.push(Event.destroy({where: {id: result[1][i].dataValues.id}, transaction: t}));
-            if(result[1][i].dataValues.PROPERTIES !== undefined){
-              var obj = JSON.parse(result[1][i].dataValues.PROPERTIES);
-              if(obj.output_dis !== undefined && obj.output_dis[0] !== undefined && obj.output_dis[0].diid !== undefined) {
-                promises1.push(Interface.destroy({where: {id: obj.output_dis[0].diid}, transaction: t}));
+          //deleted unused events
+          for (let i in result[1]) {
+            if (result[1][i].dataValues !== undefined && result[1][i].dataValues.id !== undefined) {
+              let flag = true;
+              for (let j in events) {
+                if (events[j].id !== undefined && result[1][i].dataValues.id === events[j].id) {
+                  flag = false;
+                  break;
+                }
+              }
+              if (flag) {
+                promises1.push(EventDef.destroy({where: {id: result[1][i].dataValues.id}, transaction: t}));
+                if (result[1][i].dataValues.PROPERTIES !== undefined) {
+                  let obj = JSON.parse(result[1][i].dataValues.PROPERTIES);
+                  if (obj.output_dis !== undefined && obj.output_dis[0] !== undefined && obj.output_dis[0].diid !== undefined) {
+                    promises1.push(Interface.destroy({where: {id: obj.output_dis[0].diid}, transaction: t}));
+                  }
+                }
               }
             }
           }
-        }
-      }
-      return sequelize.Promise.all(promises1);
-    });
-  }).then(function(){
-    res.send({success: true});
-  },function(){
-    res.status(500).send(trans.databaseError);
-  }).catch(function () {
+          return sequelize.Promise.all(promises1);
+        });
+      }).then(function () {
+        res.send({success: true});
+      }, function () {
+        res.status(500).send(trans.databaseError);
+      }).catch(function () {
+        res.status(500).send(trans.databaseError);
+      });
+    }else{
+      res.status(500).send(trans.authError);
+    }
+  }, () => {
     res.status(500).send(trans.databaseError);
   });
 });

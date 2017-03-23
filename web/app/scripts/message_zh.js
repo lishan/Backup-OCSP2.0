@@ -48,6 +48,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_user_manage_004':'再次输入',
     'ocsp_web_user_manage_005':'密码错误，请重试',
     'ocsp_web_user_manage_006':'两次输入的密码不一致',
+    'ocsp_web_user_manage_007':'用户登录过期',
+    'ocsp_web_user_manage_008':'没有操作权限',
 
     'ocsp_web_system_manage_000':'系统管理',
     'ocsp_web_system_manage_001':'系统配置',
@@ -110,6 +112,12 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_047':'可用字段',
     'ocsp_web_streams_manage_048':'生成可用字段',
     'ocsp_web_streams_manage_049':'流程图',
+    'ocsp_web_streams_case_field_name':'转义字段名',
+    'ocsp_web_streams_case_expression':'case when表达式',
+    'ocsp_web_streams_subscribe_type_none':'重复：无',
+    'ocsp_web_streams_subscribe_type_day':'重复：每天',
+    'ocsp_web_streams_subscribe_type_week':'重复：每周',
+    'ocsp_web_streams_subscribe_type_month':'重复：每月',
 
     'ocsp_web_common_property_zookeeper_connect': 'zookeeper的连接地址',
     'ocsp_web_common_property_zk': 'zookeeper的连接地址',

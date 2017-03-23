@@ -176,7 +176,7 @@ object MainFrameManager extends Logging {
 
     var jars = new StringBuilder(" --jars ")
     ListFileWalker(HiddenFileFilter.VISIBLE, FileFilterUtils.suffixFileFilter(".jar")).list(new File(CommonConstant.baseDir)).foreach(file =>{
-      if (file.getName.startsWith("core")){
+      if (file.getName.startsWith("ocsp-core")){
         appJars = file.getAbsolutePath
       }
       jars.append(file.getAbsolutePath).append(",")

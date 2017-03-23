@@ -1,20 +1,20 @@
 // Generated on 2016-11-01 using generator-angular 0.15.1
 'use strict';
 
-var gulp = require('gulp');
-var $ = require('gulp-load-plugins')();
-var openURL = require("open");
-var lazypipe = require('lazypipe');
-var rimraf = require('rimraf');
-var wiredep = require('wiredep').stream;
-var runSequence = require('run-sequence');
+let gulp = require('gulp');
+let $ = require('gulp-load-plugins')();
+let openURL = require("open");
+let lazypipe = require('lazypipe');
+let rimraf = require('rimraf');
+let wiredep = require('wiredep').stream;
+let runSequence = require('run-sequence');
 
-var yeoman = {
+let yeoman = {
   app: require('./bower.json').appPath || 'app',
   dist: 'dist'
 };
 
-var paths = {
+let paths = {
   scripts: [yeoman.app + '/scripts/**/*.js'],
   buildScriptsDest: yeoman.app + '/build-scripts',
   buildScripts : [yeoman.app + '/build-scripts/**/*.js'],
@@ -42,11 +42,11 @@ var paths = {
 // Reusable pipelines //
 ////////////////////////
 
-var lintScripts = lazypipe()
+let lintScripts = lazypipe()
   .pipe($.jshint, '.jshintrc')
   .pipe($.jshint.reporter, 'jshint-stylish');
 
-var styles = lazypipe()
+let styles = lazypipe()
   .pipe($.sass, {
     outputStyle: 'expanded',
     precision: 10
@@ -54,13 +54,13 @@ var styles = lazypipe()
   .pipe($.autoprefixer, 'last 1 version')
   .pipe(gulp.dest, 'app/styles');
 
-var es6ClientScript = lazypipe()
+let es6ClientScript = lazypipe()
   .pipe($.babel, {
     presets: ['es2015']
   })
   .pipe(gulp.dest, paths.buildScriptsDest);
 
-var es6ServerScript = lazypipe()
+let es6ServerScript = lazypipe()
   .pipe($.babel, {
     presets: ['es2015']
   })
@@ -85,11 +85,11 @@ gulp.task('lint:serverScripts', function () {
     .pipe(lintScripts());
 });
 
-gulp.task('start:client', ['start:server', 'styles', 'es6:frontend', 'es6:server'], function () {
-  openURL("http://localhost:9000","firefox");
+gulp.task('start:client', ['start:server'], function () {
+  openURL("http://localhost:9000","chrome");
 });
 
-gulp.task('start:server', function(cb) {
+gulp.task('start:server', ['styles', 'es6:frontend', 'es6:server', 'bower'], function(cb) {
   let started = false;
   return $.nodemon({
     script: 'build-server/app.js',
@@ -136,7 +136,6 @@ gulp.task('serve', function (cb) {
     ['lint:clientScripts'],
     ['lint:serverScripts'],
     ['start:client'],
-	  ['bower'],
     'watch', cb);
 });
 
@@ -178,8 +177,8 @@ gulp.task('es6:server', () => {
 });
 
 gulp.task('client:build', ['html', 'styles', 'es6:frontend', 'es6:server'], function () {
-  var jsFilter = $.filter('**/*.js');
-  var cssFilter = $.filter('**/*.css');
+  let jsFilter = $.filter('**/*.js');
+  let cssFilter = $.filter('**/*.css');
 
   return gulp.src(paths.views.main)
     .pipe($.useref({
@@ -237,7 +236,11 @@ gulp.task('pageNotFound', function(){
 
 gulp.task('config', () => {
   return gulp.src("server/config.js.template")
-    .pipe(gulp.dest("build-server"))
+    .pipe(gulp.dest("build-server"));
+});
+
+gulp.task('lib', ()=> {
+  return gulp.src("server/lib/*.jar").pipe(gulp.dest("build-server/lib"));
 });
 
 gulp.task('copy:extras', function () {
@@ -251,7 +254,7 @@ gulp.task('copy:fonts', function () {
 });
 
 gulp.task('build', ['clean:dist', 'clean:server', 'clean:client'], function (cb) {
-  runSequence(['config', 'images', 'favicon', 'copy:extras', 'copy:fonts', 'client:rename', 'pageNotFound'], cb);
+  runSequence(['config', 'lib', 'images', 'favicon', 'copy:extras', 'copy:fonts', 'client:rename', 'pageNotFound'], cb);
 });
 
 gulp.task('war', ['build'], () => {

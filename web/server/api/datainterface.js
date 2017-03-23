@@ -1,12 +1,12 @@
 "use strict";
-var express = require('express');
-var sequelize = require('../sequelize');
-var Sequelize = require('sequelize');
-var DataInterface = require('../model/STREAM_DATAINTERFACE')(sequelize, Sequelize);
-var config = require('../config');
-var trans = config[config.trans || 'zh'];
+let express = require('express');
+let sequelize = require('../sequelize');
+let Sequelize = require('sequelize');
+let DataInterface = require('../model/STREAM_DATAINTERFACE')(sequelize, Sequelize);
+let config = require('../config');
+let trans = config[config.trans || 'zh'];
 
-var router = express.Router();
+let router = express.Router();
 
 router.get('/', function(req, res){
   DataInterface.findAll().then(function (datainterface){

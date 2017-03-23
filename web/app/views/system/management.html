@@ -73,7 +73,7 @@
   <div class="col-md-2 well">
     <div class="list-group">
       <div class="list-group-item">
-        <button class="wizard-button btn btn-default btn-block" ng-click="openSparkModal()">{{'ocsp_web_system_manage_003' | translate}}</button>
+        <button class="wizard-button btn btn-default btn-block" ng-disabled="!isAdmin()" ng-click="openSparkModal()">{{'ocsp_web_system_manage_003' | translate}}</button>
       </div>
     </div>
   </div>
@@ -97,7 +97,7 @@
                 <div class="col-md-8">
                   <input ng-model="property.value" class="form-control" popover-trigger="'mouseenter'"
                          popover-placement="right" popover-append-to-body=true
-                         uib-popover="{{property.description}}" popover-title="{{property.name}}">
+                         uib-popover="{{property.description}}" popover-title="{{property.name}}" ng-disabled="!isAdmin()">
                 </div>
               </div>
             </div>
@@ -117,7 +117,7 @@
                   <label>{{'ocsp_web_common_011' | translate}}</label>
                 </div>
                 <div class="col-md-8">
-                  <input class="form-control" ng-model="data.name">
+                  <input class="form-control" ng-model="data.name" ng-disabled="!isAdmin()">
                 </div>
               </div>
             </div>
@@ -129,13 +129,13 @@
                 <div class="col-md-8">
                   <input class="form-control" ng-model="item.pvalue" popover-append-to-body=true
                          popover-trigger="'mouseenter'" popover-placement="right" popover-title="{{item.pname}}"
-                         uib-popover="{{'ocsp_web_common_property_' + trans(item.pname) | translate}}">
+                         uib-popover="{{'ocsp_web_common_property_' + trans(item.pname) | translate}}" ng-disabled="!isAdmin()">
                 </div>
               </div>
             </div>
           </div>
         </uib-accordion>
-        <button type="button" class="btn btn-primary" ng-click="save()">{{'ocsp_web_common_009' | translate}}</button>
+        <button type="button" class="btn btn-primary" ng-disabled="!isAdmin()" ng-click="save()">{{'ocsp_web_common_009' | translate}}</button>
       </div>
     </div>
   </div>

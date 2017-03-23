@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Properties
 
 import com.asiainfo.ocdp.stream.common.{BroadcastManager, Logging}
-import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, EventConf}
+import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, EventConf, MainFrameConf}
 import kafka.producer.KeyedMessage
 import org.apache.commons.lang.math.NumberUtils
 import org.apache.spark.rdd.RDD
@@ -38,7 +38,7 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
    */
   
   def setMessage(jsonRDD: RDD[String], conf: EventConf, uniqKeys: String) = {
-    
+
     var fildList = conf.select_expr.split(",")
     if (conf.get("ext_fields", null) != null && conf.get("ext_fields") != "") {
       val fields = conf.get("ext_fields").split(",").map(ext => (ext.split("as"))(1).trim)
@@ -67,18 +67,22 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
 
 
     logInfo(s"The number of partitions is $numPartitions")
+    val extraID = MainFrameConf.systemProps.getBoolean(MainFrameConf.EXTRAID, false)
 
-    val resultRDD: RDD[(String, String)] = transforEvent2KafkaMessage(jsonRDD, uniqKeys).coalesce(numPartitions)
-    resultRDD.mapPartitions(iter => {
+    jsonRDD.coalesce(numPartitions).mapPartitions(iter => {
       val diConf = broadDiconf.value
       val messages = ArrayBuffer[KeyedMessage[String, String]]()
-      val it = iter.toList.map(line =>
+      val it = iter.toList.map(jsonstr =>
         {
-          val key = line._1
-          val msg_json = line._2
-          val msg_head = Json4sUtils.jsonStr2String(msg_json, fildList, delim)
+          val line = Json4sUtils.jsonStr2Map(jsonstr)
+          val key = uniqKeys.split(diConf.uniqKeysDelim).map(item=>line(item.trim)).mkString(diConf.uniqKeyValuesDelim)
+          //val msg_json = line._2
+          val msg_head = Json4sUtils.jsonStr2String(jsonstr, fildList, delim)
           // 加入当前msg输出时间戳
-          val msg = msg_head + delim + sdf.format(System.currentTimeMillis)
+          val msg = { if (extraID)
+              conf.id + delim + msg_head + delim + sdf.format(System.currentTimeMillis)
+            else
+              msg_head + delim + sdf.format(System.currentTimeMillis) }
           if (key == null) messages.append(new KeyedMessage[String, String](topic, msg))
           else messages.append(new KeyedMessage[String, String](topic, key, msg))
           key
@@ -89,20 +93,6 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
     })
   }
 
-  /**
-   *
-   * @param jsonRDD
-   * @param uniqKeys
-   * @return 返回输出到kafka的(key, message)元组的数组
-   */
-  def transforEvent2KafkaMessage(jsonRDD: RDD[String], uniqKeys: String): RDD[(String, String)] = {
-
-    jsonRDD.map(jsonstr => {
-      val data = Json4sUtils.jsonStr2Map(jsonstr)
-      val key = uniqKeys.split(",").map(data(_)).mkString(",")
-      (key, jsonstr)
-    })
-  }
 }
 
 class StreamJDBCWriter(diConf: DataInterfaceConf) extends StreamWriter {

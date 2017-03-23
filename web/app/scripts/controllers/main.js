@@ -8,11 +8,11 @@
  * Controller of the ocspApp
  */
 angular.module('ocspApp')
-  .controller('MainCtrl',['$scope', '$location', 'loginService', 'hotkeys', function ($scope, $location, loginService, hotkeys) {
+  .controller('MainCtrl',['$scope', '$location', '$rootScope', 'hotkeys', function ($scope, $location, $rootScope, hotkeys) {
     $scope.user = {};
     $scope.login = function(){
       if($scope.user.pass !== undefined) {
-        loginService.login($scope.user.name, $scope.user.pass);
+        $rootScope.login($scope.user.name, $scope.user.pass);
       }
     };
 

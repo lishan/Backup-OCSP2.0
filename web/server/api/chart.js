@@ -39,16 +39,24 @@ router.get('/taskData/:id',(req,res)=>{
   let batchtime = [[]];//for chart with type 'line' data must be in double array
   let runtimetimestamps = [];
   promises.push(Record.findAll({
-    attributes: ["reserved_records", "dropped_records","timestamp"],
+    attributes: ["reserved_records", "dropped_records","timestamp", "application_id"],
     where: {task_id: taskid, archived: 0},
     order: 'timestamp ASC'
   }).then((data) => {
-    for(let i in data){
-      result[0].push(data[i].dataValues.reserved_records);
-      result[1].push(data[i].dataValues.dropped_records);
-      timestamps.push(data[i].dataValues.timestamp);
+    if(data !== null && data !== undefined && data.length > 0) {
+      let appId = data[data.length-1].dataValues.application_id;
+      for (let i in data) {
+        if(data[i].application_id === appId) {
+          result[0].push(data[i].dataValues.reserved_records);
+          result[1].push(data[i].dataValues.dropped_records);
+          timestamps.push(data[i].dataValues.timestamp);
+        }
+      }
     }
+    result[0].push(0);
+    result[1].push(0);
   }));
+
   //task batch time
   promises.push(sequelize.query('select task_id, timestamp, batch_running_time_ms  as run_time , STREAM_TASK_MONITOR.application_id from STREAM_TASK_MONITOR, (select application_id from STREAM_TASK_MONITOR where archived=0 and task_id='+ req.params.id +' ORDER BY timestamp DESC limit 1) tmp where archived=0 and tmp.application_id=STREAM_TASK_MONITOR.application_id limit 120;',{
     type: sequelize.QueryTypes.SELECT
@@ -60,8 +68,9 @@ router.get('/taskData/:id',(req,res)=>{
       }
     }
   ));
+
   sequelize.Promise.all(promises).then(()=>{
-    res.status(200).send({result,timestamps,batchtime, runtimetimestamps});
+    res.status(200).send({result,timestamps,batchtime,runtimetimestamps});
   }, () => {
     res.status(500).send(trans.databaseError);
   });
@@ -121,7 +130,7 @@ router.get('/status', (req,res) => {
     sequelize.Promise.all(promises).then(()=>{
       for(let i in tasks) {
         let tmp = tasks[i].dataValues;
-        running.push(tmp.running_time?  tmp.running_time/ 60000: 0);
+        running.push(tmp.running_time?  (tmp.running_time/ 60000).toFixed(2): 0);
         names.push(tmp.name? tmp.name : 0);
         count[0].push(tmp.count1? tmp.count1 : 0);
         count[1].push(tmp.count2? tmp.count2 : 0);
@@ -131,11 +140,11 @@ router.get('/status', (req,res) => {
           status[tmp.status]++;
         }
       }
-
       for(let i in tasknum) {
         let tmp = tasknum[i]-1;
         taskname.push(tasks[tmp].dataValues.name);
       }     
+      running.push(0);
       count[0].push(0);
       count[1].push(0);
       records[0].push(0);

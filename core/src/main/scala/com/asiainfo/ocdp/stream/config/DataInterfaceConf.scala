@@ -32,6 +32,9 @@ class DataInterfaceConf extends BaseConf {
   @BeanProperty var dataSchemas: Array[DataSchema] = null
   @BeanProperty var interval: Int = 1
 
+  @BeanProperty var uniqKeysDelim: String = ","
+  @BeanProperty var uniqKeyValuesDelim: String = "_"
+
   def getTopicSet(): Set[String] = {
     dataSchemas.map(dataSchema => dataSchema.getTopic).toSet
   }

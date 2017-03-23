@@ -1,38 +1,51 @@
 "use strict";
-var express = require('express');
+let express = require('express');
 let router = express.Router();
-var multer  = require('multer');
-var fs = require('fs');
-var unzip = require('unzip2');
-var sequelize = require('../sequelize');
-var Sequelize = require('sequelize');
-var Label = require('../model/STREAM_LABEL_DEFINITION')(sequelize, Sequelize);
-var LabelRefer = require('../model/STREAM_LABEL')(sequelize, Sequelize);
-var config = require('../config');
-var path = require('path');
-var trans = config[config.trans || 'zh'];
+let multer  = require('multer');
+let fs = require('fs');
+let unzip = require('unzip2');
+let sequelize = require('../sequelize');
+let Sequelize = require('sequelize');
+let Label = require('../model/STREAM_LABEL_DEFINITION')(sequelize, Sequelize);
+let LabelRefer = require('../model/STREAM_LABEL')(sequelize, Sequelize);
+let config = require('../config');
+let path = require('path');
+let trans = config[config.trans || 'zh'];
 
-var storage = multer.diskStorage({
+let storage = multer.diskStorage({
   destination: './uploads/',
   filename: function (req, file, cb) {
     cb(null, "tmpOran.jar");
   }
 });
-var upload = multer({ storage: storage });
+let upload = multer({ storage: storage });
 
 router.get('/', function(req, res){
-  Label.findAll().then(function (labels){
-    res.send(labels);
-  }, function(){
-    res.status(500).send(trans.databaseError);
-  });
+  let username = req.query.username;
+  let user = req.query.user;
+  if(user === "admin") {
+    Label.findAll().then(function (labels) {
+      res.send(labels);
+    }, function () {
+      res.status(500).send(trans.databaseError);
+    });
+  }else{
+    Label.findAll({where: {$or: [{owner: username}, {owner: "ocspadmin"}]}}).then(function (labels) {
+      res.send(labels);
+    }, function () {
+      res.status(500).send(trans.databaseError);
+    });
+  }
 });
 
 router.post('/', function(req, res){
-  var labels = req.body.labels;
-  var promises = [];
-  for(var i in labels){
-    promises.push(Label.update(labels[i], {where : {id : labels[i].id}}));
+  let username = req.query.username;
+  let labels = req.body.labels;
+  let promises = [];
+  for(let i in labels){
+    if(labels[i].owner === username) {// only owner can change label properties
+      promises.push(Label.update(labels[i], {where: {id: labels[i].id}}));
+    }
   }
   sequelize.Promise.all(promises).then(function(){
     res.send({success : true});
@@ -58,6 +71,7 @@ router.get('/diid/:id', function(req, res){
 });
 
 router.post('/upload', upload.single('file'), function(req, res){
+  let username = req.query.username;
   let result = [];
   let promise = new sequelize.Promise((resolve, reject) => {
     fs.createReadStream('./uploads/tmpOran.jar')
@@ -94,7 +108,7 @@ router.post('/upload', upload.single('file'), function(req, res){
         for (let i in result) {
           promises.push(Label.findOrCreate({
             where:{name: result[i].name},
-            defaults:{class_name: result[i].classname},
+            defaults:{class_name: result[i].classname, owner: username},
             transaction: t
           }));
         }
@@ -121,8 +135,9 @@ router.post('/upload', upload.single('file'), function(req, res){
         let promises = [];
         for (let i in result) {
           promises.push(Label.create({
-            name: result[i].name,
-            class_name: result[i].classname
+            name: result[i].name, //This is a unique key, cannot insert duplicate
+            class_name: result[i].classname,
+            owner: username
           }, {
             transaction: t
           }));
@@ -135,9 +150,7 @@ router.post('/upload', upload.single('file'), function(req, res){
               res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
             });
           } else {
-            fs.unlink('./uploads/tmpOran.jar', () => {
-              res.status(200).send({success: true});
-            });
+            res.status(200).send({success: true});
           }
         });
       }).catch(() => {
