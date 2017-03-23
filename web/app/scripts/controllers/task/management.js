@@ -20,6 +20,12 @@ angular.module('ocspApp')
     $http.get('/api/config/links').success(function(data){
       $scope.links = data;
     });
+    $scope.auditTypes = [
+      {name: 'none', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_none')},
+      {name: 'day', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_day')},
+      {name: 'week', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_week')},
+      {name: 'month', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_month')}
+    ];
 
     //Check spark_home properties
     function _openSparkModal(){

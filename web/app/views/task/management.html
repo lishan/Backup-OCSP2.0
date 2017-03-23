@@ -449,16 +449,16 @@
                                        append-to-body="true"
                                        on-select="onSelect(item)">
                               <ui-select-match>
-                                <span ng-bind="$select.selected"></span>
+                                <span ng-bind="$select.selected.displayName"></span>
                               </ui-select-match>
                               <ui-select-choices
-                                repeat="type in (['none','day','week','month'] | filter: $select.search) track by type">
-                                <span ng-bind="type"></span>
+                                repeat="type.name as type in (auditTypes | filter: $select.search) track by type.name">
+                                <span ng-bind="type.displayName"></span>
                               </ui-select-choices>
                             </ui-select>
                             <span class="redtip" ng-show="mainForm['eventsAudit_' + $index].$touched && mainForm['eventsAudit_' + $index].$error.required">{{'ocsp_web_common_027' | translate}}</span>
                           </div>
-                          <div class="form-group" ng-if="item.auditEnable && item.audit.type === 'none'">
+                          <div class="form-group" ng-if="item.auditEnable && item.audit.type !== undefined && item.audit.type === 'none'">
                             <label>{{'ocsp_web_streams_manage_041' | translate}}</label>
                             <div class="row" ng-repeat="period in item.audit.periods">
                               <div class="col-md-2">
@@ -493,7 +493,7 @@
                                 <button type="button" class="btn btn-danger btn-circle" ng-click="remove(item.audit.periods, $index)"><i class="glyphicon glyphicon-remove"></i></button>
                               </div>
                               <div class="col-md-5">
-                                <div class="input-group">
+                                <p class="input-group">
                                   <input type="text" class="form-control" ng-model="period.s" required ng-pattern="/^[1-7]$/"
                                          uib-tooltip="{{'ocsp_web_streams_manage_042' | translate}} 1-7"
                                          tooltip-placement="top"
@@ -508,10 +508,10 @@
                                   <span class="input-group-btn">
                                     <button type="button" class="btn btn-default" ng-click="period.t1 = true;"><i class="glyphicon glyphicon-time"></i></button>
                                   </span>
-                                </div>
+                                </p>
                               </div>
                               <div class="col-md-5">
-                                <div class="input-group">
+                                <p class="input-group">
                                   <input type="text" class="form-control" ng-model="period.d" required ng-pattern="/^[1-7]$/"
                                          uib-tooltip="{{'ocsp_web_streams_manage_042' | translate}} 1-7"
                                          tooltip-placement="top"
@@ -526,7 +526,7 @@
                                   <span class="input-group-btn">
                                     <button type="button" class="btn btn-default" ng-click="period.t2 = true;"><i class="glyphicon glyphicon-time"></i></button>
                                   </span>
-                                </div>
+                                </p>
                               </div>
                             </div>
                           </div>

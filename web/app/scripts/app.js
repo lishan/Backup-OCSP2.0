@@ -117,7 +117,6 @@ angular
     };
     $rootScope.login = (username ,password) => {
       $http.post("/api/user/login/" ,{username,password}).success(function (user) {
-        console.log(user);
         if (user.status) {
           $cookies.put("username", username);
           $cookies.put("token", user.token);
