@@ -40,7 +40,7 @@ object LabelManager extends Logging{
       iter.toList.map(jsonStr => {
         val currentLine = Json4sUtils.jsonStr2Map(jsonStr)
         val uk = ukUnion.map(item=>currentLine(item.trim)).mkString(broadDiConf.value.uniqKeyValuesDelim)
-        busnessKeyList += (s"${LabelConstant.LABEL_CACHE_PREFIX_NAME}_${broadTaskConf.value.name}:${uk}" -> currentLine)
+        busnessKeyList += (s"${LabelConstant.LABEL_CACHE_PREFIX_NAME}_${broadTaskConf.value.id}:${uk}" -> currentLine)
         // 取出本条数据在打所有标签时所用的查询cache用到的key放入labelQryKeysSet
         labels.foreach(label => {
           val qryRes = Try(label.getQryKeys(currentLine))

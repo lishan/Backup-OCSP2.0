@@ -100,7 +100,7 @@ class Event extends Serializable with Logging{
         val current = Json4sUtils.jsonStr2Map(line)
         val eventKeyValue = uniqKeys.split(":").map(current(_)).mkString(":")
         // (eventCache:eventKeyValue,jsonValue)
-        batchArrayBuffer += ((s"${EventConstant.EVENT_CACHE_PREFIX_NAME}_${broadTaskConf.value.name}:${eventKeyValue}", line))
+        batchArrayBuffer += ((s"${EventConstant.EVENT_CACHE_PREFIX_NAME}_${broadTaskConf.value.id}:${eventKeyValue}", line))
 
         // 把list放入线程池更新codis
         if (index == size - 1) batchList += batchArrayBuffer.toArray
