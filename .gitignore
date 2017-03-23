@@ -1,0 +1,8 @@
+/target
+core/target
+/.settings
+/.project
+/.idea
+/build
+*.DS_Store
+/web/
