@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>ocsp-core_${spark.version}</artifactId>
+    <artifactId>ocsp-core_1.6</artifactId>
 
     <properties>
         <build.time>${timestamp}</build.time>

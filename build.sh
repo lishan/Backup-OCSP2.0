@@ -6,7 +6,7 @@ HOME_PATH=$(cd `dirname $0`; pwd)
 
 cd ${HOME_PATH}
 version=`awk '/<ocsp.version>[^<]+<\/ocsp.version>/{gsub(/<ocsp.version>|<\/ocsp.version>/,"",$1);print $1;exit;}' pom.xml`
-spark_version=1.6.0
+spark_version=1.6
 if [[ -z ${1} ]];then
     echo "Build based on spark 1.6"
     mvn clean package -Dmaven.test.skip=true -Pspark-1.6
