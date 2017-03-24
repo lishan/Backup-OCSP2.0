@@ -4,24 +4,29 @@ import java.util.NoSuchElementException
 import java.util.concurrent._
 
 import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, EventCycleLife, StreamingCache}
-import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, MainFrameConf, TaskConf}
-import com.asiainfo.ocdp.stream.constant.{DataSourceConstant, LabelConstant}
-import com.asiainfo.ocdp.stream.datasource.StreamingInputReader
+import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, DataSchema, MainFrameConf, TaskConf}
+import com.asiainfo.ocdp.stream.constant.{CommonConstant, DataSourceConstant, LabelConstant}
+import com.asiainfo.ocdp.stream.service.TaskServer
 import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.spark2.event.Event
 import com.asiainfo.ocdp.stream.spark2.service.DataInterfaceServer
 import com.asiainfo.ocdp.stream.tools._
+import com.asiainfo.ocdp.stream.datasource.StreamingSourceFactory
 import org.apache.commons.lang.StringUtils
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.util.LongAccumulator
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.streaming.{StreamingContext, Time}
+import org.apache.spark.{Accumulator, SparkConf, SparkContext}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{immutable, mutable}
+import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
+
 
 /**
  * Created by surq on 12/09/15
@@ -30,6 +35,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
   val taskDiid = taskConf.getDiid
   val interval = taskConf.getReceive_interval
+  val taskID = taskConf.getId
 
   val dataInterfaceService = new DataInterfaceServer
 
@@ -38,30 +44,42 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
   conf.setInterval(interval)
 
-  protected def transform(source: String, schema: StructType, conf: DataInterfaceConf, droppedRecordsCounter: LongAccumulator, reservedRecordsCounter: LongAccumulator): Option[Row] = {
-    val delim = conf.get("delim", ",")
+  private def transform[T: ClassTag](input: T, dataSchema: DataSchema,
+          totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): Option[Row] = {
+
+    val delim = dataSchema.getDelim
+    var topic = ""
+    val source = {
+      if (CommonConstant.MulTopic) {
+        val tup = input.asInstanceOf[(String, String)]
+        topic = tup._1
+        tup._2
+      } else {
+        input.asInstanceOf[String]
+      }
+    }
     val inputArr = source.split(delim, -1)
 
-    if (inputArr.size != schema.size) {
-      droppedRecordsCounter.add(1)
-      None
-    } else {
+		totalRecordsCounter.add(1)
+
+    val valid = {
+      if (CommonConstant.MulTopic) topic == dataSchema.getTopic && inputArr.size == dataSchema.getRawSchemaSize
+      else inputArr.size == dataSchema.getRawSchemaSize
+    }
+
+    if (valid) {
       reservedRecordsCounter.add(1)
       Some(Row.fromSeq(inputArr))
+    } else {
+      None
     }
   }
 
-  private def conf_check() = {
+  private def confCheck() = {
     /*
      * check the conf in Driver
      * try to get the conf we needed
      * */
-
-    val topic = conf.get(DataSourceConstant.TOPIC_KEY)
-
-    if (StringUtils.isEmpty(topic)) {
-      throw new Exception("kafka topic is not set!!!")
-    }
 
     val uniqKeys = conf.get("uniqKeys")
 
@@ -73,7 +91,10 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       try {
         dsconf.get(DataSourceConstant.GROUP_ID_KEY)
       } catch {
-        case ex: NoSuchElementException => ""
+        case ex: NoSuchElementException => {
+          logWarning(s"Can not find ${DataSourceConstant.GROUP_ID_KEY}")
+          StringUtils.EMPTY
+        }
       }
     }
 
@@ -84,19 +105,63 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     }
   }
 
+  private def toDataFrame[R: ClassTag](rdd: RDD[R], totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): DataFrame = {
+
+    var mixDF : DataFrame = null
+    val broadDiConf = BroadcastManager.getBroadDiConf()
+    val dataSchemas = broadDiConf.value.getDataSchemas
+
+    for (dataSchema <- dataSchemas) {
+
+      val rowRDD = withUptime("1.kafka RDD 转换成 rowRDD"){
+        rdd.map( input => {
+          transform(input, dataSchema, totalRecordsCounter, reservedRecordsCounter)
+        }).collect { case Some(row) => row }
+      }
+
+      if (rowRDD.partitions.size > 0) {
+
+        val schema = dataSchema.getRawSchema()
+        val commonSchema = dataSchema.getUsedItemsSchema
+        val rawFrame: DataFrame = withUptime("2.rowRDD 转换成 DataFrame"){
+          val spark = SparkSessionSingleton.getInstance(rowRDD.sparkContext.getConf)
+          spark.createDataFrame(rowRDD, schema)
+        }
+
+        val filter_expr = conf.get("filter_expr")
+        val tDF = withUptime("3.DataFrame 最初过滤不规则数据"){
+          if (filter_expr != null && filter_expr.trim != "")
+            rawFrame.selectExpr(commonSchema.fieldNames: _*).filter(filter_expr)
+          else
+            rawFrame.selectExpr(commonSchema.fieldNames: _*)
+        }
+
+        if (null == mixDF)
+          mixDF = tDF
+        else
+          mixDF = mixDF.unionAll(tDF)
+
+      } else
+        println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
+    }
+    mixDF
+  }
+
   final def process(ssc: StreamingContext) = {
 
     // check the config first
-    conf_check()
+    confCheck()
 
     //1 根据输入数据接口配置，生成数据流 DStream
+
     val dataSource = StreamingSourceFactory.createDataSource(ssc, conf)
-    val inputStream = dataSource.createStream()
+    val inputStream = {
+      if (CommonConstant.MulTopic) dataSource.createStreamMulData()
+      else dataSource.createStream()
+    }
 
     //1.2 根据输入数据接口配置，生成构造 sparkSQL DataFrame 的 structType
-    val schema = conf.getBaseSchema
-    // 全量字段: baseItems + udfItems 
-    val allItemsSchema = conf.getAllItemsSchema
+    // 全量字段: baseItems + udfItems
 
     //Broad cast configuration from driver to executor
     BroadcastManager.broadcastDiConf(conf)
@@ -105,34 +170,25 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     BroadcastManager.broadcastCodisProps(MainFrameConf.codisProps)
     BroadcastManager.broadcastTaskConf(taskConf)
 
-    val droppedRecordsCounter = DroppedRecordsCounter.getInstance(ssc.sparkContext)
+    val totalRecordsCounter = TotalRecordsCounter.getInstance(ssc.sparkContext)
     val reservedRecordsCounter = ReservedRecordsCounter.getInstance(ssc.sparkContext)
 
+    val taskServer = new TaskServer
+
     //2 流数据处理
-    inputStream.foreachRDD(rdd => {
-      val t0 = System.currentTimeMillis()
+    inputStream.foreachRDD((rdd, time: Time) => {
       //2.1 流数据转换
       val broadDiConf = BroadcastManager.getBroadDiConf()
+      val dataSchemas = broadDiConf.value.getDataSchemas
       val recover_mode = DataSourceConstant.AT_MOST_ONCE
-      val rowRDD = rdd.map(inputArr => {
-        val diConf = broadDiConf.value
-        transform(inputArr, schema, diConf, droppedRecordsCounter, reservedRecordsCounter)
-      }).collect { case Some(row) => row }
 
-      if (rowRDD.partitions.size > 0) {
-        // Get the singleton instance of SparkSession
-        val spark = SparkSessionSingleton.getInstance(rowRDD.sparkContext.getConf)
+      taskServer.updateHeartbeat(taskID)
 
-        val t1 = System.currentTimeMillis()
-        println("1.kafka RDD 转换成 rowRDD 耗时 (millis):" + (t1 - t0))
-        val dataFrame = spark.createDataFrame(rowRDD, schema)
+      //2.1 流数据转换
+      val mixDF = toDataFrame(rdd, totalRecordsCounter, reservedRecordsCounter)
+      val spark = SparkSessionSingleton.getInstance(ssc.sparkContext.getConf)
 
-        val t2 = System.currentTimeMillis
-        println("2.rowRDD 转换成 DataFrame 耗时 (millis):" + (t2 - t1))
-        val filter_expr = conf.get("filter_expr")
-        val mixDF = if (filter_expr != null && filter_expr.trim != "") dataFrame.selectExpr(allItemsSchema.fieldNames: _*).filter(filter_expr)
-        else dataFrame.selectExpr(allItemsSchema.fieldNames: _*)
-
+      if (null != mixDF) {
         /**
           * update offset BEFORE output the result for AT MOST ONCE
           */
@@ -140,52 +196,57 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
           StreamingSourceFactory.updateDataSource(broadDiConf.value, rdd)
 
         if (labels.size > 0) {
-          val t3 = System.currentTimeMillis
-          println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
-          val labelDF = execLabels(mixDF)
-
-          val t4 = System.currentTimeMillis
-          println("4.dataframe 转成rdd打标签耗时(millis):" + (t4 - t3))
+          val labelDF = withUptime("4.dataframe 转成rdd打标"){
+            execLabels(mixDF)
+          }
 
           labelDF.persist()
-          val enhancedDF = spark.read.json(labelDF.rdd)
+          // read.json为spark sql 动作类提交job
+          val enhancedDF = withUptime("5.RDD 转换成 DataFrame"){
+            spark.read.json(labelDF.rdd)
+          }
 
-          val t5 = System.currentTimeMillis
-          println("5.RDD 转换成 DataFrame 耗时(millis):" + (t5 - t4))
-
-          makeEvents(enhancedDF, conf.get("uniqKeys"))
+          withUptime("6.所有业务营销"){
+            makeEvents(enhancedDF, conf.get("uniqKeys"))
+          }
 
           labelDF.unpersist()
-
-          println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t5))
-        } else {
-
-          val t3 = System.currentTimeMillis
-          println("3.DataFrame 最初过滤不规则数据耗时 (millis):" + (t3 - t2))
-
+        }
+        else {
           mixDF.persist()
           mixDF.count()
-          val t4 = System.currentTimeMillis
-          println("4.mixDF count耗时(millis):" + (t4 - t3))
 
-          makeEvents(mixDF, conf.get("uniqKeys"))
+          withUptime("4.所有业务营销"){
+            makeEvents(mixDF, conf.get("uniqKeys"))
+          }
           mixDF.unpersist()
-          println("6.所有业务营销 耗时(millis):" + (System.currentTimeMillis - t4))
-
         }
 
-        logInfo(s"Dropped ${droppedRecordsCounter.value} records since their schema size is ${schema.size} not matching records field size.")
+        val droppedCount = totalRecordsCounter.value/dataSchemas.length - reservedRecordsCounter.value
+        logInfo(s"Dropped ${droppedCount} records since their schema size do not matching records field size.")
         logInfo(s"Reserved ${reservedRecordsCounter.value} records successfully.")
 
-        if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_RECORDS_CORRECTNESS_ENABLE, false)){
-          MonitorUtils.outputRecordsCorrectness(taskConf.id,reservedRecordsCounter.value,droppedRecordsCounter.value,ssc.sparkContext.applicationId)
+        var maxMem = 0L
+        var memUsed = 0L
+        var memRemaining = 0L
+
+        ssc.sparkContext.getExecutorStorageStatus.foreach(mem => {
+          maxMem = maxMem + mem.maxMem
+          memUsed = memUsed + mem.memUsed
+          memRemaining = memRemaining + mem.memRemaining
+        })
+
+        if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_TASK_MONITOR_ENABLE, false)){
+          MonitorUtils.outputTaskStatistics(taskConf.id,
+            reservedRecordsCounter.value,
+            droppedCount,
+            ssc.sparkContext.applicationId,
+            maxMem,
+            memUsed,
+            memRemaining,
+            (System.currentTimeMillis() - time.milliseconds))
         }
-
       }
-      else {
-        println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
-      }
-
       /**
         * update offset AFTER output the result for AT LEAST ONCE
         */
@@ -194,13 +255,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     })
   }
 
-  final def readSource(ssc: StreamingContext): DStream[String] = {
-    StreamingInputReader.readSource(ssc, conf)
-  }
-
-  /**
-   * 字段增强：根据uk从codis中取出相关关联数据，进行打标签操作
-   */
   def execLabels(df: DataFrame): Dataset[String] = {
 
     val broadDiConf = BroadcastManager.getBroadDiConf
@@ -328,17 +382,16 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
   }
 
   /**
-   * 业务处理
-   */
+    * 业务处理
+    */
   final def makeEvents(df: DataFrame, uniqKeys: String) = {
 
     val threadPool: ExecutorService = Executors.newCachedThreadPool
 
     val eventService = new ExecutorCompletionService[String](threadPool)
-
-    val now = new java.util.Date()
     val events: Array[Event] = dataInterfaceService.getEventsByIFId(taskDiid)
 
+    val now = new java.util.Date()
     val validEvents = events.filter(event => {
 
       val period = event.conf.get("period", "")
@@ -347,16 +400,18 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       else new EventCycleLife(period).contains(now)
     })
 
-    validEvents.map(event => eventService.submit(new BuildEvent(event, df, uniqKeys)))
-
-    for (index <- 0 until validEvents.size) {
-      eventService.take.get()
-    }
+    validEvents.map(event => eventService.submit(new BuildEvent(event, df, uniqKeys))).foreach(_=>eventService.take.get())
 
     threadPool.shutdown()
-
   }
 
+  def withUptime[U](description: String)(fun: => U): U ={
+    val start = System.currentTimeMillis
+    val result = fun
+    val end = System.currentTimeMillis
+    println(s"${description}耗时(millis): ${end-start}")
+    result
+  }
 }
 
 class BuildEvent(event: Event, df: DataFrame, uniqKeys: String) extends Callable[String] {
@@ -382,18 +437,19 @@ object SparkSessionSingleton {
   }
 }
 
+
 /**
   * Use this singleton to get or register an Accumulator.
   */
-object DroppedRecordsCounter {
+object TotalRecordsCounter {
 
-  @volatile private var instance: LongAccumulator = null
+  @volatile private var instance: Accumulator[Long] = null
 
-  def getInstance(sc: SparkContext): LongAccumulator = {
+  def getInstance(sc: SparkContext): Accumulator[Long] = {
     if (instance == null) {
       synchronized {
         if (instance == null) {
-          instance = sc.longAccumulator("DroppedRecordsCounter")
+          instance = sc.accumulator(0L, "TotalRecordsCounter")
         }
       }
     }
@@ -406,13 +462,13 @@ object DroppedRecordsCounter {
   */
 object ReservedRecordsCounter {
 
-  @volatile private var instance: LongAccumulator = null
+  @volatile private var instance: Accumulator[Long] = null
 
-  def getInstance(sc: SparkContext): LongAccumulator = {
+  def getInstance(sc: SparkContext): Accumulator[Long] = {
     if (instance == null) {
       synchronized {
         if (instance == null) {
-          instance = sc.longAccumulator("ReservedRecordsCounter")
+          instance = sc.accumulator(0L, "ReservedRecordsCounter")
         }
       }
     }

@@ -40,10 +40,12 @@ class DataInterfaceServer extends Logging with Serializable {
       conf.setDsConf(dsconf)
 
       val propsJsonStr = interface.get("properties").getOrElse("").replace(" ", "")
-      conf.setBaseSchema(Json4sUtils.jsonStr2BaseStructType(propsJsonStr, "fields"))
-      conf.setBaseItemsSize((Json4sUtils.jsonStr2ArrMap(propsJsonStr, "fields")).size)
-      conf.setAllItemsSchema(Json4sUtils.jsonStr2UdfStructType(propsJsonStr, "fields", "userFields"))
+      conf.setCommonSchema(Json4sUtils.jsonStr2BaseStructType(propsJsonStr, "fields"))
+//      conf.setBaseSchema(Json4sUtils.jsonStr2BaseStructType(propsJsonStr, "fields"))
+ //     conf.setBaseItemsSize((Json4sUtils.jsonStr2ArrMap(propsJsonStr, "fields")).size)
+  //    conf.setAllItemsSchema(Json4sUtils.jsonStr2UdfStructType(propsJsonStr, "fields", "userFields"))
 
+      conf.setDataSchemas(Json4sUtils.jsonStr2DataSchemas(propsJsonStr, "sources", conf.getCommonSchema))
       val propsMap = Json4sUtils.jsonStr2ArrMap(propsJsonStr, "props")
       propsMap.foreach(kvMap => {
         if (!kvMap.isEmpty) conf.set(kvMap.get("pname").get, kvMap.get("pvalue").get)

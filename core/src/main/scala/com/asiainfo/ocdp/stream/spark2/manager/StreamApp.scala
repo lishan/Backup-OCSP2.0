@@ -4,8 +4,12 @@ import com.asiainfo.ocdp.stream.common.{Logging, SscManager}
 import com.asiainfo.ocdp.stream.constant.TaskConstant
 import com.asiainfo.ocdp.stream.manager.{AppStatusUpdateListener, TaskStopManager}
 import com.asiainfo.ocdp.stream.service.TaskServer
+import org.apache.spark._
+import org.apache.spark.streaming._
 import org.apache.spark.streaming.{Seconds, StreamingContext, StreamingContextState}
 import org.apache.spark.{SparkConf, SparkContext}
+
+import scala.collection.GenTraversable
 
 /**
   * Created by leo on 9/16/15.
@@ -32,12 +36,12 @@ object StreamApp extends Logging {
 
     sparkConf.setAppName("OCDP_Streaming")
 
-    val sc = new SparkContext(sparkConf)
-    val listener = new AppStatusUpdateListener(taskConf.getId)
-    sc.addSparkListener(listener)
+    //val sc = new SparkContext(sparkConf)
+    //val listener = new AppStatusUpdateListener(taskConf.getId)
+    //sc.addSparkListener(listener)
 
     //2 启动 streamingContext
-    val ssc = new StreamingContext(sc, Seconds(taskConf.getReceive_interval))
+    val ssc = new StreamingContext(sparkConf, Seconds(taskConf.getReceive_interval))
     //    ssc.addStreamingListener(new ReceiveRecordNumListener())
     new TaskStopManager(ssc, taskConf.getId)
 
@@ -49,7 +53,8 @@ object StreamApp extends Logging {
       ssc.start()
       //4 update task status in db
       if (StreamingContextState.ACTIVE == ssc.getState()) {
-        taskServer.startTask(taskConf.getId)
+        //taskServer.startTask(taskConf.getId, ssc.applicationId)
+        taskServer.startTask(taskConf.getId, ssc.sparkContext.applicationId)
         logInfo("Start task " + taskConf.getId + " sucess !")
       }
       ssc.awaitTermination()
@@ -61,8 +66,15 @@ object StreamApp extends Logging {
           taskServer.RetryTask(taskConf.getId)
         }
       }
+      case err: Error =>  {
+        err.printStackTrace()
+        logError("stream task goes wrong!" + err.getStackTrace)
+      }
+      case _ =>  {
+          logError("stream task goes wrong!")
+      }
     } finally {
-//    ssc.awaitTermination()
+     // ssc.awaitTermination()
       ssc.stop()
       //若task的状态是PRE_RESTART 则将数据库中的task status设为1,准备启动;
       //否则将数据库中task status设为0,停止状态
