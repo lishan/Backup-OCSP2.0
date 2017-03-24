@@ -106,7 +106,7 @@ class Event extends Serializable with Logging{
             eventKeyValue = eventUniqKeys.split(diConf.uniqKeysDelim).map(item=>current(item.trim)).mkString(diConf.uniqKeyValuesDelim)
           }
 
-          batchArrayBuffer += ((s"${EventConstant.EVENT_CACHE_PREFIX_NAME}_${broadTaskConf.value.name}:${eventKeyValue}", line))
+          batchArrayBuffer += ((s"${EventConstant.EVENT_CACHE_PREFIX_NAME}_${broadTaskConf.value.id}:${eventKeyValue}", line))
         })
 
         // 把list放入线程池更新codis

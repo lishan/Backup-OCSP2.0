@@ -4,8 +4,8 @@
  * For job management main page controller
  */
 angular.module('ocspApp')
-  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', '$rootScope', '$interval', '$uibModal', '$filter', 'moment', 'strService',
-    function ($scope, $http, Notification, $q, $rootScope, $interval, $uibModal, $filter, moment, strService) {
+  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', '$rootScope', '$interval', '$uibModal', '$filter', 'moment', 'strService', 'CONFIGS',
+    function ($scope, $http, Notification, $q, $rootScope, $interval, $uibModal, $filter, moment, strService, CONFIGS) {
     $rootScope.init('task');
     //i18n
     $scope.localLang = {
@@ -20,6 +20,12 @@ angular.module('ocspApp')
     $http.get('/api/config/links').success(function(data){
       $scope.links = data;
     });
+    $scope.auditTypes = [
+      {name: 'none', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_none')},
+      {name: 'day', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_day')},
+      {name: 'week', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_week')},
+      {name: 'month', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_month')}
+    ];
 
     //Check spark_home properties
     function _openSparkModal(){
@@ -57,6 +63,12 @@ angular.module('ocspApp')
       $scope.chartSeries = [$filter('translate')('ocsp_web_dashboard_reserved'), $filter('translate')('ocsp_web_dashboard_dropped')];
       $scope.chartData = charts.result;
       $scope.chartLabels = [];
+      $scope.chartRunTimeSeries = [$filter('translate')('ocsp_web_dashboard5')];
+      $scope.chartRunTimeLabels = [];
+      $scope.chartRunTimeData = charts.batchtime;
+      for(let i in charts.runtimetimestamps){
+        $scope.chartRunTimeLabels.push(moment(charts.runtimetimestamps[i]).format('YYYY-MM-DD HH:mm:ss'));
+      }
       for(let i in charts.timestamps){
         $scope.chartLabels.push(moment(charts.timestamps[i]).format('YYYY-MM-DD HH:mm:ss'));
       }
@@ -188,15 +200,20 @@ angular.module('ocspApp')
         }
         _dealWith($scope.selectedJob.status);
       });
+    }, CONFIGS.taskInterval);
+    let chartRefreshInterval = $interval(function(){
       if($scope.selectedJob.id !== undefined) {
         $http.get('/api/chart/taskData/' + $scope.selectedJob.id).success((data) => {
           _graphs(data);
         });
       }
-    }, 3000);
+    }, CONFIGS.chartRefreshInterval);
     $scope.$on('$destroy', function(){
       if(taskInterval) {
         $interval.cancel(taskInterval);
+      }
+      if(chartRefreshInterval){
+        $interval.cancel(chartRefreshInterval);
       }
     });
 

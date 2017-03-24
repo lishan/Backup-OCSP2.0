@@ -18,6 +18,8 @@ angular.module('ocspApp')
       $scope.running = [data.running];
       $scope.count = data.count;
       $scope.records = data.records;
+      $scope.batchtime = data.batchtime;
+      $scope.taskname = data.taskname;
       $scope.series1 = [$filter('translate')('ocsp_web_dashboard_reserved'), $filter('translate')('ocsp_web_dashboard_dropped')];
       $scope.series2 = [$filter('translate')('ocsp_web_dashboard_enabled_events'), $filter('translate')('ocsp_web_dashboard_disabled_events')];
     });

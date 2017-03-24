@@ -112,6 +112,12 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_047':'可用字段',
     'ocsp_web_streams_manage_048':'生成可用字段',
     'ocsp_web_streams_manage_049':'流程图',
+    'ocsp_web_streams_case_field_name':'转义字段名',
+    'ocsp_web_streams_case_expression':'case when表达式',
+    'ocsp_web_streams_subscribe_type_none':'重复：无',
+    'ocsp_web_streams_subscribe_type_day':'重复：每天',
+    'ocsp_web_streams_subscribe_type_week':'重复：每周',
+    'ocsp_web_streams_subscribe_type_month':'重复：每月',
 
     'ocsp_web_common_property_zookeeper_connect': 'zookeeper的连接地址',
     'ocsp_web_common_property_zk': 'zookeeper的连接地址',
@@ -130,6 +136,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_dashboard2' : '时间统计(分)',
     'ocsp_web_dashboard3' : '丢掉数据和处理数据量',
     'ocsp_web_dashboard4' : '事件数量',
+    'ocsp_web_dashboard5' : 'Task Batch Running Time',
+
     'ocsp_web_dashboard_dropped': '丢掉数据',
     'ocsp_web_dashboard_reserved': '处理数据',
     'ocsp_web_dashboard_enabled_events': '启用事件',
