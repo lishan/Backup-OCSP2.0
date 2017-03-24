@@ -240,7 +240,7 @@ gulp.task('config', () => {
 });
 
 gulp.task('lib', ()=> {
-  return gulp.src("server/lib/*.jar").pipe(gulp.dest("build-server/lib"));
+  return gulp.src("server/lib/*").pipe(gulp.dest("build-server/lib"));
 });
 
 gulp.task('copy:extras', function () {
