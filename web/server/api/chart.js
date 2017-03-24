@@ -41,7 +41,8 @@ router.get('/taskData/:id',(req,res)=>{
   promises.push(Record.findAll({
     attributes: ["reserved_records", "dropped_records","timestamp", "application_id"],
     where: {task_id: taskid, archived: 0},
-    order: 'timestamp ASC'
+    order: 'timestamp ASC',
+    limit: 120
   }).then((data) => {
     if(data !== null && data !== undefined && data.length > 0) {
       let appId = data[data.length-1].dataValues.application_id;
@@ -126,10 +127,10 @@ router.get('/status', (req,res) => {
       _getRunningTime(tasks);
       _getBatchTime();
       for(let i in tasks) {
-        _getData(i);        
+        _getData(i);
       }
     }
-    
+
     sequelize.Promise.all(promises).then(()=>{
       for(let i in tasks) {
         let tmp = tasks[i].dataValues;
@@ -146,7 +147,7 @@ router.get('/status', (req,res) => {
       for(let i in tasknum) {
         let tmp = tasknum[i]-1;
         taskname.push(tasks[tmp].dataValues.name);
-      }     
+      }
       running.push(0);
       count[0].push(0);
       count[1].push(0);
