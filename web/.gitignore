@@ -13,3 +13,4 @@ nohup.out
 /target/
 ocsp.war
 *.iml
+log/
