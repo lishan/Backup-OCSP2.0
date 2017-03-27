@@ -60,18 +60,25 @@ angular.module('ocspApp')
     };
 
     function _graphs(charts){
+      console.log("charts",charts);
       $scope.chartSeries = [$filter('translate')('ocsp_web_dashboard_reserved'), $filter('translate')('ocsp_web_dashboard_dropped')];
       $scope.chartData = charts.result;
       $scope.chartLabels = [];
       $scope.chartRunTimeSeries = [$filter('translate')('ocsp_web_dashboard5')];
       $scope.chartRunTimeLabels = [];
       $scope.chartRunTimeData = charts.batchtime;
+      $scope.chartMemorySeries = [$filter('translate')('ocsp_web_dashboard_memory_used'), $filter('translate')('ocsp_web_dashboard_memory_available')];
+      // $scope.chartMemoryLabels = [];
+      $scope.chartMemoryData = charts.mem_storage;
       for(let i in charts.runtimetimestamps){
         $scope.chartRunTimeLabels.push(moment(charts.runtimetimestamps[i]).format('YYYY-MM-DD HH:mm:ss'));
       }
       for(let i in charts.timestamps){
         $scope.chartLabels.push(moment(charts.timestamps[i]).format('YYYY-MM-DD HH:mm:ss'));
       }
+      // for(let i in charts.memtimestamps){
+      //   $scope.chartMemoryLabels.push(moment(charts.memtimestamps[i]).format('YYYY-MM-DD HH:mm:ss'));
+      // }
     }
 
     //Actions and change
@@ -193,6 +200,7 @@ angular.module('ocspApp')
               if($scope.jobs[i].id === tasks[j].id){
                 $scope.jobs[i].status = tasks[j].status;
                 $scope.jobs[i].running_time = tasks[j].running_time;
+
                 break;
               }
             }

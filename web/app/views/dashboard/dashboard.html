@@ -40,7 +40,16 @@
   <div class="col-md-6">
     <div class="panel panel-default">
       <div class="panel-heading">{{'ocsp_web_dashboard5' | translate}}</div>
-        <canvas class="chart chart-bar" chart-data="batchtime" chart-labels="taskname" height="161">
+        <canvas class="chart chart-bar" chart-data="batchtime" chart-labels="names" height="161">
+        </canvas>
+      <div class="panel-body">
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">{{'ocsp_web_dashboard6' | translate}}</div>
+        <canvas class="chart chart-bar" chart-data="mem_storage" chart-series="series3" chart-labels="names" height="161"  chart-options="{legend:{display:true}}">
         </canvas>
       <div class="panel-body">
       </div>

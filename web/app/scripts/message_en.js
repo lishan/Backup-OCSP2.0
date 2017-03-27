@@ -137,6 +137,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_dashboard3' : 'Dropped and Reserved Data',
     'ocsp_web_dashboard4' : 'Number of Events',
     'ocsp_web_dashboard5' : 'Task Batch Running Time',
+    'ocsp_web_dashboard6' : 'Task Storage Memory',
+
     'ocsp_web_dashboard_dropped': 'Dropped',
     'ocsp_web_dashboard_reserved': 'Reserved',
     'ocsp_web_dashboard_enabled_events': 'Enabled events',
