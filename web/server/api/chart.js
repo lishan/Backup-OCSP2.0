@@ -41,12 +41,12 @@ router.get('/taskData/:id',(req,res)=>{
   promises.push(Record.findAll({
     attributes: ["reserved_records", "dropped_records","timestamp", "application_id"],
     where: {task_id: taskid, archived: 0},
-    order: 'timestamp ASC',
+    order: 'timestamp DESC',
     limit: 120
   }).then((data) => {
     if(data !== null && data !== undefined && data.length > 0) {
       let appId = data[data.length-1].dataValues.application_id;
-      for (let i in data) {
+      for (let i = data.length - 1; i >= 0; i--) {
         if(data[i].application_id === appId) {
           result[0].push(data[i].dataValues.reserved_records);
           result[1].push(data[i].dataValues.dropped_records);
