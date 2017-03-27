@@ -14,3 +14,5 @@ nohup.out
 ocsp.war
 *.iml
 log/
+server/config.js
+server/lib/shiro.ini
