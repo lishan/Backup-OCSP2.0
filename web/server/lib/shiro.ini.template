@@ -1,0 +1,13 @@
+ldapRealm = org.apache.shiro.realm.ldap.JndiLdapRealm
+ldapRealm.userDnTemplate = @USER_DN_TEMPLATE@
+ldapRealm.contextFactory.url = ldap://@LDAP_ADDR@
+jdbcRealm=org.apache.shiro.realm.jdbc.JdbcRealm
+dataSource=com.alibaba.druid.pool.DruidDataSource
+dataSource.driverClassName=com.mysql.jdbc.Driver
+dataSource.url=jdbc:mysql://@MYSQL_ADDR@/@MYSQL_DATABASE@
+dataSource.username=@MYSQL_UNAME@
+dataSource.password=@MYSQL_PWD@
+jdbcRealm.dataSource=$dataSource
+jdbcRealm.authenticationQuery=select password from STREAM_USER where name = ?
+jpamRealm=com.asiainfo.rspc.auth.realm.JPamRealm
+securityManager.realms = @SECURITY_MANAGER_REALMS@

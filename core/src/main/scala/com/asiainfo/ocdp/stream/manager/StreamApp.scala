@@ -59,8 +59,11 @@ object StreamApp extends Logging {
         val exception_code = ExceptionConstant.ERR_JOB_EXCEPTION
         taskServer.insertExcepiton(taskId, taskConf.appID, exception_code, ExceptionConstant.getExceptionInfo(exception_code))
       }
+      case err: Error =>  {
+        err.printStackTrace()
+        logError("stream task goes wrong!" + err.getStackTrace)
+      }
     } finally {
-//    ssc.awaitTermination()
       ssc.stop()
       //若task的状态是PRE_RESTART 则将数据库中的task status设为1,准备启动;
       //否则将数据库中task status设为0,停止状态

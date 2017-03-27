@@ -43,11 +43,12 @@ router.get('/taskData/:id',(req,res)=>{
   promises.push(Record.findAll({
     attributes: ["reserved_records","used_storage_memory","max_storage_memory","dropped_records","timestamp", "batch_running_time_ms", "application_id"],
     where: {task_id: taskid, archived: 0},
-    order: 'timestamp ASC'
+    order: 'timestamp DESC',
+    limit: 120
   }).then((data) => {
     if(data !== null && data !== undefined && data.length > 0) {
       let appId = data[data.length-1].dataValues.application_id;
-      for (let i in data) {
+      for (let i = data.length - 1; i >= 0; i--) {
         if(data[i].application_id === appId) {
           result[0].push(data[i].dataValues.reserved_records);
           result[1].push(data[i].dataValues.dropped_records);
@@ -142,10 +143,10 @@ router.get('/status', (req,res) => {
       _getRunningTime(tasks);
       _getBatchTime();
       for(let i in tasks) {
-        _getData(i);        
+        _getData(i);
       }
     }
-    
+
     sequelize.Promise.all(promises).then(()=>{
       console.log("Data dashboard batch time & Storage Memory :", batchtime);
       for(let i in tasks) {
