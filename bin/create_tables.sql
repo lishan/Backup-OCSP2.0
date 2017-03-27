@@ -167,6 +167,7 @@ DROP TABLE IF EXISTS `STREAM_TASK`;
 CREATE TABLE `STREAM_TASK` (
   `id` int(16) NOT NULL AUTO_INCREMENT,
   `name` varchar(16) DEFAULT NULL,
+  `appID` varchar(256) DEFAULT NULL,
   `type` int(11) NOT NULL,
   `receive_interval` int(11) NOT NULL DEFAULT '5',
   `num_executors` int(11) NOT NULL DEFAULT '2',
@@ -182,6 +183,7 @@ CREATE TABLE `STREAM_TASK` (
   `cur_retry` int(11) NOT NULL DEFAULT '0',
   `diid` int(16) NOT NULL,
   `owner` varchar(255) DEFAULT NULL,
+  `heartbeat` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `STREAM_TASK_ibfk_1` (`diid`),
   CONSTRAINT `STREAM_TASK_ibfk_1` FOREIGN KEY (`diid`) REFERENCES `STREAM_DATAINTERFACE` (`id`)
