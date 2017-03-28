@@ -234,6 +234,27 @@ LOCK TABLES `STREAM_USER` WRITE;
 INSERT INTO `STREAM_USER` VALUES (1,'ocspadmin','admin','Administrator');
 /*!40000 ALTER TABLE `STREAM_USER` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `STREAM_EXCEPTION`
+--
+DROP TABLE IF EXISTS `STREAM_EXCEPTION`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `STREAM_EXCEPTION` (
+  `id` int(16) NOT NULL AUTO_INCREMENT,
+  `taskID` int(16) NOT NULL ,
+  `appID` varchar(256) DEFAULT NULL,
+  `exception_type` int(16) NOT NULL ,
+  `exception_info` varchar(500) DEFAULT NULL,
+  `level` int(11) NOT NULL DEFAULT '0',
+  `begin_time` DATETIME NOT NULL, 
+  `end_time` DATETIME NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
