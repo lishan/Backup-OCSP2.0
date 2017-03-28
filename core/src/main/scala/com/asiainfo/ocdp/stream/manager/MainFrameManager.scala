@@ -128,12 +128,22 @@ object MainFrameManager extends Logging {
             pre_stop_tasks.remove(taskId)
             logInfo("stop Task " + taskId + "  successfully !")
           }
+
+          if (pre_start_tasks.contains(taskId)) {
+            pre_start_tasks.remove(taskId)
+          }
         }
 
         case TaskConstant.RETRY => {
+
+          if (pre_start_tasks.contains(taskId)) {
+            pre_start_tasks.remove(taskId)
+          }
+
           val start_time = taskServer.getStartTime(taskId)
           val cur_retry = taskServer.checkTaskRetry(taskId)
-          if (cur_retry < taskServer.checkMaxRetry(taskId)) {
+          val max_retry = taskServer.checkMaxRetry(taskId)
+          if (cur_retry < max_retry) {
             val cur_time = System.currentTimeMillis()
 
             if (cur_time > start_time + RETRY_MIN_INTERVAL ) {
