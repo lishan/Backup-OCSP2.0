@@ -36,8 +36,8 @@ let getRunningTime = function (tasks) {
 
 router.get('/', function(req, res){
   let username = req.query.username;
-  let user = req.query.user;
-  if(user === "admin") {
+  let usertype = req.query.usertype;
+  if(usertype === "admin") {
     Task.findAll().then((tasks) => {
       getRunningTime(tasks);
       res.send(tasks);
@@ -56,8 +56,8 @@ router.get('/', function(req, res){
 
 router.get('/status', function(req,res){
   let username = req.query.username;
-  let user = req.query.user;
-  if(user === "admin") {
+  let usertype = req.query.usertype;
+  if(usertype === "admin") {
     Task.findAll({attributes: ['id', 'status', 'start_time', 'stop_time']}).then(function (tasks) {
       getRunningTime(tasks);
       res.send(tasks);
@@ -77,14 +77,14 @@ router.get('/status', function(req,res){
 router.post('/change/:id', function(req, res){
   let status = req.body.status;
   let username = req.query.username;
-  let user = req.query.user;
+  let usertype = req.query.usertype;
   sequelize.transaction(function(t) {
     return Task.find({where: {id: req.params.id}, transaction: t}).then(function (task) {
       let result = task.dataValues;
       if(result.status === 0 && status === 4){// When task is in stop status, it cannot be restart.
         return sequelize.Promise.reject();
       }
-      if(result.owner !== username || user === "admin"){
+      if(result.owner !== username || usertype === "admin"){
         return sequelize.Promise.reject();// Only owner can change status
       }
       if(status === "delete"){
@@ -285,7 +285,8 @@ router.post("/", function(req, res){
   let task = req.body.task;
   let inputInterface = req.body.task.input;
   let events = req.body.task.events;
-  if(req.query.user === "admin"){
+  let usertype = req.query.usertype;
+  if(usertype === "admin"){
     //admin cannot create tasks
     res.status(500).send(trans.authError);
   }else {

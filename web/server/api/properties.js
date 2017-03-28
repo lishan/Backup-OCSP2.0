@@ -46,8 +46,8 @@ router.post('/spark', function(req, res){
 });
 
 router.post('/', function(req, res){
-  let user = req.query.user;
-  if(user === "admin") {
+  let usertype = req.query.usertype;
+  if(usertype === "admin") {
     let properties = req.body.data;
     let promises = [];
     for (let i in properties) {

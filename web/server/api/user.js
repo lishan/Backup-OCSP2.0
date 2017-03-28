@@ -39,9 +39,10 @@ router.post('/login', function (req, res) {
 });
 
 router.post('/change', function(req, res){
-  let admin = req.query.user;
-  if(admin === "admin") {
-    let user = req.body.user;
+  let username = req.query.username;
+  let usertype = req.query.usertype;
+  let user = req.body.user;
+  if(username === user.name || usertype === "admin") {
     let pass = user.oldPassword;
     User.find({where: {name: user.name, password: pass}}).then(function (data) {
       if (data !== null && data !== undefined && data.dataValues !== undefined) {

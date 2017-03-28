@@ -5,7 +5,7 @@
  */
 angular.module('ocspApp')
   .controller('UserManagementCtrl', ['$scope', '$http', '$rootScope', '$filter', 'Notification', 'hotkeys', function ($scope, $http, $rootScope, $filter, Notification, hotkeys) {
-    $rootScope.init('user', true);
+    $rootScope.init('user');
     $scope.message = null;
     $scope.styles = null;
     $scope.user = {

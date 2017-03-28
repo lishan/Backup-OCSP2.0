@@ -17,8 +17,8 @@ router.get('/', function(req, res){
 });
 
 router.post('/', function (req, res) {
-  let user = req.query.user;
-  if(user === "admin") {
+  let usertype = req.query.usertype;
+  if(usertype === "admin") {
     let datasource = req.body.data;
     sequelize.transaction(function (t) {
       datasource.status = 2;//can be deleted
@@ -62,8 +62,8 @@ router.post('/', function (req, res) {
 });
 
 router.put('/', function (req, res) {
-  let user = req.query.user;
-  if(user === "admin") {
+  let usertype = req.query.usertype;
+  if(usertype === "admin") {
     let datasources = req.body.data;
     sequelize.transaction(function (t) {
       let promises = [];

@@ -65,9 +65,9 @@
           <ul class="nav navbar-nav navbar-right">
             <li ng-if="username !== null && isAdmin()"><a ng-class="{true:'active'}[tab === 'dashboard']" href="#/dashboard">{{'ocsp_web_dashboard_name' | translate}}</a></li>
             <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'task']" href="#/task_management">{{'ocsp_web_streams_manage_000' | translate}}</a></li>
-            <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'label']" href="#/label_management">{{'ocsp_web_label_manage_000' | translate}}</a></li>
             <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'system']" href="#/system_management">{{'ocsp_web_system_manage_000' | translate}}</a></li>
-            <li ng-if="username !== null && isAdmin()"><a ng-class="{true:'active'}[tab === 'user']" href="#/user_management">{{'ocsp_web_user_manage_000' | translate}}</a></li>
+            <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'label']" href="#/label_management">{{'ocsp_web_label_manage_000' | translate}}</a></li>
+            <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'user']" href="#/user_management">{{'ocsp_web_user_manage_000' | translate}}</a></li>
           </ul>
         </div>
       </div>

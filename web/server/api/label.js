@@ -22,8 +22,8 @@ let upload = multer({ storage: storage });
 
 router.get('/', function(req, res){
   let username = req.query.username;
-  let user = req.query.user;
-  if(user === "admin") {
+  let usertype = req.query.usertype;
+  if(usertype === "admin") {
     Label.findAll().then(function (labels) {
       res.send(labels);
     }, function () {
