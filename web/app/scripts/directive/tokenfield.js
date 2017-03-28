@@ -9,14 +9,14 @@ angular.module('ocspApp').directive('tokenfield',['strService', function(strServ
     transclude: true,
     replace: true,
     scope: {
-      ngModel: '=',
-      autoCompleteModel: "="
+      ngModel: '='
     },
     link: function (scope, element, attrs) {
-      let _findLabelTips = function(str, labels){
+      let _findLabelTips = function(){
+        let [inputs, labels] = [attrs.inputs, attrs.labels];
         let result = new Set();
-        if(str !== undefined && str.trim() !== ""){
-          result = new Set(strService.split(str));
+        if(inputs !== undefined && inputs.trim() !== ""){
+          result = new Set(strService.split(inputs));
         }
         if(labels !== undefined && labels.trim() !== ""){
           labels = JSON.parse(labels);
@@ -35,29 +35,23 @@ angular.module('ocspApp').directive('tokenfield',['strService', function(strServ
         }
         return [...result];
       };
-      scope.bRequired = attrs !== undefined && attrs.required === 'true' ? true : false;
-      let _bDisabled = attrs !== undefined && attrs.disabled === 'true' ? true : false;
+      scope.bRequired = attrs !== undefined && attrs.required === 'true';
+      let _bDisabled = attrs !== undefined && attrs.disabled === 'true';
       let $e = element.find('input');
       let token = {};
       // Add tips
-      if(scope.autoCompleteModel !== undefined) {
-        token = $e.tokenfield({
-          autocomplete: {
-            source: strService.split(scope.autoCompleteModel),
-            delay: 100
-          },
-          sortable: true,
-          showAutocompleteOnFocus: true
-        });
-      }else{
-        token = $e.tokenfield({
-          sortable: true,
-        });
-      }
-      attrs.$observe('labels', function(labels) {
-        if(labels !== undefined && labels !== null){
-          $e.data('bs.tokenfield').$input.autocomplete({source: _findLabelTips(scope.autoCompleteModel,labels)});
-        }
+      token = $e.tokenfield({
+        autocomplete: {
+          source: _findLabelTips(),
+          delay: 100
+        },
+        sortable: true,
+      });
+      attrs.$observe('inputs', () => {
+        $e.data('bs.tokenfield').$input.autocomplete({source: _findLabelTips()});
+      });
+      attrs.$observe('labels', () => {
+        $e.data('bs.tokenfield').$input.autocomplete({source: _findLabelTips()});
       });
       //Disable duplicated keys
       $e.on('tokenfield:createtoken', function (event) {
