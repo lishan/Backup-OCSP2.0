@@ -139,6 +139,9 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_dashboard5' : '处理每批次数据使用的时间',
     'ocsp_web_dashboard6' : '处理每批次数据使用的存储内存',
 
+    'ocsp_web_dashboard_memory_used': '已使用的存储内存',
+    'ocsp_web_dashboard_memory_available': '可用的存储内存',
+
     'ocsp_web_dashboard_dropped': '丢掉数据',
     'ocsp_web_dashboard_reserved': '处理数据',
     'ocsp_web_dashboard_enabled_events': '启用事件',
