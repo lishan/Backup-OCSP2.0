@@ -423,7 +423,7 @@
                           </div>
                           <div class="form-group">
                             <label>{{'ocsp_web_streams_manage_018' | translate}}*</label>
-                            <tokenfield auto-complete-model="selectedJob.input.fields" labels="{{selectedJob.labels}}" ng-model="item.select_expr" name="eventsFields_{{$index}}" required="true"></tokenfield>
+                            <tokenfield inputs="{{selectedJob.input.fields}}" labels="{{selectedJob.labels}}" ng-model="item.select_expr" name="eventsFields_{{$index}}" required="true"></tokenfield>
                             <span class="redtip" ng-show="mainForm['eventsFields_' + $index].$touched && mainForm['eventsFields_' + $index].$error.required">{{'ocsp_web_common_027' | translate}}</span>
                           </div>
                           <div class="form-group">
@@ -509,7 +509,7 @@
                                          tooltip-placement="top"
                                          tooltip-trigger="'mouseenter'" ng-if="item.audit.type === 'week'">
                                   <input type="text" class="form-control" ng-model="period.s" required
-                                         uib-tooltip="{{'ocsp_web_streams_manage_042' | translate}} 1-31" ng-pattern="/^[1-3]\d$/"
+                                         uib-tooltip="{{'ocsp_web_streams_manage_042' | translate}} 1-31" ng-pattern="/^([1-9]|[1-2]\d|30|31)$/"
                                          tooltip-placement="top"
                                          tooltip-trigger="'mouseenter'" ng-if="item.audit.type === 'month'">
                                   <span class="input-group-btn" style="width:0px;"></span>
@@ -527,7 +527,7 @@
                                          tooltip-placement="top"
                                          tooltip-trigger="'mouseenter'" ng-if="item.audit.type === 'week'">
                                   <input type="text" class="form-control" ng-model="period.d" required
-                                         uib-tooltip="{{'ocsp_web_streams_manage_042' | translate}} 1-31" ng-pattern="/^[1-3]\d$/"
+                                         uib-tooltip="{{'ocsp_web_streams_manage_042' | translate}} 1-31" ng-pattern="/^([1-9]|[1-2]\d|30|31)$/"
                                          tooltip-placement="top"
                                          tooltip-trigger="'mouseenter'" ng-if="item.audit.type === 'month'">
                                   <span class="input-group-btn" style="width:0px;"></span>

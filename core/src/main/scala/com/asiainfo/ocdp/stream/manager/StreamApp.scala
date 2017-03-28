@@ -45,8 +45,9 @@ object StreamApp extends Logging {
       ssc.start()
       //4 update task status in db
       if (StreamingContextState.ACTIVE == ssc.getState()) {
+        taskServer.updateHeartbeat(taskConf.getId)
         taskServer.startTask(taskConf.getId, sc.applicationId)
-        logInfo("Start task " + taskConf.getId + " sucess !")
+        logInfo("Start task " + taskConf.getId + " success !")
       }
       ssc.awaitTermination()
     } catch {

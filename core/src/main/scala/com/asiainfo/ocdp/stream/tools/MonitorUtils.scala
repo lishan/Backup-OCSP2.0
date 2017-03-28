@@ -30,8 +30,8 @@ object MonitorUtils extends Logging{
   }
 
 
-  def outputTaskStatistics(taskId: String, reservedRecordsCounter: Long, droppedRecordsCounter: Long, applicationId: String, maxMem: Long, memUsed: Long, memRemaining: Long, runningTime: Long) = {
-    val sql = s"INSERT INTO ${TableInfoConstant.TaskMonitorName} (task_id,reserved_records,dropped_records,archived,application_id,batch_running_time_ms,max_storage_memory,used_storage_memory,remaining_storage_memory) VALUES ('${taskId}',${reservedRecordsCounter},${droppedRecordsCounter}, 0, '${applicationId}', '${runningTime}', ${maxMem}, ${memUsed}, ${memRemaining});"
+  def outputTaskStatistics(taskId: String, batchTime:String, reservedRecordsCounter: Long, droppedRecordsCounter: Long, applicationId: String, maxMem: Long, memUsed: Long, memRemaining: Long, runningTime: Long) = {
+    val sql = s"INSERT INTO ${TableInfoConstant.TaskMonitorName} (task_id,timestamp,reserved_records,dropped_records,archived,application_id,batch_running_time_ms,max_storage_memory,used_storage_memory,remaining_storage_memory) VALUES ('${taskId}',from_unixtime(${batchTime}),${reservedRecordsCounter},${droppedRecordsCounter}, 0, '${applicationId}', '${runningTime}', ${maxMem}, ${memUsed}, ${memRemaining});"
     try {
       JDBCUtil.execute(sql)
       logInfo(s"Update task statistics via '${sql}' successfully")
