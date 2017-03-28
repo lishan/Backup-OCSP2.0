@@ -237,7 +237,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         })
 
         if (MainFrameConf.systemProps.getBoolean(MainFrameConf.MONITOR_TASK_MONITOR_ENABLE, false)){
-          MonitorUtils.outputTaskStatistics(taskConf.id,
+          MonitorUtils.outputTaskStatistics(taskConf.id,(time.milliseconds/1000).toString,
             reservedRecordsCounter.value,
             droppedCount,
             ssc.sparkContext.applicationId,

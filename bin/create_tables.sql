@@ -200,7 +200,7 @@ DROP TABLE IF EXISTS `STREAM_TASK_MONITOR`;
 CREATE TABLE `STREAM_TASK_MONITOR` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `task_id` int(16) NOT NULL,
-  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `timestamp` timestamp NOT NULL,
   `reserved_records` bigint(20) NOT NULL,
   `dropped_records` bigint(20) NOT NULL,
   `archived` int(11) NOT NULL DEFAULT '0',
