@@ -74,8 +74,9 @@ class TaskServer extends Logging {
         */
     val date=new SimpleDateFormat("yyyy-MM-dd H:mm:ss")
     val curTime = date.format(new Date())
-      s"insert into ${TableInfoConstant.ExceptionTableName} (taskID,appID,exception_type,exception_info,level,begin_time,end_time) " +
+    val sql =  s"insert into ${TableInfoConstant.ExceptionTableName} (taskID,appID,exception_type,exception_info,level,begin_time,end_time) " +
         s"VALUES ('${id}','${appID}',${exceptionType}, '${exceptionInfo}', ${ExceptionConstant.EXCEPTION_ERROR}, '${curTime}', '${curTime}');"
+    JDBCUtil.execute(sql)
   }
 
   def updateException(id: String, appID: String, exceptionType: Int, exceptionInfo: String): Unit = {
@@ -85,18 +86,16 @@ class TaskServer extends Logging {
       s"order by begin_time desc limit 1"
 
     val data = JDBCUtil.query(q)
-
-    val sql = { if (!data.isEmpty) {
+    if (!data.isEmpty) {
       /**for update exception end_time*/
       val date=new SimpleDateFormat("yyyy-MM-dd H:mm:ss")
       val curTime = date.format(new Date())
       val exception_id = data.head.get("id").get
-      s"update ${TableInfoConstant.ExceptionTableName} set level=${ExceptionConstant.EXCEPTION_ERROR}, end_time='${curTime}' where id= '${exception_id}' "
+      val sql = s"update ${TableInfoConstant.ExceptionTableName} set level=${ExceptionConstant.EXCEPTION_ERROR}, end_time='${curTime}' where id= '${exception_id}' "
+      JDBCUtil.execute(sql)
     } else {
       insertExcepiton(id, appID, exceptionType, exceptionInfo)
     }
-    }
-    JDBCUtil.execute(sql)
   }
 
   def checkMaxRetry(id: String): Int = {

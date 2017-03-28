@@ -56,6 +56,7 @@ object MainFrameManager extends Logging {
         buildTask()
       } catch {
         case e: Exception =>
+          taskServer.insertExcepiton(ExceptionConstant.MainFramID, "", ExceptionConstant.ERR_MAINFRAME_EXCEPTION, ExceptionConstant.getExceptionInfo(ExceptionConstant.ERR_MAINFRAME_EXCEPTION))
           logError("Error start new app ", e)
           waiter.notifyStop()
       }
