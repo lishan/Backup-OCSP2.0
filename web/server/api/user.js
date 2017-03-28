@@ -38,6 +38,57 @@ router.post('/login', function (req, res) {
   });
 });
 
+router.get('/', function(req, res){
+  let usertype = req.query.usertype;
+  if(usertype === "admin") {
+    User.findAll().then(function (users) {
+      res.send(users);
+    }, function () {
+      res.status(500).send(trans.databaseError);
+    });
+  }else{
+    res.status(500).send(trans.authError);
+  }
+});
+
+router.put('/', function(req, res){
+  let users = req.body.users;
+  let usertype = req.query.usertype;
+  if(usertype === "admin") {
+    User.findAll().then((dbUsers) => {
+      let promises = [];
+      for (let i in users) {
+        if (users[i].id !== undefined && users.id !== null) {
+          promises.push(User.update(users[i], {where: {id: users[i].id}}));
+        } else {
+          promises.push(User.create(users[i]));
+        }
+      }
+      for(let i in dbUsers){
+        let flag = true;
+        for(let j in users){
+          if(dbUsers[i].dataValues.id === users[j].id){
+            flag = false;
+            break;
+          }
+        }
+        if(flag){
+          promises.push(User.destroy({where: {id: dbUsers[i].dataValues.id}}));
+        }
+      }
+      sequelize.Promise.all(promises).then(function () {
+        res.send({success: true});
+      }, function () {
+        res.status(500).send(trans.databaseError);
+      });
+    }, () => {
+      res.status(500).send(trans.databaseError);
+    });
+  }else{
+    res.status(500).send(trans.authError);
+  }
+});
+
 router.post('/change', function(req, res){
   let username = req.query.username;
   let usertype = req.query.usertype;
