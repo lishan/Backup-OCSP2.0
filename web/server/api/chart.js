@@ -68,9 +68,9 @@ router.get('/taskData/:id',(req,res)=>{
     if(data !== null && data !== undefined && data.length > 0) {
       for(let i in data) {
         let tmp = data[i];
-        batchtime[0].push(Number(tmp.run_time) / 1000); //convert ms to s
-        mem_storage[0].push(tmp.use_mem/ 1024); //convert B to KB
-        mem_storage[1].push(tmp.rem_mem/ 1024);
+        batchtime[0].push(tmp.run_time?  (Number(tmp.run_time)/ 1000).toFixed(2): 0); //convert ms to s
+        mem_storage[0].push(tmp.use_mem?  (tmp.use_mem/ 1024).toFixed(2): 0); //convert B to KB
+        mem_storage[1].push(tmp.rem_mem?  (tmp.rem_mem/ 1024).toFixed(2): 0);
         runtimetimestamps.push(tmp.timestamp);
       }
       batchtime[0].reverse();
@@ -118,11 +118,11 @@ router.get('/status', (req,res) => {
         }
       }));
     };
-    //batch time & storage memory 
+    //batch time & storage memory
     let _getBatchTime = function () {
-      sequelize.query('SELECT STREAM_TASK_MONITOR.timestamp,' + 
+      sequelize.query('SELECT STREAM_TASK_MONITOR.timestamp,' +
                       'STREAM_TASK_MONITOR.task_id,'+
-                      'STREAM_TASK_MONITOR.application_id,'+ 
+                      'STREAM_TASK_MONITOR.application_id,'+
                       'STREAM_TASK_MONITOR.batch_running_time_ms as run_time,'+
                       'STREAM_TASK_MONITOR.max_storage_memory as rem_mem,'+
                       'STREAM_TASK_MONITOR.used_storage_memory as use_mem '+
@@ -137,13 +137,13 @@ router.get('/status', (req,res) => {
           for(let i in data) {
             let tmp = data[i];
             let tmpId = tmp.task_id -1;
-            batchtime[tmpId] = Number(tmp.run_time)/ 1000; //convert ms to s
-            mem_storage[0][tmpId]=tmp.use_mem/ 1024; //convert B to KB
-            mem_storage[1][tmpId]=tmp.rem_mem/ 1024;
+            batchtime[tmpId] = tmp.run_time?  (Number(tmp.run_time)/ 1000).toFixed(2): 0; //convert ms to s
+            mem_storage[0][tmpId]=tmp.use_mem?  (tmp.use_mem/ 1024).toFixed(2): 0; //convert B to KB
+            mem_storage[1][tmpId]=tmp.rem_mem?  (tmp.rem_mem/ 1024).toFixed(2): 0;
           }
         }
         //if no data
-        batchtime.push(0); 
+        batchtime.push(0);
         mem_storage[0].push(0);
         mem_storage[1].push(0);
       });
@@ -169,7 +169,7 @@ router.get('/status', (req,res) => {
         if (tmp.status >= 0 && tmp.status < 6) {
           status[tmp.status]++;
         }
-      }   
+      }
       running.push(0);
       count[0].push(0);
       count[1].push(0);
