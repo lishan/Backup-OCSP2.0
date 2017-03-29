@@ -136,8 +136,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_dashboard2' : 'Time Statistics(minute)',
     'ocsp_web_dashboard3' : 'Dropped and Reserved Data',
     'ocsp_web_dashboard4' : 'Number of Events',
-    'ocsp_web_dashboard5' : 'Task Batch Running Time',
-    'ocsp_web_dashboard6' : 'Task Storage Memory',
+    'ocsp_web_dashboard5' : 'Task Batch Running Time(second)',
+    'ocsp_web_dashboard6' : 'Task Storage Memory(KB)',
 
     'ocsp_web_dashboard_memory_used': 'Storage Memory Used',
     'ocsp_web_dashboard_memory_available': 'Available Storage Memory',
