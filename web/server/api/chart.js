@@ -1,3 +1,4 @@
+
 "use strict";
 
 import express from 'express';
@@ -117,11 +118,20 @@ router.get('/status', (req,res) => {
         }
       }));
     };
-
     //batch time & storage memory 
     let _getBatchTime = function () {
-      sequelize.query('select max(a.timestamp),a.id, a.task_id,a.application_id,a.batch_running_time_ms as run_time,a.max_storage_memory as rem_mem, a.used_storage_memory as use_mem from (select * from STREAM_TASK_MONITOR where archived=0 order by timestamp DESC) a group by a.task_id;',{
-        type: sequelize.QueryTypes.SELECT}
+      sequelize.query('SELECT STREAM_TASK_MONITOR.timestamp,' + 
+                      'STREAM_TASK_MONITOR.task_id,'+
+                      'STREAM_TASK_MONITOR.application_id,'+ 
+                      'STREAM_TASK_MONITOR.batch_running_time_ms as run_time,'+
+                      'STREAM_TASK_MONITOR.max_storage_memory as rem_mem,'+
+                      'STREAM_TASK_MONITOR.used_storage_memory as use_mem '+
+                      'from (SELECT max(timestamp) as maxtimestamp, task_id '+
+                      'FROM STREAM_TASK_MONITOR GROUP BY task_id ) a,' +
+                      'STREAM_TASK_MONITOR where a.maxtimestamp=STREAM_TASK_MONITOR.timestamp and '+
+                      'a.task_id=STREAM_TASK_MONITOR.task_id and '+
+                      'STREAM_TASK_MONITOR.archived=0;',{
+      type: sequelize.QueryTypes.SELECT}
       ).then((data) => {
         if(data !== null && data !== undefined && data.length > 0) {
           for(let i in data) {
@@ -175,3 +185,4 @@ router.get('/status', (req,res) => {
 });
 
 module.exports = router;
+
