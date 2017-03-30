@@ -36,6 +36,8 @@ function setupStream(){
     read ENABLE_LDAP
     if [ "$ENABLE_LDAP"x = "n"x ] || [ "$ENABLE_LDAP"x = "N"x ]; then
         SECURITY_MANAGER_REALMS="\$jdbcRealm"
+        sed -i -e "/@LDAP_ADDR@/d" ${STREAM_HOME}/web/server/lib/shiro.ini
+        sed -i -e "/@USER_DN_TEMPLATE@/d" ${STREAM_HOME}/web/server/lib/shiro.ini
         sed -i "s/@SECURITY_MANAGER_REALMS@/${SECURITY_MANAGER_REALMS}/g" ${STREAM_HOME}/web/server/lib/shiro.ini
     else
         echo "Please input ldap address(<ip>:<port>): "
