@@ -103,7 +103,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_034':'Running',
     'ocsp_web_streams_manage_035':'Stopping',
     'ocsp_web_streams_manage_036':'Restarting',
-    'ocsp_web_streams_manage_037':'Stream Enable',
+    'ocsp_web_streams_manage_037':'Event Enable',
     'ocsp_web_streams_manage_038':'Input Datasource',
     'ocsp_web_streams_manage_039':'Retries',
     'ocsp_web_streams_manage_040':'Audit enable',

@@ -103,7 +103,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_034':'正在运行',
     'ocsp_web_streams_manage_035':'正在停止',
     'ocsp_web_streams_manage_036':'正在重启',
-    'ocsp_web_streams_manage_037':'作业流使能',
+    'ocsp_web_streams_manage_037':'事件使能',
     'ocsp_web_streams_manage_038':'输入源',
     'ocsp_web_streams_manage_039':'重试次数',
     'ocsp_web_streams_manage_040':'订阅使能',
