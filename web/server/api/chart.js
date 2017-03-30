@@ -100,7 +100,7 @@ router.get('/status', (req,res) => {
     };
     //batch time & storage memory
     let _getBatchTime = function () {
-      sequelize.query('SELECT STREAM_TASK_MONITOR.timestamp,' +
+      promises.push(sequelize.query('SELECT STREAM_TASK_MONITOR.timestamp,' +
                       'STREAM_TASK_MONITOR.task_id,'+
                       'STREAM_TASK_MONITOR.application_id,'+
                       'STREAM_TASK_MONITOR.batch_running_time_ms as run_time,'+
@@ -126,7 +126,7 @@ router.get('/status', (req,res) => {
         batchtime.push(0);
         mem_storage[0].push(0);
         mem_storage[1].push(0);
-      });
+      }));
     };
 
     if(tasks !== undefined && tasks.length > 0){
