@@ -60,9 +60,10 @@ angular.module('ocspApp')
     };
 
     function _graphs(charts){
-      $scope.chartSeries = [$filter('translate')('ocsp_web_dashboard_reserved'), $filter('translate')('ocsp_web_dashboard_dropped')];
-      $scope.chartData = charts.dealData;
-      $scope.chartLabels = [];
+      $scope.chartSeries0 = [$filter('translate')('ocsp_web_dashboard_reserved')];
+      $scope.chartSeries1 = [$filter('translate')('ocsp_web_dashboard_dropped')];
+      $scope.chartData0 = [charts.dealData[0]];
+      $scope.chartData1 = [charts.dealData[1]];
       $scope.chartRunTimeSeries = [$filter('translate')('ocsp_web_dashboard5')];
       $scope.chartRunTimeLabels = [];
       $scope.chartRunTimeData = charts.batchtime;
