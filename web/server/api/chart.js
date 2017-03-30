@@ -33,58 +33,38 @@ let _getRunningTime = function (tasks) {
 };
 
 router.get('/taskData/:id',(req,res)=>{
-  let taskid = req.params.id;
   let promises = [];
-  let timestamps= [];
-  let result = [[],[]];
+  let dealData = [[],[]];
   let batchtime = [[]];//for chart with type 'line' data must be in double array
   let mem_storage=[[],[]];
   let runtimetimestamps = [];
-  promises.push(Record.findAll({
-    attributes: ["reserved_records","dropped_records","timestamp","application_id"],
-    where: {task_id: taskid, archived: 0},
-    order: 'timestamp DESC',
-    limit: 120
-  }).then((data) => {
-    if(data !== null && data !== undefined && data.length > 0) {
-      let appId = data[data.length-1].dataValues.application_id;
-      for (let i = data.length - 1; i >= 0; i--) {
-        if(data[i].application_id === appId) {
-          result[0].push(data[i].dataValues.reserved_records);
-          result[1].push(data[i].dataValues.dropped_records);
-          timestamps.push(data[i].dataValues.timestamp);
-        }
-      }
-    }
-    result[0].push(0);
-    result[1].push(0);
-  }));
 
   //task batch time
   promises.push(sequelize.query(
-    'select task_id, timestamp, batch_running_time_ms as run_time, used_storage_memory as use_mem, max_storage_memory as rem_mem,  STREAM_TASK_MONITOR.application_id from STREAM_TASK_MONITOR, (select application_id from STREAM_TASK_MONITOR where archived=0 and task_id=' + req.params.id +' ORDER BY timestamp DESC limit 1) tmp where archived=0 and tmp.application_id=STREAM_TASK_MONITOR.application_id ORDER BY timestamp DESC limit 120;',
+    'select task_id, timestamp, reserved_records, dropped_records, batch_running_time_ms as run_time, used_storage_memory as use_mem, remaining_storage_memory as rem_mem,  STREAM_TASK_MONITOR.application_id from STREAM_TASK_MONITOR, (select application_id from STREAM_TASK_MONITOR where archived=0 and task_id=' + req.params.id +' ORDER BY timestamp DESC limit 1) tmp where archived=0 and tmp.application_id=STREAM_TASK_MONITOR.application_id ORDER BY timestamp DESC limit 120;',
     {type: sequelize.QueryTypes.SELECT
   }).then((data) => {
     if(data !== null && data !== undefined && data.length > 0) {
       for(let i in data) {
         let tmp = data[i];
+        dealData[0].push(tmp.reserved_records ? tmp.reserved_records : 0);
+        dealData[1].push(tmp.dropped_records ? tmp.dropped_records : 0);
         batchtime[0].push(tmp.run_time?  (Number(tmp.run_time)/ 1000).toFixed(2): 0); //convert ms to s
         mem_storage[0].push(tmp.use_mem?  (tmp.use_mem/ 1024).toFixed(2): 0); //convert B to KB
         mem_storage[1].push(tmp.rem_mem?  (tmp.rem_mem/ 1024).toFixed(2): 0);
         runtimetimestamps.push(tmp.timestamp);
       }
+      dealData[0].reverse();
+      dealData[1].reverse();
       batchtime[0].reverse();
       mem_storage[0].reverse();
       mem_storage[1].reverse();
       runtimetimestamps.reverse();
     }
-    batchtime[0].push(0);
-    mem_storage[0].push(0);
-    mem_storage[1].push(0);
   }));
 
   sequelize.Promise.all(promises).then(()=>{
-    res.status(200).send({result,timestamps,batchtime,mem_storage,runtimetimestamps});
+    res.status(200).send({dealData,batchtime,mem_storage,runtimetimestamps});
   }, () => {
     res.status(500).send(trans.databaseError);
   });

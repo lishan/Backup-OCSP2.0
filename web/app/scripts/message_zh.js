@@ -122,6 +122,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_subscribe_type_day':'重复：每天',
     'ocsp_web_streams_subscribe_type_week':'重复：每周',
     'ocsp_web_streams_subscribe_type_month':'重复：每月',
+    'ocsp_web_streams_chart':'指标',
 
     'ocsp_web_common_property_zookeeper_connect': 'zookeeper的连接地址',
     'ocsp_web_common_property_zk': 'zookeeper的连接地址',
