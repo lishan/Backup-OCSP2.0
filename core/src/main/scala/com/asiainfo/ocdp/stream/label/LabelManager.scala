@@ -2,7 +2,7 @@ package com.asiainfo.ocdp.stream.label
 
 import java.util.concurrent.ExecutorCompletionService
 
-import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, Logging, StreamingCache}
+import com.asiainfo.ocdp.stream.common._
 import com.asiainfo.ocdp.stream.constant.LabelConstant
 import com.asiainfo.ocdp.stream.tools.{CacheFactory, CacheQryThreadPool, Json4sUtils}
 import org.apache.spark.rdd.RDD
@@ -25,7 +25,7 @@ object LabelManager extends Logging{
     val broadCodisProps = BroadcastManager.getBroadCodisProps
     val broadTaskConf = BroadcastManager.getBroadTaskConf
 
-    df.toJSON.mapPartitions(iter => {
+    ComFunc.Func.DFrametoJsonMapPartitions(df)(iter => {
       //      val conf = broadDiConf.value
       val labels = broadLabels.value
       val qryCacheService = new ExecutorCompletionService[List[(String, Array[Byte])]](CacheQryThreadPool.threadPool)

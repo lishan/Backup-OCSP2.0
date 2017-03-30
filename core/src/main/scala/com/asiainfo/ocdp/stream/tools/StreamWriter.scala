@@ -3,7 +3,7 @@ package com.asiainfo.ocdp.stream.tools
 import java.text.SimpleDateFormat
 import java.util.Properties
 
-import com.asiainfo.ocdp.stream.common.{BroadcastManager, Logging}
+import com.asiainfo.ocdp.stream.common.{BroadcastManager, ComFunc, Logging}
 import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, EventConf, MainFrameConf}
 import kafka.producer.KeyedMessage
 import org.apache.commons.lang.math.NumberUtils
@@ -27,9 +27,8 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
 
 
   def push(rdd: RDD[String], conf: EventConf, uniqKeys: String)= setMessage(rdd, conf, uniqKeys).count
-  def push(df: DataFrame, conf: EventConf, uniqKeys: String) = setMessage(df.toJSON, conf, uniqKeys).count
+  def push(df: DataFrame, conf: EventConf, uniqKeys: String) = setMessage(ComFunc.Func.DFrametoJsonRDD(df), conf, uniqKeys).count
 
-  
   // 向kafka发送数据的未尾字段加当前时间
   val dateFormat = "yyyyMMdd HH:mm:ss.SSS"
   val sdf =  new SimpleDateFormat(dateFormat)

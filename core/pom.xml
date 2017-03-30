@@ -77,7 +77,11 @@
     <profiles>
         <profile>
             <id>spark-2.1</id>
-           <properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+
+          <properties>
                 <scala.version>2.11.8</scala.version>
                 <scala.binary.version>2.11</scala.binary.version>
                 <spark.version>2.0.0</spark.version>
@@ -216,29 +220,17 @@
                     </executions>
                     <configuration>
                         <excludes>
-                            <exclude>com/asiainfo/ocdp/stream/datasource/DataInterfaceTask.scala</exclude>
-                            <exclude>com/asiainfo/ocdp/stream/event/Event.scala</exclude>
-                            <exclude>com/asiainfo/ocdp/stream/manager/StreamApp.scala</exclude>
-                            <exclude>com/asiainfo/ocdp/stream/manager/StreamTaskFactory.scala</exclude>
-                            <exclude>com/asiainfo/ocdp/stream/service/DataInterfaceServer.scala</exclude>
-                            <exclude>com/asiainfo/ocdp/stream/tools/StreamCodisWriter.scala</exclude>
-                            <exclude>com/asiainfo/ocdp/stream/tools/StreamWriter.scala</exclude>
-                            <exclude>com/asiainfo/ocdp/stream/tools/StreamWriterFactory.scala</exclude>
-                            <!--exclude>com/asiainfo/ocdp/stream/datasource/StreamingSourceFactory.scala</exclude-->
-                            <exclude>com/asiainfo/ocdp/stream/label/LabelManager.scala</exclude>
+                            <exclude>com/asiainfo/ocdp/stream/spark2/**</exclude>
+                            <exclude>com/asiainfo/ocdp/stream/core1_6/**</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
         </plugins>
             </build>
         </profile>
-
         <profile>
             <id>spark-1.6</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-           <properties>
+        <properties>
                 <scala.version>2.10.4</scala.version>
                 <scala.binary.version>2.10</scala.binary.version>
                 <spark.version>1.6.0</spark.version>
@@ -332,6 +324,7 @@
                         <configuration>
                         <excludes>
                         <exclude>com/asiainfo/ocdp/stream/spark2/**</exclude>
+                        <exclude>com/asiainfo/ocdp/stream/core2_0/**</exclude>
                         </excludes>
                         </configuration>
                     </plugin>

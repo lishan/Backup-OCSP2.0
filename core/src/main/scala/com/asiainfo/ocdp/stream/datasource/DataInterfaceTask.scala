@@ -11,6 +11,8 @@ import com.asiainfo.ocdp.stream.label.LabelManager
 import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.service.{DataInterfaceServer, TaskServer}
 import com.asiainfo.ocdp.stream.tools._
+import com.asiainfo.ocdp.stream.common.ComFunc
+
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -96,7 +98,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     }
   }
 
-  private def toDataFrame[R: ClassTag](rdd: RDD[R], sqlc: SQLContext, totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): DataFrame = {
+  private def toDataFrame[R: ClassTag](rdd: RDD[R], ssc: SparkContext, totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): DataFrame = {
 
     var mixDF : DataFrame = null
     val broadDiConf = BroadcastManager.getBroadDiConf()
@@ -115,7 +117,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         val schema = dataSchema.getRawSchema()
         val commonSchema = dataSchema.getUsedItemsSchema
         val rawFrame: DataFrame = withUptime("2.rowRDD 转换成 DataFrame"){
-          sqlc.createDataFrame(rowRDD, schema)
+          //sqlc.createDataFrame(rowRDD, schema)
+          ComFunc.Func.createDataFrame(ssc, rowRDD, schema)
         }
 
         val filter_expr = conf.get("filter_expr")
@@ -142,7 +145,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     // check the config first
     confCheck()
 
-    val sqlc = new SQLContext(ssc.sparkContext)
+    //val sqlc = new SQLContext(ssc.sparkContext)
 
     //1 根据输入数据接口配置，生成数据流 DStream
     val dataSource = StreamingSourceFactory.createDataSource(ssc, conf)
@@ -165,6 +168,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     val reservedRecordsCounter = ReservedRecordsCounter.getInstance(ssc.sparkContext)
 
     val taskServer = new TaskServer
+
     //2 流数据处理
     inputStream.foreachRDD((rdd, time: Time) => {
       //2.1 流数据转换
@@ -175,7 +179,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       taskServer.updateHeartbeat(taskID)
 
       //2.1 流数据转换
-      val mixDF = toDataFrame(rdd, sqlc, totalRecordsCounter, reservedRecordsCounter)
+      val mixDF = toDataFrame(rdd, ssc.sparkContext, totalRecordsCounter, reservedRecordsCounter)
 
       if (null != mixDF) {
         /**
@@ -192,7 +196,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
           labelRDD.persist()
           // read.json为spark sql 动作类提交job
           val enhancedDF = withUptime("5.RDD 转换成 DataFrame"){
-            sqlc.read.json(labelRDD)
+            ComFunc.Func.toJsonDFrame(ssc.sparkContext, labelRDD)
           }
 
           withUptime("6.所有业务营销"){

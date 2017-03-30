@@ -1,6 +1,6 @@
 package com.asiainfo.ocdp.stream.event
 
-import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, Logging}
+import com.asiainfo.ocdp.stream.common.{BroadcastConf, BroadcastManager, ComFunc, Logging}
 import com.asiainfo.ocdp.stream.config.{EventConf, MainFrameConf}
 import com.asiainfo.ocdp.stream.constant.EventConstant
 import com.asiainfo.ocdp.stream.service.EventServer
@@ -44,7 +44,8 @@ class Event extends Serializable with Logging{
       // if (EventConstant.NEEDCACHE == conf.getInt("needcache", 0)) cacheEvent(eventDF, uniqKeys)
       // 如果业务输出周期不为0，那么需要从codis中取出比兑营销时间，满足条件的输出
       val jsonRDD = if (EventConstant.RealtimeTransmission != conf.interval) checkEvent(eventDF, uniqKeys)
-      else eventDF.toJSON
+      //else eventDF.toJSON
+      else ComFunc.Func.DFrametoJsonRDD(eventDF)
       outputEvent(jsonRDD, uniqKeys)
     } catch {
       case e: AnalysisException => {
@@ -74,7 +75,7 @@ class Event extends Serializable with Logging{
     val broadCodisProps = BroadcastManager.getBroadCodisProps
     val broadTaskConf = BroadcastManager.getBroadTaskConf
 
-    eventDF.toJSON.mapPartitions(iter => {
+    ComFunc.Func.DFrametoJsonMapPartitions(eventDF)(iter => {
       val conf = broadEventConf.value
       //Init Broadcast conf
       BroadcastConf.initProp(broadSysProps.value, broadCodisProps.value)

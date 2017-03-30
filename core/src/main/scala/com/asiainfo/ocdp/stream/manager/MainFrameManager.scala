@@ -204,13 +204,7 @@ object MainFrameManager extends Logging {
     }
 
     val spark_version = MainFrameConf.versionInfo.getProperty("spark_version", "1.6")
-    var streamClass = ""
-    if (spark_version.startsWith("1")){
-      streamClass = " --class com.asiainfo.ocdp.stream.manager.StreamApp"
-    }else{
-      streamClass = " --class com.asiainfo.ocdp.stream.spark2.manager.StreamApp"
-    }
-
+    val streamClass = " --class com.asiainfo.ocdp.stream.manager.StreamApp"
     val executor_memory = " --executor-memory " + conf.getExecutor_memory
 
     val tid = conf.getId
