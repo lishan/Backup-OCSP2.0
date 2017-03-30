@@ -16,8 +16,8 @@ module.exports = {
     port: 9527
   },
   quickLinks : [
-    {name: "Spark Streaming", value: "@RM_ADDR@"},
-    {name: "Codis Dashboard", value: "@CODIS_ADDR@"}
+    {name: "Spark Streaming", value: "http://@RM_ADDR@"},
+    {name: "Codis Dashboard", value: "http://@CODIS_ADDR@"}
   ],
   env: "prod", // By default use prod env
   trans: "zh",
