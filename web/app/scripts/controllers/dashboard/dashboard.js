@@ -6,10 +6,7 @@ angular.module('ocspApp')
 
     $scope.labels = [
       $filter('translate')('ocsp_web_streams_manage_032'),
-      $filter('translate')('ocsp_web_streams_manage_033'),
       $filter('translate')('ocsp_web_streams_manage_034'),
-      $filter('translate')('ocsp_web_streams_manage_035'),
-      $filter('translate')('ocsp_web_streams_manage_036'),
       $filter('translate')('ocsp_web_streams_manage_044')
     ];
     $http.get('/api/chart/status').success((data)=>{

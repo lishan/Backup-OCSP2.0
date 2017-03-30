@@ -92,7 +92,7 @@ router.get('/taskData/:id',(req,res)=>{
 
 router.get('/status', (req,res) => {
   Task.findAll({attributes: ['id', 'name', 'diid', 'status','start_time','stop_time']}).then((tasks) => {
-    let status = [0, 0, 0, 0, 0, 0];
+    let status = [0, 0, 0];
     let names = [];
     let mem_storage=[[],[]];
     let batchtime = [];
@@ -166,8 +166,12 @@ router.get('/status', (req,res) => {
         count[1].push(tmp.count2? tmp.count2 : 0);
         records[0].push(tmp.reserved? tmp.reserved: 0);
         records[1].push(tmp.dropped? tmp.dropped: 0);
-        if (tmp.status >= 0 && tmp.status < 6) {
-          status[tmp.status]++;
+        if (tmp.status === 0){
+          status[0]++;
+        }else if(tmp.status === 2){
+          status[1]++;
+        }else if(tmp.status === 5){
+          status[2]++;
         }
       }
       running.push(0);

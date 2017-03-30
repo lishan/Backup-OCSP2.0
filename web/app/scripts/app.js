@@ -79,7 +79,7 @@ angular
     usSpinnerConfigProvider.setDefaults({color: 'orange', radius: 20});
     $httpProvider.interceptors.push('AuthInterceptor', 'UsInterceptor');
     ChartJsProvider.setOptions({
-      chartColors: ['#4da9ff','#ff704d','#79d2a6','#4d0000','#ff9900','#669999']
+      chartColors: ['#4da9ff','#79d2a6','#ff9900','#ff704d','#669999','#4d0000']
     });
   }])
   .config(['$translateProvider', '$windowProvider', function($translateProvider, $windowProvider){
