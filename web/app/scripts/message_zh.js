@@ -115,7 +115,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_046':'用户自定义字段',
     'ocsp_web_streams_manage_047':'可用字段',
     'ocsp_web_streams_manage_048':'生成可用字段',
-    'ocsp_web_streams_manage_049':'流程图',
+    'ocsp_web_streams_manage_049':'数据流图',
     'ocsp_web_streams_case_field_name':'转义字段名',
     'ocsp_web_streams_case_expression':'case when表达式',
     'ocsp_web_streams_subscribe_type_none':'重复：无',

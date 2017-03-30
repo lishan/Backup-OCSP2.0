@@ -115,7 +115,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_046':'User fields',
     'ocsp_web_streams_manage_047':'Available fields',
     'ocsp_web_streams_manage_048':'Generate available fields',
-    'ocsp_web_streams_manage_049':'Architecture',
+    'ocsp_web_streams_manage_049':'Data flow',
     'ocsp_web_streams_case_field_name':'Escape field name',
     'ocsp_web_streams_case_expression':'Case when expression',
     'ocsp_web_streams_subscribe_type_none':'Repeat: None',
