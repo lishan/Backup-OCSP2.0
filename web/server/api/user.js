@@ -17,7 +17,7 @@ router.post('/login', function (req, res) {
       if(error === null){
         token = token.trim();
         if(enableAuth) {
-          exec(`java -Dconfig=${prefix}${shiroConfig} -Dtype=decrypt -Dtoken=${token} -jar ${prefix}${jarPack}`,
+          exec(`LC_ALL=en java -Dconfig=${prefix}${shiroConfig} -Dtype=decrypt -Dtoken=${token} -jar ${prefix}${jarPack}`,
             (err, message) => {
               if (err === null) {
                 if(message.includes("Failed")) {

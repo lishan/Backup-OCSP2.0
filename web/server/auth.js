@@ -7,7 +7,7 @@ module.exports = (req, res, next) => {
   const prefix = "./server/lib/";
   let token = req.query.token;
   if(!url.includes("/api/user/login") && enableAuth){
-    exec(`java -Dconfig=${prefix}${shiroConfig} -Dtype=decrypt -Dtoken=${token} -jar ${prefix}${jarPack}`,
+    exec(`LC_ALL=en java -Dconfig=${prefix}${shiroConfig} -Dtype=decrypt -Dtoken=${token} -jar ${prefix}${jarPack}`,
       (error, message) => {
         if (error === null) {
           if(message.includes("Failed")) {
