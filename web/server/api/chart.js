@@ -11,27 +11,6 @@ let Record = require('../model/STREAM_TASK_MONITOR')(sequelize, Sequelize);
 let router = express.Router();
 let trans = config[config.trans || 'zh'];
 
-let _getRunningTime = function (tasks) {
-  if (tasks !== undefined && tasks.length > 0) {
-    let date = new Date();
-    let sss = date.getTime();
-    for (let i = 0; i < tasks.length; i++) {
-      if(tasks[i].dataValues !== undefined && tasks[i].dataValues.start_time !== undefined &&
-        tasks[i].dataValues.start_time !== null && tasks[i].dataValues.start_time !== "") {
-        if(tasks[i].status === 2) {
-          tasks[i].dataValues.running_time = parseInt(sss - tasks[i].dataValues.start_time);
-        }else if(tasks[i].status === 0 && tasks[i].dataValues.stop_time !== undefined &&
-          tasks[i].dataValues.stop_time !== null &&
-          tasks[i].dataValues.stop_time !== ""){
-          tasks[i].dataValues.running_time = parseInt(tasks[i].dataValues.stop_time - tasks[i].dataValues.start_time);
-        }else{
-          tasks[i].dataValues.running_time = null;
-        }
-      }
-    }
-  }
-};
-
 router.get('/taskData/:id',(req,res)=>{
   let promises = [];
   let dealData = [[],[]];
@@ -97,6 +76,28 @@ router.get('/status', (req,res) => {
           tasks[i].dataValues.dropped = data.dataValues.dropped_records;
         }
       }));
+    };
+    let _getRunningTime = function (tasks) {
+      if (tasks !== undefined && tasks.length > 0) {
+        let date = new Date();
+        let sss = date.getTime();
+        for (let i = 0; i < tasks.length; i++) {
+          if(tasks[i].dataValues !== undefined && tasks[i].dataValues.start_time !== undefined &&
+            tasks[i].dataValues.start_time !== null && tasks[i].dataValues.start_time !== "") {
+            if(tasks[i].status === 2) {
+              tasks[i].dataValues.running_time = parseInt(sss - tasks[i].dataValues.start_time);
+              tasks[i].dataValues.running_time = tasks[i].dataValues.running_time < 0? 0 : tasks[i].dataValues.running_time;
+            }else if(tasks[i].status === 0 && tasks[i].dataValues.stop_time !== undefined &&
+              tasks[i].dataValues.stop_time !== null &&
+              tasks[i].dataValues.stop_time !== ""){
+              tasks[i].dataValues.running_time = parseInt(tasks[i].dataValues.stop_time - tasks[i].dataValues.start_time);
+              tasks[i].dataValues.running_time = tasks[i].dataValues.running_time < 0? 0 : tasks[i].dataValues.running_time;
+            }else{
+              tasks[i].dataValues.running_time = null;
+            }
+          }
+        }
+      }
     };
     //batch time & storage memory
     let _getBatchTime = function () {

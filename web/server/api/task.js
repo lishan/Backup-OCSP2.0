@@ -13,7 +13,7 @@ let moment = require('moment');
 
 let router = express.Router();
 
-let getRunningTime = function (tasks) {
+let _getRunningTime = function (tasks) {
   if (tasks !== undefined && tasks.length > 0) {
     let date = new Date();
     let sss = date.getTime();
@@ -39,14 +39,14 @@ router.get('/', function(req, res){
   let usertype = req.query.usertype;
   if(usertype === "admin") {
     Task.findAll().then((tasks) => {
-      getRunningTime(tasks);
+      _getRunningTime(tasks);
       res.send(tasks);
     }, () => {
       res.status(500).send(trans.databaseError);
     });
   }else{
     Task.findAll({where: {owner : username}}).then((tasks) => {
-      getRunningTime(tasks);
+      _getRunningTime(tasks);
       res.send(tasks);
     }, () => {
       res.status(500).send(trans.databaseError);
@@ -59,14 +59,14 @@ router.get('/status', function(req,res){
   let usertype = req.query.usertype;
   if(usertype === "admin") {
     Task.findAll({attributes: ['id', 'status', 'start_time', 'stop_time']}).then(function (tasks) {
-      getRunningTime(tasks);
+      _getRunningTime(tasks);
       res.send(tasks);
     }, function () {
       res.status(500).send(trans.databaseError);
     });
   }else{
     Task.findAll({attributes: ['id', 'status', 'start_time', 'stop_time'], where: {owner : username}}).then(function (tasks) {
-      getRunningTime(tasks);
+      _getRunningTime(tasks);
       res.send(tasks);
     }, function () {
       res.status(500).send(trans.databaseError);
