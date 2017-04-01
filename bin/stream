@@ -35,7 +35,7 @@ function setupStream(){
     echo "Enable ldap authentication [y/n] (y)?"
     read ENABLE_LDAP
     if [ "$ENABLE_LDAP"x = "n"x ] || [ "$ENABLE_LDAP"x = "N"x ]; then
-        SECURITY_MANAGER_REALMS="\$jdbcRealm"
+        SECURITY_MANAGER_REALMS="\$jpamRealm,\$jdbcRealm"
         sed -i -e "/@LDAP_ADDR@/d" ${STREAM_HOME}/web/server/lib/shiro.ini
         sed -i -e "/@USER_DN_TEMPLATE@/d" ${STREAM_HOME}/web/server/lib/shiro.ini
         sed -i "s/@SECURITY_MANAGER_REALMS@/${SECURITY_MANAGER_REALMS}/g" ${STREAM_HOME}/web/server/lib/shiro.ini
@@ -44,7 +44,7 @@ function setupStream(){
         read LDAP_ADDR
         echo "Please input ldap user DN template(e.g., uid={0},ou=People,dc=asiainfo,dc=com): "
         read USER_DN_TEMPLATE
-        SECURITY_MANAGER_REALMS="\$ldapRealm,\$jdbcRealm"
+        SECURITY_MANAGER_REALMS="\$ldapRealm,\$jpamRealm,\$jdbcRealm"
 
         sed -i "s/@LDAP_ADDR@/${LDAP_ADDR}/g" ${STREAM_HOME}/web/server/lib/shiro.ini
         sed -i "s/@USER_DN_TEMPLATE@/${USER_DN_TEMPLATE}/g" ${STREAM_HOME}/web/server/lib/shiro.ini
