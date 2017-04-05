@@ -38,11 +38,11 @@ OCSP是基于Spark streaming的处理流数据低延迟、可高度扩展的，�
  
      * 作业状态界面
  
-      ![前台页面展示1](http://ohpsj3ec3.bkt.clouddn.com/web1.png?imageView/2/w/500/q/100)
+         ![前台页面展示1](http://ohpsj3ec3.bkt.clouddn.com/web1.png?imageView/2/w/500/q/100)
 
      * 作业配置界面
      
-      ![前台页面展示2](http://ohpsj3ec3.bkt.clouddn.com/web2.png?imageView/2/w/500/q/100)
+         ![前台页面展示2](http://ohpsj3ec3.bkt.clouddn.com/web2.png?imageView/2/w/500/q/100)
 
      * 作业创建界面
   
