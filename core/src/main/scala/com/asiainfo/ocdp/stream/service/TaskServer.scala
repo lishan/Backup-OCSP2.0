@@ -138,7 +138,7 @@ class TaskServer extends Logging {
 
   def getAllTaskInfos(): Array[TaskConf] = {
 
-    val sql = "select id,appID,type,status,num_executors,executor_memory,total_executor_cores,queue,retry,cur_retry,start_time,diid,owner from " + TableInfoConstant.TaskTableName
+    val sql = "select id,appID,type,receive_interval,status,num_executors,executor_memory,total_executor_cores,queue,retry,cur_retry,start_time,diid,owner from " + TableInfoConstant.TaskTableName
     val res = Try(JDBCUtil.query(sql))
     res match {
       case Success(data) => {
@@ -157,6 +157,7 @@ class TaskServer extends Logging {
           taskConf.setOwner(x.getOrElse("owner", ""))
           taskConf.setCur_retry(x.get("cur_retry").get.toInt)
           taskConf.setStart_time(x.get("start_time").get.toLong)
+          taskConf.setReceive_interval(x.get("receive_interval").get.toInt)
           taskConf
         })
       }

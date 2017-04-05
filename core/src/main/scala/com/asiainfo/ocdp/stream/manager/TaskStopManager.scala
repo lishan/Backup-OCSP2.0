@@ -45,7 +45,7 @@ class TaskStopManager(ssc: StreamingContext, taskId: String) extends Logging {
           ssc.stop()
         }
       }
-      case Failure(t) => logError("Failed to get task status from data base !!")
+      case Failure(t) => logError("Failed to get task status from database! " + t.getStackTrace.toString())
     }
   }
 
