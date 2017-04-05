@@ -18,7 +18,7 @@
           <tr ng-repeat="u in users">
             <td ><input name="username_{{$index}}" type="text" class="form-control" ng-model="u.name" required="true"></td>
             <td><input type="text" class="form-control" ng-model="u.description"></td>
-            <td><input name="password_{{$index}}" type="password" class="form-control" ng-model="u.password" required="true"></td>
+            <td><input name="password_{{$index}}" type="password" class="form-control" ng-model="u.password"></td>
             <td><a ng-click="remove(users, $index)"><i class="glyphicon glyphicon-remove"></i></a></td>
           </tr>
           </tbody>
