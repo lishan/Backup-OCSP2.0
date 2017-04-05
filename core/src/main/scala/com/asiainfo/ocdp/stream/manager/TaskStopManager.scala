@@ -8,6 +8,8 @@ import com.asiainfo.ocdp.stream.constant.TaskConstant
 import com.asiainfo.ocdp.stream.service.TaskServer
 import org.apache.spark.streaming.StreamingContext
 
+import scala.util.{Failure, Success, Try}
+
 /**
  * Created by leo on 8/30/15.
  */
@@ -36,8 +38,14 @@ class TaskStopManager(ssc: StreamingContext, taskId: String) extends Logging {
 
   //检测到任务状态为准备停止或准备重启时,均终止ssc
   def checkTaskStop(ssc: StreamingContext, id: String) {
-    if (TaskConstant.PRE_STOP == taskServer.checkTaskStatus(id) || TaskConstant.PRE_RESTART == taskServer.checkTaskStatus(id)) {
-      ssc.stop()
+    val res = Try(taskServer.checkTaskStatus(id))
+    res match {
+      case Success(status) => {
+        if (TaskConstant.PRE_STOP == status || TaskConstant.PRE_RESTART == status) {
+          ssc.stop()
+        }
+      }
+      case Failure(t) => logError("Failed to get task status from data base !!")
     }
   }
 

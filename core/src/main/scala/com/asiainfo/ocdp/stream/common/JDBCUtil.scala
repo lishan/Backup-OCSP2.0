@@ -30,7 +30,10 @@ object JDBCUtil {
   }
 
   final def closeConnection = {
-    if (conn != null) conn.close()
+    if (conn != null) {
+      conn.close()
+      conn = null
+    }
   }
 
   def query(sql: String): Array[Map[String, String]] = {
@@ -55,6 +58,11 @@ object JDBCUtil {
         result += line
       }
       result.toArray
+    } catch {
+      case e: Exception => {
+        closeConnection
+        throw e
+      }
     } finally {
       if (rs != null) rs.close()
       if (statement != null) statement.close()
@@ -70,6 +78,11 @@ object JDBCUtil {
 
       // Execute Query
       statement.execute(sql)
+    } catch {
+      case e: Exception => {
+        closeConnection
+        throw e
+      }
     } finally {
       if (statement != null) statement.close()
       //if (connection != null) connection.close()

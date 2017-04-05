@@ -5,6 +5,8 @@ import com.asiainfo.ocdp.stream.constant.{ExceptionConstant, TaskConstant}
 import com.asiainfo.ocdp.stream.service.TaskServer
 import org.apache.spark.streaming.{Seconds, StreamingContext, StreamingContextState}
 import org.apache.spark.{SparkConf, SparkContext}
+
+import scala.util.{Failure, Success, Try}
 /**
   * Created by leo on 9/16/15.
   */
@@ -53,13 +55,21 @@ object StreamApp extends Logging {
     } catch {
       case e: Exception => {
         e.printStackTrace()
-        if (taskServer.checkMaxRetry(taskConf.getId) > 0) {
-          logInfo("task : " + taskConf.getId + " got exception, task will retry")
-          taskServer.RetryTask(taskConf.getId)
+        val res = Try(taskServer.checkMaxRetry(taskConf.getId))
+        res match {
+          case Success(maxRetry) => {
+            if (maxRetry > 0) {
+              logInfo("task : " + taskConf.getId + " got exception, task will retry")
+              taskServer.RetryTask(taskConf.getId)
+            }
+            val exception_code = ExceptionConstant.ERR_JOB_EXCEPTION
+            taskServer.insertExcepiton(taskId, taskConf.appID, exception_code, ExceptionConstant.getExceptionInfo(exception_code))
+          }
+          case Failure(e) => {
+            logError("error to get task info from db " + e.getStackTrace)
+          }
         }
-        val exception_code = ExceptionConstant.ERR_JOB_EXCEPTION
-        taskServer.insertExcepiton(taskId, taskConf.appID, exception_code, ExceptionConstant.getExceptionInfo(exception_code))
-      }
+     }
       case err: Error =>  {
         err.printStackTrace()
         logError("stream task goes wrong!" + err.getStackTrace)
@@ -68,12 +78,21 @@ object StreamApp extends Logging {
       ssc.stop()
       //若task的状态是PRE_RESTART 则将数据库中的task status设为1,准备启动;
       //否则将数据库中task status设为0,停止状态
-      if (TaskConstant.PRE_START == taskServer.checkTaskStatus(taskConf.getId) || TaskConstant.PRE_RESTART == taskServer.checkTaskStatus(taskConf.getId)){
-      taskServer.RestartTask(taskConf.getId)
-        logInfo("Restarting task " + taskConf.getId + " ...")
-      } else if (TaskConstant.RETRY != taskServer.checkTaskStatus(taskConf.getId)) {
-        taskServer.stopTask(taskConf.getId)
-        logInfo("Stop task " + taskConf.getId + " successfully !")
+      val res = Try(taskServer.checkTaskStatus(taskConf.getId))
+      res match {
+        case Success(status) => {
+          if (TaskConstant.PRE_START == status || TaskConstant.PRE_RESTART == status ){
+            taskServer.RestartTask(taskConf.getId)
+            logInfo("Restarting task " + taskConf.getId + " ...")
+          } else if (TaskConstant.RETRY != status ) {
+            taskServer.stopTask(taskConf.getId)
+            logInfo("Stop task " + taskConf.getId + " successfully !")
+          }
+        }
+        case Failure(e) => {
+          //do nothing when can not connect db
+          logError("error to get task status from db " + e.getStackTrace)
+        }
       }
 
       sys.exit()

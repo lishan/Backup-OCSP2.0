@@ -6,13 +6,14 @@ import java.util.{Timer, TimerTask}
 import akka.actor.{ActorSystem, Props}
 import com.asiainfo.ocdp.stream.common.Logging
 import com.asiainfo.ocdp.stream.config.{MainFrameConf, TaskConf}
-import com.asiainfo.ocdp.stream.constant.{CommonConstant, TaskConstant, ExceptionConstant}
+import com.asiainfo.ocdp.stream.constant.{CommonConstant, ExceptionConstant, TaskConstant}
 import com.asiainfo.ocdp.stream.service.TaskServer
 import com.asiainfo.ocdp.stream.tools.{DateFormatUtils, ListFileWalker, MonitorUtils}
 import org.apache.commons.io.filefilter.{FileFilterUtils, HiddenFileFilter}
 import org.apache.commons.lang.StringUtils
 
 import scala.collection.mutable
+import scala.util.{Failure, Success, Try}
 
 /**
  * Created by tsingfu on 15/8/26.
@@ -141,9 +142,9 @@ object MainFrameManager extends Logging {
             pre_start_tasks.remove(taskId)
           }
 
-          val start_time = taskServer.getStartTime(taskId)
-          val cur_retry = taskServer.checkTaskRetry(taskId)
-          val max_retry = taskServer.checkMaxRetry(taskId)
+          val start_time = taskConf.start_time
+          val cur_retry = taskConf.retry
+          val max_retry = taskConf.cur_retry
           if (cur_retry < max_retry) {
             val cur_time = System.currentTimeMillis()
 
@@ -250,9 +251,16 @@ object MainFrameManager extends Logging {
   private def checkHearbeat(taskId: String, taskConf: TaskConf) {
     val TASK_TIMEDOUT = (taskConf.receive_interval * 2 + 30)*1000
     val curTime = System.currentTimeMillis()
-    val heartbeat = taskServer.getHeartbeat(taskId)
-    if (curTime - heartbeat > TASK_TIMEDOUT) {
-      taskServer.updateException(taskId, taskConf.appID, ExceptionConstant.ERR_SPARK_JOB_FINISHED, ExceptionConstant.getExceptionInfo(ExceptionConstant.ERR_SPARK_JOB_FINISHED))
+    val res = Try(taskServer.getHeartbeat(taskId))
+    res match {
+      case Success(heartbeat) => {
+        if (curTime - heartbeat > TASK_TIMEDOUT) {
+          taskServer.updateException(taskId, taskConf.appID, ExceptionConstant.ERR_SPARK_JOB_FINISHED, ExceptionConstant.getExceptionInfo(ExceptionConstant.ERR_SPARK_JOB_FINISHED))
+        }
+      }
+      case Failure(e) => {
+        logError("error to get task hearbeat from db " + e.getStackTrace)
+      }
     }
   }
 }

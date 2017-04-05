@@ -12,7 +12,6 @@ import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.service.{DataInterfaceServer, TaskServer}
 import com.asiainfo.ocdp.stream.tools._
 import com.asiainfo.ocdp.stream.common.ComFunc
-
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -20,6 +19,7 @@ import org.apache.spark.streaming.{StreamingContext, Time}
 import org.apache.spark.{Accumulator, SparkContext}
 
 import scala.reflect.ClassTag
+import scala.util.{Failure, Success, Try}
 
 /**
  * Created by surq on 12/09/15
@@ -34,6 +34,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
   val conf = dataInterfaceService.getDataInterfaceInfoById(taskDiid)
   val labels = dataInterfaceService.getLabelsByIFId(taskDiid)
+
+  var events: Array[Event] = new Array[Event](0)
 
   conf.setInterval(interval)
 
@@ -257,7 +259,13 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     val threadPool: ExecutorService = Executors.newCachedThreadPool
 
     val eventService = new ExecutorCompletionService[String](threadPool)
-    val events: Array[Event] = dataInterfaceService.getEventsByIFId(taskDiid)
+
+    /**if can not get the latest event config, using the cache info*/
+    val query_events = Try(dataInterfaceService.getEventsByIFId(taskDiid))
+    query_events match {
+      case Success(qEvents) => events = qEvents
+      case Failure(t) => logError("Failed to get event config for DataBase ")
+    }
 
     val now = new java.util.Date()
     val validEvents = events.filter(event => {
