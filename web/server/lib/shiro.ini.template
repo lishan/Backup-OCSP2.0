@@ -10,4 +10,10 @@ dataSource.password=@MYSQL_PWD@
 jdbcRealm.dataSource=$dataSource
 jdbcRealm.authenticationQuery=select password from STREAM_USER where name = ?
 jpamRealm=com.asiainfo.rspc.auth.realm.JPamRealm
+authcStrategy=org.apache.shiro.authc.pam.FirstSuccessfulStrategy
+credentialsMatcher=org.apache.shiro.authc.credential.HashedCredentialsMatcher
+credentialsMatcher.hashAlgorithmName=sha-256
+credentialsMatcher.hashIterations=1
+credentialsMatcher.storedCredentialsHexEncoded=true
+jdbcRealm.credentialsMatcher=$credentialsMatcher
 securityManager.realms = @SECURITY_MANAGER_REALMS@
