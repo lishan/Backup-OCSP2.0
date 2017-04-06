@@ -192,9 +192,11 @@
     <h1 class="page-header">
       {{task.name}}
     </h1>
-    <div class="form-group" ng-show="task.input.topic !== null && task.input.topic !== '' && task.input.topic !== undefined">
-      <label>{{'ocsp_web_streams_manage_010' | translate}}:</label>
-      &nbsp;{{task.input.topic}}
+    <div class="form-group" ng-show="task.input.inputs !== undefined && task.input.inputs.length > 0">
+      <label>{{'ocsp_web_streams_manage_038' | translate}}:</label>
+      <ul class="list-group">
+        <li ng-repeat="item in task.input.inputs" class="list-group-item"><strong>{{item.name}}</strong></li>
+      </ul>
     </div>
     <div ng-show="task.outputLabels !== undefined && task.outputLabels.length > 0" class="form-group">
       <label>{{'ocsp_web_common_024' | translate}}:</label>
@@ -204,8 +206,8 @@
     </div>
     <div ng-show="task.events !== undefined && task.events.length > 0" class="form-group">
       <label>{{'ocsp_web_common_025' | translate}}:</label>
-      <ul ng-repeat="item in task.events" class="list-group">
-        <li class="list-group-item"><strong>{{item.name}}</strong>({{item.output.datasource.type}})</li>
+      <ul class="list-group">
+        <li ng-repeat="item in task.events" class="list-group-item"><strong>{{item.name}}</strong>({{item.output.datasource.type}})</li>
       </ul>
     </div>
   </div>

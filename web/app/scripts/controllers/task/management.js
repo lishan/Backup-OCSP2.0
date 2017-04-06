@@ -335,9 +335,17 @@ angular.module('ocspApp')
     function _drawGraph(item, labels){
       let graphDefinition = 'graph LR;';
       graphDefinition += "task[" + item.name + "];";
-      graphDefinition += "input((" + item.input.name + "));";
-      graphDefinition += "task-->input;";
-      let last = "input";
+      let last = "task";
+      if(item.input.inputs.length > 0){
+        graphDefinition += "subgraph  " + $filter('translate')('ocsp_web_streams_manage_038') + ";";
+        for(let i = 0 ; i < item.input.inputs.length; i++){
+          graphDefinition += `${item.input.inputs[i].name}(("${item.input.inputs[i].name}"));`;
+        }
+        graphDefinition += "end;";
+        for(let i = 0 ; i < item.input.inputs.length; i++){
+          graphDefinition += `task --> ${item.input.inputs[i].name};`;
+        }
+      }
       if(labels.length > 0) {
         graphDefinition += "subgraph " + $filter('translate')('ocsp_web_common_024') + ";";
         if (labels.length > 1){
@@ -348,7 +356,9 @@ angular.module('ocspApp')
           graphDefinition += labels[0].name + ";";
         }
         graphDefinition += "end;";
-        graphDefinition += "input-->" + labels[0].name + ";";
+        for(let i = 0 ; i < item.input.inputs.length; i++){
+          graphDefinition += `${item.input.inputs[i].name} --> ${labels[0].name};`;
+        }
         if (labels.length > 1) {
           last = labels[labels.length - 1].name;
         }else{
@@ -359,12 +369,12 @@ angular.module('ocspApp')
         graphDefinition += "subgraph " + $filter('translate')('ocsp_web_common_025') + ";";
         for(let j in item.events){
           if(item.events[j].output === undefined){
-            graphDefinition += item.events[j].name + "((\"" + item.events[j].name + "\"));";
+            graphDefinition += `${item.events[j].name}(("${item.events[j].name}"));`;
           }else {
-            if(item.events[j].output.type === 1) {
-              graphDefinition += item.events[j].name + "((\"" + item.events[j].name + "(kafka)\"));";
+            if(item.events[j].output.topic !== undefined) {
+              graphDefinition += `${item.events[j].name}(("${item.events[j].name}(${item.events[j].output.topic})"));`;
             }else{
-              graphDefinition += item.events[j].name + "((\"" + item.events[j].name + "(codis)\"));";
+              graphDefinition += `${item.events[j].name}(("${item.events[j].name}"));`;
             }
           }
         }
