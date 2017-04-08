@@ -77,9 +77,6 @@
     <profiles>
         <profile>
             <id>spark-2.1</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
 
           <properties>
                 <scala.version>2.11.8</scala.version>
@@ -230,6 +227,9 @@
         </profile>
         <profile>
             <id>spark-1.6</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
         <properties>
                 <scala.version>2.10.4</scala.version>
                 <scala.binary.version>2.10</scala.binary.version>
