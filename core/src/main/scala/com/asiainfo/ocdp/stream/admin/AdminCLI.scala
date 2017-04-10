@@ -16,12 +16,12 @@ object AdminCLI {
 
   def Usage() = {
     println("Usage: stream admin")
-    println("\t -loadlabel < jar path>")
-    println("\t \t as: ./stream admin -loadlabel ../web/uploads/LabelLibrary-2.0.1.jar")
+    println("\t -loadlabel <jar path> -user <user name>")
+    println("\t \t as: ./stream admin -loadlabel ../web/uploads/LabelLibrary-2.0.1.jar -user admin")
     println("")
   }
 
-  def LoadLabel(jarfile: String): Unit = {
+  def LoadLabel(jarfile: String, user: String): Unit = {
 
     val jfile = new JarFile(jarfile)
     val files = jfile.entries()
@@ -40,11 +40,11 @@ object AdminCLI {
         val res = JDBCUtil.query(querysql)
 
         if (res.isEmpty) {
-          val sql = s"insert into ${TableInfoConstant.LabelDefinitionTableName}(name, class_name) values('${className}','${labelName}')"
+          val sql = s"insert into ${TableInfoConstant.LabelDefinitionTableName}(name, class_name, owner) values('${className}','${labelName}', '${user}')"
           JDBCUtil.execute(sql)
-          println("load label " + labelName + "successfully")
-        } else if (className.compareTo(res.head.get("class_name").get) == 0 ) {
-          println("ERROR: label already exist! class name: " + className + "lablename: " + labelName)
+          println("load label " + labelName + "owner: " + "user " + "successfully")
+        } else if (labelName.compareTo(res.head.get("class_name").get) == 0 && user.compareTo(res.head.get("owner").get) != 0) {
+          println("ERROR: label already exist! class name: " + labelName + " username: " + res.head.get("owner").get)
           sys.exit(-1)
         }
       }
@@ -58,6 +58,8 @@ object AdminCLI {
       case Nil => map
       case "-loadlabel" :: value :: tail =>
         nextOption(map ++ Map('jarfile -> value.toString), tail)
+      case "-user" :: value :: tail =>
+        nextOption(map ++ Map('user -> value.toString), tail)
       case "-loadlabel" :: tail => {
         println("ERROR: no  jar path input")
         Usage()
@@ -86,10 +88,23 @@ object AdminCLI {
       sys.exit(-1)
     }
 
-    val str = options.get('jarfile).getOrElse("")
+    val str = options.get('jarfile).getOrElse("").asInstanceOf[String]
+    val user = options.get('user).getOrElse("").asInstanceOf[String]
+
+    if (str.isEmpty) {
+      println("jarfile path must be specific")
+      Usage()
+      sys.exit(-1)
+    }
+
+    if (user.isEmpty) {
+      println("user name must be specific")
+      Usage()
+      sys.exit(-1)
+    }
 
     try {
-      LoadLabel(str.asInstanceOf[String])
+      LoadLabel(str, user)
     } catch {
       case ex: FileNotFoundException => {
         println("ERROR: can not load jar file : " + str)
