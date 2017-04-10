@@ -364,6 +364,15 @@ angular.module('ocspApp')
         }else{
           last = labels[0].name;
         }
+      }else{ // Contain no labels
+        graphDefinition += "subgraph " + $filter('translate')('ocsp_web_common_024') + ";";
+        graphDefinition += "null(" + $filter('translate')('ocsp_web_common_036') + ");";
+        graphDefinition += "style null fill:#6D6D65,stroke:#6D6D65,stroke-width:0px;";
+        graphDefinition += "end;";
+        for(let i = 0 ; i < item.input.inputs.length; i++){
+          graphDefinition += `${item.input.inputs[i].name} --> null;`;
+        }
+        last = "null";
       }
       if(item.events.length > 0) {
         graphDefinition += "subgraph " + $filter('translate')('ocsp_web_common_025') + ";";

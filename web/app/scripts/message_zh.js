@@ -40,6 +40,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_033': '输出配置',
     'ocsp_web_common_034': '不是有效整数',
     'ocsp_web_common_035': '字段错误',
+    'ocsp_web_common_036': '无',
 
     'ocsp_web_user_manage_000':'用户管理',
     'ocsp_web_user_manage_001':'修改密码',
@@ -123,6 +124,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_subscribe_type_week':'重复：每周',
     'ocsp_web_streams_subscribe_type_month':'重复：每月',
     'ocsp_web_streams_chart':'指标',
+    'ocsp_web_streams_owner':'作业流所有者',
 
     'ocsp_web_common_property_zookeeper_connect': 'zookeeper的连接地址',
     'ocsp_web_common_property_zk': 'zookeeper的连接地址',

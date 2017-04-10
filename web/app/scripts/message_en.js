@@ -40,6 +40,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_033': 'Output configuration',
     'ocsp_web_common_034': 'Invaild integer',
     'ocsp_web_common_035': 'Input error',
+    'ocsp_web_common_036': 'none',
 
     'ocsp_web_user_manage_000':'User Management',
     'ocsp_web_user_manage_001':'Change password',
@@ -123,6 +124,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_subscribe_type_week':'Repeat: Every Week',
     'ocsp_web_streams_subscribe_type_month':'Repeat: Every Month',
     'ocsp_web_streams_chart':'Quota',
+    'ocsp_web_streams_owner':'Stream owner',
 
     'ocsp_web_common_property_zookeeper_connect': 'Zookeeper address',
     'ocsp_web_common_property_zk': 'Zookeeper address',
