@@ -22,7 +22,7 @@ module.exports = {
   env: "prod", // By default use prod env
   trans: "zh",
   jarPack: "auth-1.0-SNAPSHOT.jar",
-  enableAuth: false,
+  enableAuth: true,
   shiroConfig: "shiro.ini",
   zh: {
     databaseError: "请检查数据库配置",

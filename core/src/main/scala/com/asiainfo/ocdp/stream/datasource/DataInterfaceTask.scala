@@ -180,6 +180,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
       taskServer.updateHeartbeat(taskID)
 
+      val currentReservedRecordsCounterValue = reservedRecordsCounter.value
+
       //2.1 流数据转换
       val mixDF = toDataFrame(rdd, ssc.sparkContext, totalRecordsCounter, reservedRecordsCounter)
 
@@ -196,6 +198,11 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
           }
 
           labelRDD.persist()
+
+          val availableRecords = labelRDD.count()
+
+          reservedRecordsCounter.setValue(currentReservedRecordsCounterValue + availableRecords)
+
           // read.json为spark sql 动作类提交job
           val enhancedDF = withUptime("5.RDD 转换成 DataFrame"){
             ComFunc.Func.toJsonDFrame(ssc.sparkContext, labelRDD)
@@ -209,7 +216,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         }
         else {
           mixDF.persist()
-          mixDF.count()
+          val availableRecords = mixDF.count()
+          reservedRecordsCounter.setValue(currentReservedRecordsCounterValue + availableRecords)
 
           withUptime("4.所有业务营销"){
             makeEvents(mixDF, conf.get("uniqKeys"))
