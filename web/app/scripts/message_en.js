@@ -20,7 +20,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_013': 'Basic configuration',
     'ocsp_web_common_014': 'Searching...',
     'ocsp_web_common_015': 'on',
-    'ocsp_web_common_016': 'of',
+    'ocsp_web_common_016': 'off',
     'ocsp_web_common_017': 'None selected',
     'ocsp_web_common_018': 'Name',
     'ocsp_web_common_019': 'Description',
