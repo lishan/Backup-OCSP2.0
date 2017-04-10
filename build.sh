@@ -29,20 +29,20 @@ fi
 
 rm -fr build
 
-mkdir -p build/OCDP_Stream/lib
-mkdir -p build/OCDP_Stream/logs
-mkdir -p build/OCDP_Stream/web
+mkdir -p build/OCSP/lib
+mkdir -p build/OCSP/logs
+mkdir -p build/OCSP/web
 
-cp -r bin build/OCDP_Stream
-cp -r conf build/OCDP_Stream
+cp -r bin build/OCSP
+cp -r conf build/OCSP
 
-cp core/target/ocsp-core_${spark_version}-${version}.jar build/OCDP_Stream/lib
-cp core/target/ocsp-core_${spark_version}-${version}-dist/lib/*.jar build/OCDP_Stream/lib
+cp core/target/ocsp-core_${spark_version}-${version}.jar build/OCSP/lib
+cp core/target/ocsp-core_${spark_version}-${version}-dist/lib/*.jar build/OCSP/lib
 
-tar -xzf web/target/web-${version}-bundle.tar.gz -C build/OCDP_Stream/web
+tar -xzf web/target/web-${version}-bundle.tar.gz -C build/OCSP/web
 
 cd build
 
-tar -czf OCDP_Stream_${version}.tar.gz OCDP_Stream
+tar -czf OCSP_${version}.tar.gz OCSP
 
 exit 0

@@ -30,7 +30,7 @@ object StreamApp extends Logging {
     val sparkConf = new SparkConf()
     sparkConf.set("spark.scheduler.mode", "FAIR")
 
-    sparkConf.setAppName(s"OCDP_Streaming_${taskConf.getName}")
+    sparkConf.setAppName(s"OCSP_${taskConf.getName}")
 
     val sc = new SparkContext(sparkConf)
 
