@@ -29,12 +29,15 @@ fi
 
 rm -fr build
 
-mkdir -p build/OCSP/lib
+mkdir -p build/OCSP/lib/native
 mkdir -p build/OCSP/logs
 mkdir -p build/OCSP/web
 
 cp -r bin build/OCSP
 cp -r conf build/OCSP
+
+cp thirdparty/Jpam-1.1/net-sf-jpam build/OCSP/conf
+cp thirdparty/JPam-1.1/libjpam.so build/OCSP/lib/native
 
 cp core/target/ocsp-core_${spark_version}-${version}.jar build/OCSP/lib
 cp core/target/ocsp-core_${spark_version}-${version}-dist/lib/*.jar build/OCSP/lib

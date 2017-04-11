@@ -73,19 +73,14 @@ function setupStream(){
         sed -i "s/@MYSQL_ADDR@/$MYSQL_ADDR/g" ${STREAM_HOME}/web/server/lib/shiro.ini
     fi
 
+
+    if [ ! -f "/etc/pam.d/net-sf-jpam" ]; then
+       sudo -u root cp ${STREAM_HOME}/conf/net-sf-jpam /etc/pam.d
+    else
+       error "Can not overwrite /etc/pam.d/net-sf-jpam since it exists."
+    fi
+
     success "Setup successfully."
-#    if [ $? -eq 0 ]; then
-#        echo "Init Mysql database"
-#        mysql -u"${MYSQL_UNAME}" -p"${MYSQL_PWD}" -D"${MYSQL_DATABASE}"<${STREAM_HOME}/bin/create_tables.sql
-#    else
-#        error "Set config file error"
-#    fi
-#    if [ $? -eq 0 ]; then
-#        success "Setup successfully."
-#    else
-#        error "Setup failed"
-#        error "Please rerun stream setup"
-#    fi
 }
 
 function startStream(){
@@ -95,7 +90,7 @@ function startStream(){
         exit 2
     fi
 
-    if [ ! -d "${STREAM_HOME}/logs/stream_pid.log" ]; then
+    if [ ! -f "${STREAM_HOME}/logs/stream_pid.log" ]; then
        touch "${STREAM_HOME}/logs/stream_pid.log"
     fi
 

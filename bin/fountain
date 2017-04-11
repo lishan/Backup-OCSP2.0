@@ -9,6 +9,8 @@
 STREAM_HOME=$(cd `dirname $0`/..; pwd)
 . ${STREAM_HOME}/bin/Utilities.sh
 
+export LD_LIBRARY_PATH=${STREAM_HOME}/lib/native:$LD_LIBRARY_PATH
+
 function print_usage(){
   echo "Usage: fountain [COMMAND]"
   echo "  where COMMAND is one of:"
