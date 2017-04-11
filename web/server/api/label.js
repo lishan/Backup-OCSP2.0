@@ -11,11 +11,12 @@ let LabelRefer = require('../model/STREAM_LABEL')(sequelize, Sequelize);
 let config = require('../config');
 let path = require('path');
 let trans = config[config.trans || 'zh'];
+const jarName = "./uploads/tmpOcspRunning.jar";
 
 let storage = multer.diskStorage({
   destination: './uploads/',
   filename: function (req, file, cb) {
-    cb(null, "tmpOran.jar");
+    cb(null, "tmpOcspRunning.jar");
   }
 });
 let upload = multer({ storage: storage });
@@ -74,7 +75,7 @@ router.post('/upload', upload.single('file'), function(req, res){
   let username = req.query.username;
   let result = [];
   let promise = new sequelize.Promise((resolve, reject) => {
-    fs.createReadStream('./uploads/tmpOran.jar')
+    fs.createReadStream(jarName)
       .pipe(unzip.Parse())
       .once('error', function () {
         reject("Cannot parse file " + req.file.originalname);
@@ -114,21 +115,15 @@ router.post('/upload', upload.single('file'), function(req, res){
         }
         return sequelize.Promise.all(promises);
       }).then(() => {
-        fs.rename('./uploads/tmpOran.jar', './uploads/' + req.file.originalname, (err) => {
+        fs.renameSync(jarName, './uploads/' + req.file.originalname, (err) => {
           if (err) {
-            fs.unlink('./uploads/tmpOran.jar', () => {
-              res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
-            });
+            res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
           } else {
-            fs.unlink('./uploads/tmpOran.jar', () => {
-              res.status(200).send({success: true});
-            });
+            res.status(200).send({success: true});
           }
         });
       }).catch(() => {
-        fs.unlink('./uploads/tmpOran.jar', () => {
-          res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
-        });
+        res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
       });
     }else {
       sequelize.transaction(function (t) {
@@ -144,25 +139,23 @@ router.post('/upload', upload.single('file'), function(req, res){
         }
         return sequelize.Promise.all(promises);
       }).then(() => {
-        fs.rename('./uploads/tmpOran.jar', './uploads/' + req.file.originalname, (err) => {
+        fs.renameSync(jarName, './uploads/' + req.file.originalname, (err) => {
           if (err) {
-            fs.unlink('./uploads/tmpOran.jar', () => {
-              res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
-            });
+            res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
           } else {
             res.status(200).send({success: true});
           }
         });
-      }).catch(() => {
-        fs.unlink('./uploads/tmpOran.jar', () => {
+      }).catch((error) => {
+        if(error.fields && error.fields.name){
+          res.status(500).send(trans.labelConflictError + error.fields.name);
+        }else{
           res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
-        });
+        }
       });
     }
   },() => {
-    fs.unlink('./uploads/tmpOran.jar', () => {
-      res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
-    });
+    res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
   });
 });
 
