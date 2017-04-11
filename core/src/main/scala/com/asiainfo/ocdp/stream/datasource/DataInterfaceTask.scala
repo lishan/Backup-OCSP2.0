@@ -152,8 +152,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     //1 根据输入数据接口配置，生成数据流 DStream
     val dataSource = StreamingSourceFactory.createDataSource(ssc, conf)
     val inputStream = {
-      if (CommonConstant.MulTopic) dataSource.createStreamMulData()
-      else dataSource.createStream()
+      if (CommonConstant.MulTopic) dataSource.createStreamMulData(taskConf)
+      else dataSource.createStream(taskConf)
     }
 
     //1.2 根据输入数据接口配置，生成构造 sparkSQL DataFrame 的 structType

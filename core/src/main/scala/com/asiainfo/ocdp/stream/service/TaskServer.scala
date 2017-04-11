@@ -2,7 +2,7 @@ package com.asiainfo.ocdp.stream.service
 
 import com.asiainfo.ocdp.stream.common.{JDBCUtil, Logging}
 import com.asiainfo.ocdp.stream.config.TaskConf
-import com.asiainfo.ocdp.stream.constant.{ExceptionConstant, TableInfoConstant, TaskConstant}
+import com.asiainfo.ocdp.stream.constant.{DataSourceConstant, ExceptionConstant, TableInfoConstant, TaskConstant}
 import org.apache.commons.lang.StringUtils
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -136,6 +136,14 @@ class TaskServer extends Logging {
     data.head.get("cur_retry").get.toInt
   }*/
 
+  private def getNumeric(x: Map[String, String], key: String, default: String): String = {
+    val v = x.getOrElse(key, default)
+    if (v == null) {
+      default
+    } else {
+      v
+    }
+  }
   def getAllTaskInfos(): Array[TaskConf] = {
 
     val sql = "select id,appID,type,receive_interval,status,num_executors,executor_memory,total_executor_cores,queue,retry,cur_retry,start_time,diid,owner from " + TableInfoConstant.TaskTableName
@@ -152,11 +160,11 @@ class TaskServer extends Logging {
           taskConf.setExecutor_memory(x.get("executor_memory").get)
           taskConf.setTotal_executor_cores(x.get("total_executor_cores").get)
           taskConf.setQueue(x.get("queue").get)
-          taskConf.setRetry(x.get("retry").get.toInt)
+          taskConf.setRetry(getNumeric(x,"retry","0").toInt)
           taskConf.setDiid(x.get("diid").get)
           taskConf.setOwner(x.getOrElse("owner", ""))
           taskConf.setCur_retry(x.get("cur_retry").get.toInt)
-          taskConf.setStart_time(x.get("start_time").get.toLong)
+          taskConf.setStart_time(getNumeric(x,"start_time","0").toLong)
           taskConf.setReceive_interval(x.get("receive_interval").get.toInt)
           taskConf
         })
@@ -168,7 +176,7 @@ class TaskServer extends Logging {
   }
 
   def getTaskInfoById(id: String): TaskConf = {
-    val sql = "select id,appID,type,name,receive_interval,retry,diid, owner from " + TableInfoConstant.TaskTableName + " where id= '" + id +"'"
+    val sql = "select id,appID,type,name,receive_interval,retry,diid, owner, recover_mode from " + TableInfoConstant.TaskTableName + " where id= '" + id +"'"
     val data = JDBCUtil.query(sql).head
     val taskConf = new TaskConf()
     taskConf.setId(data.get("id").get)
@@ -176,9 +184,10 @@ class TaskServer extends Logging {
     taskConf.setTask_type(data.get("type").get.toInt)
     taskConf.setName(data.get("name").get)
     taskConf.setReceive_interval(data.get("receive_interval").get.toInt)
-    taskConf.setRetry(data.get("retry").get.toInt)
+    taskConf.setRetry(getNumeric(data,"retry","0").toInt)
     taskConf.setDiid(data.get("diid").get)
     taskConf.setOwner(data.getOrElse("owner", ""))
+    taskConf.setRecovery_mode(getNumeric(data,"recover_mode", DataSourceConstant.FROM_LATEST))
     taskConf
   }
 

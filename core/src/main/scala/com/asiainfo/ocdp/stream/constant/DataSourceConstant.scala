@@ -23,6 +23,8 @@ object DataSourceConstant {
   //for recover
   val AT_MOST_ONCE = "at_most_once"
   val AT_LEAST_ONCE = "at_least_once"
+  val FROM_LAST_STOP = "from_last_stop"
+  val FROM_LATEST = "from_latest"
 
   //For Hdfs
   val HDFS_DEFAULT_FS_KEY = "fs.defaultFS"

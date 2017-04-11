@@ -183,7 +183,8 @@ CREATE TABLE `STREAM_TASK` (
   `cur_retry` int(11) NOT NULL DEFAULT '0',
   `diid` int(16) NOT NULL,
   `owner` varchar(255) DEFAULT NULL,
-  `heartbeat` varchar(500) DEFAULT NULL,
+  `heartbeat` varchar(500) DEFAULT "from_latest",
+  `recover_mode` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `STREAM_TASK_ibfk_1` (`diid`),
   CONSTRAINT `STREAM_TASK_ibfk_1` FOREIGN KEY (`diid`) REFERENCES `STREAM_DATAINTERFACE` (`id`)

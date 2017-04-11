@@ -3,7 +3,7 @@ package com.asiainfo.ocdp.stream.datasource
 import com.asiainfo.ocdp.stream.common.KafkaCluster
 import com.asiainfo.ocdp.stream.constant.CommonConstant
 import com.asiainfo.ocdp.stream.common.KafkaCluster.LeaderOffset
-import com.asiainfo.ocdp.stream.config.DataInterfaceConf
+import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, TaskConf}
 import com.asiainfo.ocdp.stream.constant.{CommonConstant, DataSourceConstant}
 import kafka.common.TopicAndPartition
 import kafka.message.MessageAndMetadata
@@ -27,7 +27,7 @@ class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf) extends Stream
   val mGroupId = mDsConf.get(DataSourceConstant.GROUP_ID_KEY)
   val mKC = new KafkaCluster(mKafkaParams)
 
-  final def createStreamMulData(): DStream[(String, String)] = {
+  final def createStreamMulData(taskConf: TaskConf): DStream[(String, String)] = {
 
     val partitionsE = mKC.getPartitions(mTopicsSet)
     logInfo("Init Direct Kafka Stream : brokers->" + mDsConf.get(DataSourceConstant.BROKER_LIST_KEY)
@@ -37,7 +37,19 @@ class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf) extends Stream
       throw new Exception(s"get kafka partition failed: ${partitionsE.left.get}")
     val partitions = partitionsE.right.get
 
-    val consumerOffsets = getFromOffsets(mKC, mKafkaParams, mTopicsSet)
+    val consumerOffsets = (if(taskConf.recovery_mode == DataSourceConstant.FROM_LAST_STOP) {
+      val consumerOffsetsE = mKC.getConsumerOffsets(mGroupId, partitions)
+      //TestOffsets(mKC, mKafkaParams, mTopicsSet)
+      CheckOffsets(mKC, mTopicsSet, mGroupId)
+      (if (consumerOffsetsE.isLeft) {
+        logWarning("Init Direct Kafka Stream: Failed to get Consumer offset! Use the latest data!")
+        getFromOffsets(mKC, mKafkaParams, mTopicsSet)
+      } else {
+        consumerOffsetsE.right.get
+      })
+    } else {
+      getFromOffsets(mKC, mKafkaParams, mTopicsSet)
+    })
 
     consumerOffsets.foreach{ case (tp, lo) =>
       logInfo("using offset : " + lo)
@@ -47,7 +59,7 @@ class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf) extends Stream
       mSSC, mKafkaParams, consumerOffsets, (m: MessageAndMetadata[String, String]) => (m.topic, m.message()))
   }
 
-  final def createStream(): DStream[String] = {
+  final def createStream(taskConf: TaskConf): DStream[String] = {
 
     val partitionsE = mKC.getPartitions(mTopicsSet)
     logInfo("Init Direct Kafka Stream : brokers->" + mDsConf.get(DataSourceConstant.BROKER_LIST_KEY)
@@ -57,24 +69,19 @@ class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf) extends Stream
       throw new Exception(s"get kafka partition failed: ${partitionsE.left.get}")
     val partitions = partitionsE.right.get
 
-    /*
-     * FIXME
-     *currently use the lastest offset directly
-     * if read the offset, it maybe too much data, can not process in one batch or need to long time
-     */
-
-    /*
-    val consumerOffsetsE = mKC.getConsumerOffsets(mGroupId, partitions)
-    TestOffsets(mKC, mKafkaParams, mTopicsSet)
-    CheckOffsets(mKC, mTopicsSet, mGroupId)
-    val consumerOffsets = (if (consumerOffsetsE.isLeft) {
+    val consumerOffsets = (if(taskConf.recovery_mode == DataSourceConstant.FROM_LAST_STOP) {
+      val consumerOffsetsE = mKC.getConsumerOffsets(mGroupId, partitions)
+      //TestOffsets(mKC, mKafkaParams, mTopicsSet)
+      CheckOffsets(mKC, mTopicsSet, mGroupId)
+      (if (consumerOffsetsE.isLeft) {
         logWarning("Init Direct Kafka Stream: Failed to get Consumer offset! Use the latest data!")
         getFromOffsets(mKC, mKafkaParams, mTopicsSet)
       } else {
         consumerOffsetsE.right.get
       })
-    */
-    val consumerOffsets = getFromOffsets(mKC, mKafkaParams, mTopicsSet)
+    } else {
+      getFromOffsets(mKC, mKafkaParams, mTopicsSet)
+    })
 
     KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder, String](
       mSSC, mKafkaParams, consumerOffsets, (m: MessageAndMetadata[String, String]) => m.message())
@@ -106,6 +113,7 @@ class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf) extends Stream
     }
   }
 
+  /**we only use this function to get latest offset*/
   def getFromOffsets(
       kc: KafkaCluster,
       kafkaParams: Map[String, String],
