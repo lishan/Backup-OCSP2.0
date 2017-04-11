@@ -91,6 +91,10 @@ module.exports = function(sequelize, DataTypes) {
     heartbeat: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    recover_mode: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     createdAt: false,

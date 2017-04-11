@@ -593,6 +593,10 @@ angular.module('ocspApp')
       }
     };
 
+    $scope.selectedRecoverMode = function(str){
+      $scope.selectedJob.recover_mode = str;
+    };
+
     $scope.onSelect = function(item){
       //Clear periods when select audit type
       item.audit.periods = [{}];

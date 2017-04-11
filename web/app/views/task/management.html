@@ -243,6 +243,23 @@
                         </div>
                       </div>
                     </div>
+                    <div class="form-group">
+                      <div class="row">
+                        <div class="col-md-2">
+                          <label>Kafka offset*</label>
+                        </div>
+                        <div class="col-md-8">
+                          <div class="btn-group" data-toggle="buttons">
+                            <label class="btn btn-default" ng-class="{active: selectedJob.recover_mode !== 'from_last_stop'}" ng-click="selectedRecoverMode('from_latest')">
+                              <input ng-model="selectedJob.recover_mode"  value="from_latest" type="radio">{{'ocsp_web_streams_from_latest' | translate}}
+                            </label>
+                            <label class="btn btn-default" ng-class="{active: selectedJob.recover_mode === 'from_last_stop'}" ng-click="selectedRecoverMode('from_last_stop')">
+                              <input ng-model="selectedJob.recover_mode" value="from_last_stop" type="radio">{{'ocsp_web_streams_from_last_stop' | translate}}
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </uib-accordion>
                 <uib-accordion>

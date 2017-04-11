@@ -125,6 +125,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_subscribe_type_month':'Repeat: Every Month',
     'ocsp_web_streams_chart':'Quota',
     'ocsp_web_streams_owner':'Stream owner',
+    'ocsp_web_streams_from_latest':'from_latest',
+    'ocsp_web_streams_from_last_stop':'from_last_stop',
 
     'ocsp_web_common_property_zookeeper_connect': 'Zookeeper address',
     'ocsp_web_common_property_zk': 'Zookeeper address',
