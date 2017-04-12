@@ -380,6 +380,9 @@ angular.module('ocspApp')
           if(item.events[j].output === undefined){
             graphDefinition += `${item.events[j].name}(("${item.events[j].name}"));`;
           }else {
+            if(item.events[j].status === 0){
+              graphDefinition += `style ${item.events[j].name} fill:#7d7d7d,stroke:#81b1db,stroke-width:0px;`;
+            }
             if(item.events[j].output.topic !== undefined) {
               graphDefinition += `${item.events[j].name}(("${item.events[j].name}(${item.events[j].output.topic})"));`;
             }else{
