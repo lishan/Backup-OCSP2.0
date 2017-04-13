@@ -226,7 +226,7 @@ function createEvents(events, i, diid, status) {
     });
   }
   //Add data audit function
-  if(events[i].audit !== undefined && events[i].auditEnable && events[i].audit.type !== undefined && events[i].audit.periods !== undefined && events[i].audit.periods.length > 0){
+  if(events[i].audit !== undefined && events[i].audit.type !== undefined && events[i].audit.type!== "always" && events[i].audit.periods !== undefined && events[i].audit.periods.length > 0){
     let result = {
       period: events[i].audit.type,
       time:[]

@@ -21,12 +21,12 @@ angular.module('ocspApp')
       $scope.links = data;
     });
     $scope.auditTypes = [
+      {name: 'always', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_always')},
       {name: 'none', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_none')},
       {name: 'day', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_day')},
       {name: 'week', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_week')},
       {name: 'month', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_month')}
     ];
-
     //Check spark_home properties
     function _openSparkModal(){
       let modal = $uibModal.open({
@@ -461,14 +461,13 @@ angular.module('ocspApp')
           for(let i in $scope.selectedJob.events){
             if($scope.selectedJob.events[i].PROPERTIES !== undefined && $scope.selectedJob.events[i].PROPERTIES !== null) {
               $scope.selectedJob.events[i].PROPERTIES = JSON.parse($scope.selectedJob.events[i].PROPERTIES);
-              if($scope.selectedJob.events[i].PROPERTIES.props !== undefined && $scope.selectedJob.events[i].PROPERTIES.props.length > 0) {
+              if($scope.selectedJob.events[i].PROPERTIES.props !== undefined && $scope.selectedJob.events[i].PROPERTIES.props.length > 0) {             	
                 for (let j in $scope.selectedJob.events[i].PROPERTIES.props) {
                   if ($scope.selectedJob.events[i].PROPERTIES.props[j].pname === "userKeyIdx") {
                     $scope.selectedJob.events[i].userKeyIdx = $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue;
                   }
                   if ($scope.selectedJob.events[i].PROPERTIES.props[j].pname === "period") {
                     $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue = JSON.parse($scope.selectedJob.events[i].PROPERTIES.props[j].pvalue);
-                    $scope.selectedJob.events[i].auditEnable = true;
                     $scope.selectedJob.events[i].audit = {
                       type : $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.period,
                       periods : []
@@ -490,25 +489,25 @@ angular.module('ocspApp')
                       }
                     }
                   }
-                }
-              }
-              if($scope.selectedJob.events[i].PROPERTIES.output_dis !== undefined && $scope.selectedJob.events[i].PROPERTIES.output_dis[0] !== undefined) {
-                $scope.selectedJob.events[i].interval = $scope.selectedJob.events[i].PROPERTIES.output_dis[0].interval;
-                $scope.selectedJob.events[i].delim = $scope.selectedJob.events[i].PROPERTIES.output_dis[0].delim;
-                if($scope.selectedJob.events[i].delim === "\\|"){
-                  $scope.selectedJob.events[i].delim = "|";
-                }
-                for(let j in $scope.selectedJob.output){
-                  if($scope.selectedJob.output[j].id === parseInt($scope.selectedJob.events[i].PROPERTIES.output_dis[0].diid)){
-                    $scope.selectedJob.events[i].output = $scope.selectedJob.output[j];
-                    _parseProperties($scope.selectedJob.events[i].output, $scope.selectedJob.events[i].output.properties);
-                    _parseDatasource($scope.selectedJob.events[i].output);
-                    break;
-                  }
-                }
-              }
-            }
-          }
+          		}
+	          if($scope.selectedJob.events[i].PROPERTIES.output_dis !== undefined && $scope.selectedJob.events[i].PROPERTIES.output_dis[0] !== undefined) {
+	            $scope.selectedJob.events[i].interval = $scope.selectedJob.events[i].PROPERTIES.output_dis[0].interval;
+	            $scope.selectedJob.events[i].delim = $scope.selectedJob.events[i].PROPERTIES.output_dis[0].delim;
+	            if($scope.selectedJob.events[i].delim === "\\|"){
+	              $scope.selectedJob.events[i].delim = "|";
+	            }
+	            for(let j in $scope.selectedJob.output){
+	              if($scope.selectedJob.output[j].id === parseInt($scope.selectedJob.events[i].PROPERTIES.output_dis[0].diid)){
+	                $scope.selectedJob.events[i].output = $scope.selectedJob.output[j];
+	                _parseProperties($scope.selectedJob.events[i].output, $scope.selectedJob.events[i].output.properties);
+	                _parseDatasource($scope.selectedJob.events[i].output);
+	                break;
+	              }
+	            }
+	          }
+        	  }
+          	}
+  		  }	
           _dealWith($scope.selectedJob.status);
           _drawGraph($scope.selectedJob, labels);
           _graphs(arr.charts.data);

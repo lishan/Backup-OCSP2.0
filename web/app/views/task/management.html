@@ -479,16 +479,12 @@
                             <label>{{'ocsp_web_streams_manage_040' | translate}}*</label>
                           </div>
                           <div class="form-group">
-                            <toggle-switch ng-model="item.auditEnable"
-                                           on-label="{{'ocsp_web_common_015' | translate}}"
-                                           off-label="{{'ocsp_web_common_016' | translate}}"></toggle-switch>
-                          </div>
-                          <div class="form-group" ng-if="item.auditEnable">
-                            <ui-select ng-model="item.audit.type" ng-required="true" name="eventsAudit_{{$index}}"
+                            <ui-select ng-model="item.audit.type" ng-required="true" 
+                                       name="eventsAudit_{{$index}}"
                                        append-to-body="true"
                                        on-select="onSelect(item)">
                               <ui-select-match>
-                                <span ng-bind="$select.selected.displayName"></span>
+                                <span ng-bind="$select.selected.displayName" ></span>
                               </ui-select-match>
                               <ui-select-choices
                                 repeat="type.name as type in (auditTypes | filter: $select.search) track by type.name">
@@ -497,7 +493,7 @@
                             </ui-select>
                             <span class="redtip" ng-show="mainForm['eventsAudit_' + $index].$touched && mainForm['eventsAudit_' + $index].$error.required">{{'ocsp_web_common_027' | translate}}</span>
                           </div>
-                          <div class="form-group" ng-if="item.auditEnable && item.audit.type !== undefined && item.audit.type === 'none'">
+                          <div class="form-group" ng-if="item.audit.type !== undefined && item.audit.type === 'none'">
                             <label>{{'ocsp_web_streams_manage_041' | translate}}</label>
                             <div class="row" ng-repeat="period in item.audit.periods">
                               <div class="col-md-2">
@@ -524,7 +520,7 @@
                               </div>
                             </div>
                           </div>
-                          <div class="form-group" ng-if="item.auditEnable && item.audit.type !== undefined && item.audit.type !== 'none'">
+                          <div class="form-group" ng-if="item.audit.type !== 'always' && item.audit.type !== undefined && item.audit.type !== 'none'">
                             <label>{{'ocsp_web_streams_manage_041' | translate}}</label>
                             <div class="row" ng-repeat="period in item.audit.periods">
                               <div class="col-md-2">
