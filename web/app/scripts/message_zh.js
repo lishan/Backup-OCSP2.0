@@ -107,7 +107,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_037':'事件使能',
     'ocsp_web_streams_manage_038':'输入源',
     'ocsp_web_streams_manage_039':'重试次数',
-    'ocsp_web_streams_manage_040':'订阅类型',
+    'ocsp_web_streams_manage_040':'订阅周期',
     'ocsp_web_streams_manage_041':'选择时间段',
     'ocsp_web_streams_manage_042':'可能值',
     'ocsp_web_streams_manage_043':'开始时间必须小于结束时间',

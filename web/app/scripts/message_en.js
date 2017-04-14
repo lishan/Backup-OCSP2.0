@@ -107,7 +107,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_037':'Event Enable',
     'ocsp_web_streams_manage_038':'Input Datasource',
     'ocsp_web_streams_manage_039':'Retries',
-    'ocsp_web_streams_manage_040':'Subscribe type',
+    'ocsp_web_streams_manage_040':'The subscription period',
     'ocsp_web_streams_manage_041':'Choose during time',
     'ocsp_web_streams_manage_042':'Valid value',
     'ocsp_web_streams_manage_043':'Start time should be earlier than end time',
