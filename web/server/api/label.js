@@ -78,7 +78,7 @@ router.post('/upload', upload.single('file'), function(req, res){
     fs.createReadStream(jarName)
       .pipe(unzip.Parse())
       .once('error', function () {
-        reject("Cannot parse file " + req.file.originalname);
+        reject("Cannot parse file " + req.file.originalname.replace(/\.jar/g, "") + "_" + username + ".jar");
       })
       .on('entry', function (entry) {
         let filename = entry.path;
@@ -89,7 +89,7 @@ router.post('/upload', upload.single('file'), function(req, res){
           let index = filename.lastIndexOf(".");
           if(index > 0) {
             result.push({
-              name: filename.substr(index + 1) + "_" + username,
+              name: filename.substr(index + 1),
               classname: filename
             });
           }else{
@@ -103,7 +103,7 @@ router.post('/upload', upload.single('file'), function(req, res){
       });
   });
   promise.then(() => {
-    if(fs.existsSync('./uploads/' + req.file.originalname)){
+    if(fs.existsSync('./uploads/' + req.file.originalname.replace(/\.jar/g, "") + "_" + username + ".jar")){
       sequelize.transaction(function (t) {
         let promises = [];
         for (let i in result) {
@@ -115,7 +115,7 @@ router.post('/upload', upload.single('file'), function(req, res){
         }
         return sequelize.Promise.all(promises);
       }).then(() => {
-        fs.renameSync(jarName, './uploads/' + req.file.originalname, (err) => {
+        fs.renameSync(jarName, './uploads/' + req.file.originalname.replace(/\.jar/g, "") + "_" + username + ".jar", (err) => {
           if (err) {
             res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
           } else {
@@ -139,7 +139,7 @@ router.post('/upload', upload.single('file'), function(req, res){
         }
         return sequelize.Promise.all(promises);
       }).then(() => {
-        fs.renameSync(jarName, './uploads/' + req.file.originalname, (err) => {
+        fs.renameSync(jarName, './uploads/' + req.file.originalname.replace(/\.jar/g, "") + "_" + username + ".jar" , (err) => {
           if (err) {
             res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
           } else {
