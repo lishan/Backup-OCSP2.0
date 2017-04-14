@@ -89,7 +89,7 @@ router.post('/upload', upload.single('file'), function(req, res){
           let index = filename.lastIndexOf(".");
           if(index > 0) {
             result.push({
-              name: filename.substr(index + 1),
+              name: filename.substr(index + 1) + "_" + username,
               classname: filename
             });
           }else{
