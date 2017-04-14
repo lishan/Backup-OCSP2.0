@@ -489,7 +489,11 @@ angular.module('ocspApp')
                       }
                     }
                   }
+                  if($scope.selectedJob.events[i].PROPERTIES.props.length === 1) { 
+                  	$scope.selectedJob.events[i].audit={ type : "always", periods : []};	
+                  }
           		}
+
 	          if($scope.selectedJob.events[i].PROPERTIES.output_dis !== undefined && $scope.selectedJob.events[i].PROPERTIES.output_dis[0] !== undefined) {
 	            $scope.selectedJob.events[i].interval = $scope.selectedJob.events[i].PROPERTIES.output_dis[0].interval;
 	            $scope.selectedJob.events[i].delim = $scope.selectedJob.events[i].PROPERTIES.output_dis[0].delim;
