@@ -124,7 +124,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_subscribe_type_day':'Repeat: Every Day',
     'ocsp_web_streams_subscribe_type_week':'Repeat: Every Week',
     'ocsp_web_streams_subscribe_type_month':'Repeat: Every Month',
-    'ocsp_web_streams_subscribe_type_always':'Repeat: Always',
+    'ocsp_web_streams_subscribe_type_always':'Repeat: Every Batch',
 
     'ocsp_web_streams_chart':'Quota',
     'ocsp_web_streams_owner':'Stream owner',
