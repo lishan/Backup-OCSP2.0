@@ -115,7 +115,7 @@ router.post('/upload', upload.single('file'), function(req, res){
         }
         return sequelize.Promise.all(promises);
       }).then(() => {
-        fs.renameSync(jarName, './uploads/' + req.file.originalname.replace(/\.jar/g, "") + "_" + username + ".jar", (err) => {
+        fs.rename(jarName, './uploads/' + req.file.originalname.replace(/\.jar/g, "") + "_" + username + ".jar", (err) => {
           if (err) {
             res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
           } else {
@@ -139,7 +139,7 @@ router.post('/upload', upload.single('file'), function(req, res){
         }
         return sequelize.Promise.all(promises);
       }).then(() => {
-        fs.renameSync(jarName, './uploads/' + req.file.originalname.replace(/\.jar/g, "") + "_" + username + ".jar" , (err) => {
+        fs.rename(jarName, './uploads/' + req.file.originalname.replace(/\.jar/g, "") + "_" + username + ".jar" , (err) => {
           if (err) {
             res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
           } else {
