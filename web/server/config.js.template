@@ -28,12 +28,12 @@ module.exports = {
     databaseError: "请检查数据库配置",
     uploadError: "上传失败, 请手动将jar包放到",
     authError: "权限不足",
-    labelConflictError: "标签实现类冲突 "
+    labelConflictError: `label与owner的标签实现类冲突`
   },
   en: {
     databaseError: "Please check your database configurations",
     uploadError: "Upload failed, please upload manually jar to",
     authError: "Authentication failed",
-    labelConflictError: "Label class name conflicts with "
+    labelConflictError: `label conflicts with owner 's Label class`
   }
 };

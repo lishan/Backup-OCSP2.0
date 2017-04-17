@@ -108,8 +108,8 @@ router.post('/upload', upload.single('file'), function(req, res){
         let promises = [];
         for (let i in result) {
           promises.push(Label.findOrCreate({
-            where:{name: result[i].name},
-            defaults:{class_name: result[i].classname, owner: username},
+            where:{name: result[i].name, owner: username},
+            defaults:{class_name: result[i].classname},
             transaction: t
           }));
         }
@@ -122,8 +122,20 @@ router.post('/upload', upload.single('file'), function(req, res){
             res.status(200).send({success: true});
           }
         });
-      }).catch(() => {
-        res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
+      }).catch((error) => {
+        if(error.fields && error.fields.name){
+          let message = trans.labelConflictError.replace("label", error.fields.name);
+          Label.find({
+            where:{name: error.fields.name}
+          }).then((data)=>{
+            message = message.replace("owner", data.dataValues.owner);
+            res.status(500).send(message);
+          },()=>{
+            res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
+          });
+        }else{
+          res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
+        }
       });
     }else {
       sequelize.transaction(function (t) {
@@ -148,7 +160,15 @@ router.post('/upload', upload.single('file'), function(req, res){
         });
       }).catch((error) => {
         if(error.fields && error.fields.name){
-          res.status(500).send(trans.labelConflictError + error.fields.name);
+          let message = trans.labelConflictError.replace("label", error.fields.name);
+          Label.find({
+            where:{name: error.fields.name}
+          }).then((data)=>{
+            message = message.replace("owner", data.dataValues.owner);
+            res.status(500).send(message);
+          },()=>{
+            res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
+          });
         }else{
           res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
         }
