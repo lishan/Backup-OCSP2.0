@@ -18,3 +18,4 @@ server/config.js
 server/lib/shiro.ini
 *.log
 users.dat
+/tmp

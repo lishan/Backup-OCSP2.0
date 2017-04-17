@@ -11,12 +11,12 @@ let LabelRefer = require('../model/STREAM_LABEL')(sequelize, Sequelize);
 let config = require('../config');
 let path = require('path');
 let trans = config[config.trans || 'zh'];
-const jarName = "./uploads/tmpOcspRunning.jar";
+const jarName = "./tmp/_tmp-461491200.jar";
 
 let storage = multer.diskStorage({
-  destination: './uploads/',
+  destination: './tmp/',
   filename: function (req, file, cb) {
-    cb(null, "tmpOcspRunning.jar");
+    cb(null, "_tmp-461491200.jar");
   }
 });
 let upload = multer({ storage: storage });
