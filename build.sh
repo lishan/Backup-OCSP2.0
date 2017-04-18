@@ -44,6 +44,9 @@ cp core/target/ocsp-core_${spark_version}-${version}-dist/lib/*.jar build/OCSP/l
 
 tar -xzf web/target/web-${version}-bundle.tar.gz -C build/OCSP/web
 
+mkdir build/OCSP/web/uploads
+mkdir build/OCSP/web/tmp
+
 cd build
 
 tar -czf OCSP_${version}.tar.gz OCSP
