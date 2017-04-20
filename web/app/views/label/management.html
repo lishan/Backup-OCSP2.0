@@ -9,14 +9,16 @@
           <thead>
           <tr>
             <th>{{'ocsp_web_label_manage_001' | translate}}</th>
+            <th>{{'ocsp_web_label_manage_004' | translate}}</th>
             <th>{{'ocsp_web_label_manage_002' | translate}}</th>
             <th>{{'ocsp_web_label_manage_003' | translate}}</th>
           </tr>
           </thead>
           <tbody>
             <tr ng-repeat="label in labels">
-              <td class="col-md-3">{{label.name}}</td>
-              <td class="col-md-3">{{label.class_name}}</td>
+              <td class="col-md-2">{{label.name}}</td>
+              <td class="col-md-2">{{label.owner}}</td>
+              <td class="col-md-2">{{label.class_name}}</td>
               <td class="col-md-6"><textarea ng-model="label.properties" class="form-control" rows="6" ng-disabled="owner(label)"/></td>
             </tr>
           </tbody>

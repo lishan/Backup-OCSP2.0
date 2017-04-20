@@ -66,6 +66,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_label_manage_001':'标签名字',
     'ocsp_web_label_manage_002':'标签实现类',
     'ocsp_web_label_manage_003':'标签参数',
+    'ocsp_web_label_manage_004':'标签所有者',
 
     'ocsp_web_streams_manage_000':'作业流管理',
     'ocsp_web_streams_manage_001':'新建作业流',

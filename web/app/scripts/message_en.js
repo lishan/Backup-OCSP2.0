@@ -66,6 +66,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_label_manage_001':'Label Name',
     'ocsp_web_label_manage_002':'Label Implementation Class',
     'ocsp_web_label_manage_003':'Label Parameters',
+    'ocsp_web_label_manage_004':'Label Owner',
 
     'ocsp_web_streams_manage_000':'Streams Management',
     'ocsp_web_streams_manage_001':'Add Streams',
