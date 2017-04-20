@@ -33,7 +33,7 @@ User can use OCSP to build his streaming platform easily and quickly.
 
      
 
-* Framework [Details](https://github.com/OCSP/OCSP_mainline/wiki/OCSP%E6%9E%B6%E6%9E%84%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3)
+* Framework [Details](https://github.com/OCSP/OCSP_mainline/wiki/OCSP-Architecture)
 
    OCSP consists of four components: Data input, Core processing, Configuration, Basic components as below:
 
