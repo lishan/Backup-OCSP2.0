@@ -66,7 +66,7 @@ User can use OCSP to build his streaming platform easily and quickly.
 
 ### How to use
 
-* [Guideline](https://github.com/OCSP/OCSP_mainline/wiki/2.1-\(Medivh\)-使用文档)
+* [Guideline](https://github.com/OCSP/OCSP_mainline/wiki/2.1-\(Medivh\)-OCSP-User-Guide)
 * [Label development](https://github.com/OCSP/OCSP_mainline/wiki/%E8%87%AA%E5%AE%9A%E4%B9%89%E6%A0%87%E7%AD%BE)
 * [Performance optimization](https://github.com/OCSP/OCSP_mainline/wiki/OCSP-%E8%B0%83%E4%BC%98)
 
