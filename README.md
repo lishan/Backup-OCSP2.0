@@ -79,4 +79,4 @@ User can use OCSP to build his streaming platform easily and quickly.
 *   V2.0.1 RPM builds based on Spark1.6.x [v2.0.1](https://pan.baidu.com/s/1gfn6hzX)
 
 ### FAQ
-* [FAQ](https://github.com/OCSP/OCSP_mainline/wiki/常见问题)
+* [FAQ](https://github.com/OCSP/OCSP_mainline/wiki/FAQ)
