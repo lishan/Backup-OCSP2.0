@@ -56,13 +56,13 @@ User can use OCSP to build his streaming platform easily and quickly.
 
 ### Build & Installation
 
-* [Build](https://github.com/OCSP/OCSP_mainline/wiki/编译OCSP源代码方法)
+* [Build](https://github.com/OCSP/OCSP_mainline/wiki/Compile-Source-Code)
 
-* [Installation](https://github.com/OCSP/OCSP_mainline/wiki/安装部署)
+* [Installation](https://github.com/OCSP/OCSP_mainline/wiki/OCSP-Setup)
 
-* [Codis installation](https://github.com/OCSP/OCSP_mainline/wiki/Codis-%E9%83%A8%E7%BD%B2)
+* [Codis installation](https://github.com/CodisLabs/codis/blob/release3.2/doc/tutorial_en.md)
 
-* [YARN label configuration](https://github.com/OCSP/OCSP_mainline/wiki/Yarn-Node-Label-%E9%85%8D%E7%BD%AE)
+* [YARN label configuration](https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.2/bk_yarn_resource_mgt/content/configuring_node_labels.html)
 
 ### How to use
 
