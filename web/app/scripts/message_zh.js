@@ -144,11 +144,11 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
 
     'ocsp_web_dashboard_name' : '仪表盘',
     'ocsp_web_dashboard1' : '运行状态',
-    'ocsp_web_dashboard2' : '时间统计(分)',
-    'ocsp_web_dashboard3' : '丢掉数据和处理数据量',
-    'ocsp_web_dashboard4' : '事件数量',
-    'ocsp_web_dashboard5' : '处理每批次数据使用的时间(秒)',
-    'ocsp_web_dashboard6' : '处理每批次数据使用的存储内存(KB)',
+    'ocsp_web_dashboard2' : '运行时长统计(分)',
+    'ocsp_web_dashboard3' : '丢掉数据和处理数据量(条)',
+    'ocsp_web_dashboard4' : '事件数量(个)',
+    'ocsp_web_dashboard5' : '处理当前批次数据使用的时间(秒)',
+    'ocsp_web_dashboard6' : '处理当前批次数据使用的存储内存(KB)',
 
     'ocsp_web_dashboard_memory_used': '已使用的存储内存',
     'ocsp_web_dashboard_memory_available': '可用的存储内存',
