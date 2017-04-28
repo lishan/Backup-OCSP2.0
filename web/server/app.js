@@ -9,7 +9,7 @@ import auth from './auth';
 
 let app = express();
 let env = config.env || 'dev';
-
+let version_api = 'v1';
 if(env === 'dev') {
   app.use(require('connect-livereload')());
   app.use("/fonts",express.static("app/bower_components/bootstrap/fonts"));
@@ -43,6 +43,10 @@ app.use('/api/event', require('./api/event'));
 app.use('/api/config', require('./api/globalconfig'));
 app.use('/api/user', require('./api/user'));
 app.use('/api/chart', require('./api/chart'));
+
+//rest api for BI
+app.use('/ocsp/' +version_api+ '/api/events', require('./api/events'));
+app.use('/ocsp/' +version_api+ '/api/streams', require('./api/streams'));
 
 app.get('*', function(req, res) {
   res.sendFile(path.join(__dirname, '../',config[env].dist,'/404.html'));// load the single view file (angular will handle the page changes on the front-end)
