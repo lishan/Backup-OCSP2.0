@@ -74,9 +74,11 @@ User can use OCSP to build his streaming platform easily and quickly.
 
 *   2016 Nov. [V2.0.0](https://github.com/OCSP/OCSP_mainline/releases/tag/2.0.0) 
 *   2017 Jan 13. [V2.0.1](https://github.com/OCSP/OCSP_mainline/releases/tag/2.0.1)
+*   2017 May 4.  [V2.1](https://github.com/OCSP/OCSP_mainline/releases/tag/2.1.0)
 
 ### Downloads
 *   V2.0.1 RPM builds based on Spark1.6.x [v2.0.1](https://pan.baidu.com/s/1gfn6hzX)
+*   V2.1 RPM builds based on Spark1.6.x [v2.1](https://pan.baidu.com/s/1pKH5qA3)
 
 ### FAQ
 * [FAQ](https://github.com/OCSP/OCSP_mainline/wiki/FAQ)
