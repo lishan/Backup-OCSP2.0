@@ -255,6 +255,66 @@ CREATE TABLE `STREAM_EXCEPTION` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Table structure for table `STREAM_EVENT_TYPE_MAPPING`
+--
+
+DROP TABLE IF EXISTS `STREAM_EVENT_TYPE_MAPPING`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `STREAM_EVENT_TYPE_MAPPING` (
+  `event_id` int(16) NOT NULL ,
+  `type` varchar(30) NOT NULL,
+  `type_name` varchar(255) NOT NULL,
+  `parent_type` varchar(30) NOT NULL,
+  `children_types` varchar(30) NOT NULL,
+  PRIMARY KEY (`event_id`),
+  FOREIGN KEY (event_id) references STREAM_EVENT(id)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `STREAM_HISTORY_CONFIG`
+--
+
+DROP TABLE IF EXISTS `STREAM_HISTORY_CONFIG`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `STREAM_HISTORY_CONFIG` (
+  `config_id` INTEGER NOT NULL AUTO_INCREMENT,
+  `component_name` varchar(256) NOT NULL ,
+  `version` varchar(256) NOT NULL,
+  `config_data` text NOT NULL,
+  `create_timestamp` varchar(500) NOT NULL,
+  `user_name` varchar(256) NOT NULL,
+  `note` text ,
+  PRIMARY KEY (`config_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `STREAM_EVENT_CEP`
+--
+
+DROP TABLE IF EXISTS `STREAM_EVENT_CEP`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `STREAM_EVENT_ CEP` (
+  `event_id` int(16) NOT NULL ,
+  `type` varchar(30) ,
+  `code` varchar(256) ,
+  `source` varchar(256) ,
+  `monitor_fields` varchar(512) ,
+  `reserve_1` varchar(512) ,
+  `reserve_2` varchar(512) ,
+  `reserve_3` varchar(512) ,
+  `reserve_4` varchar(512) ,
+  `reserve_5` varchar(512) ,
+  PRIMARY KEY (`event_id`),
+  FOREIGN KEY (event_id) references STREAM_EVENT(id)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
