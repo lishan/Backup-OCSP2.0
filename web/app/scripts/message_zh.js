@@ -41,6 +41,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_034': '不是有效整数',
     'ocsp_web_common_035': '字段错误',
     'ocsp_web_common_036': '无',
+    'ocsp_web_common_037': '事件处理中心',
 
     'ocsp_web_user_manage_000':'用户管理',
     'ocsp_web_user_manage_001':'修改密码',
@@ -129,6 +130,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_owner':'作业流所有者',
     'ocsp_web_streams_from_latest':'最新的offset',
     'ocsp_web_streams_from_last_stop':'最后一次消费的offset',
+    'ocsp_web_streams_cep1':'请点击  ',
+    'ocsp_web_streams_cep2':'  创建事件',
 
     'ocsp_web_common_property_zookeeper_connect': 'zookeeper的连接地址',
     'ocsp_web_common_property_zk': 'zookeeper的连接地址',

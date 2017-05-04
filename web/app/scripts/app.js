@@ -31,7 +31,8 @@ angular
     'cfp.hotkeys',
     'ui.bootstrap.datetimepicker',
     'angularMoment',
-    'chart.js'
+    'chart.js',
+    'angularBootstrapNavTree'
   ])
   .config(function ($routeProvider) {
     $routeProvider
@@ -58,6 +59,10 @@ angular
       .when('/dashboard',{
         templateUrl: 'views/dashboard/dashboard.html',
         controller: 'DashboardCtrl'
+      })
+      .when('/events_center',{
+        templateUrl: 'views/events/center.html',
+        controller: 'EventsCenterCtrl'
       })
       .otherwise({
         controller : function(){
@@ -101,6 +106,9 @@ angular
     $rootScope.tab = null;
     $rootScope.message = null;
     $rootScope.styles = null;
+    $http.get("/api/config/cepEnable").success((data)=>{
+      $rootScope.cep = JSON.parse(data);
+    });
     $rootScope.changeTab = (tab) => {
       $rootScope.tab = tab;
     };
@@ -147,12 +155,14 @@ angular
       let name = $cookies.get("username");
       if(name === null || name === undefined){
         $rootScope.username = null;
+        $cookies.remove("username");
         $rootScope.message = $filter('translate')('ocsp_web_user_manage_007');
         $rootScope.styles = "redBlock";
         $location.path("/");
       }else {
         if(adminGuard && !$rootScope.isAdmin()){
           $rootScope.username = null;
+          $cookies.remove("username");
           $rootScope.message = $filter('translate')('ocsp_web_user_manage_008');
           $rootScope.styles = "redBlock";
           $location.path("/");

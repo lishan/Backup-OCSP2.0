@@ -37,6 +37,7 @@ angular.module('ocspApp').directive('tokenfield',['strService', function(strServ
       };
       scope.bRequired = attrs !== undefined && attrs.required === 'true';
       let _bDisabled = attrs !== undefined && attrs.disabled === 'true';
+      let _bReadonly = attrs !== undefined && attrs.readonly === 'true';
       let $e = element.find('input');
       let token = {};
       // Add tips
@@ -67,6 +68,9 @@ angular.module('ocspApp').directive('tokenfield',['strService', function(strServ
       });
       if(_bDisabled) {
         element.find("input.token-input").attr('disabled',true);
+      }
+      if(_bReadonly) {
+        token.tokenfield('disable');
       }
       token.on('tokenfield:sorttoken', function(){
         scope.$apply(function(){

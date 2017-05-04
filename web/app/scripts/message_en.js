@@ -41,6 +41,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_034': 'Invaild integer',
     'ocsp_web_common_035': 'Input error',
     'ocsp_web_common_036': 'none',
+    'ocsp_web_common_037': 'Event Processing Center',
 
     'ocsp_web_user_manage_000':'User Management',
     'ocsp_web_user_manage_001':'Change password',
@@ -120,17 +121,17 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_049':'Data flow',
     'ocsp_web_streams_case_field_name':'Escape field name',
     'ocsp_web_streams_case_expression':'Case when expression',
-
     'ocsp_web_streams_subscribe_type_none':'Repeat: None',
     'ocsp_web_streams_subscribe_type_day':'Repeat: Every Day',
     'ocsp_web_streams_subscribe_type_week':'Repeat: Every Week',
     'ocsp_web_streams_subscribe_type_month':'Repeat: Every Month',
     'ocsp_web_streams_subscribe_type_always':'Repeat: Every Batch',
-
     'ocsp_web_streams_chart':'Quota',
     'ocsp_web_streams_owner':'Stream owner',
     'ocsp_web_streams_from_latest':'The latest offset',
     'ocsp_web_streams_from_last_stop':'The last end offset',
+    'ocsp_web_streams_cep1':'Please click  ',
+    'ocsp_web_streams_cep2':'  to create events',
 
     'ocsp_web_common_property_zookeeper_connect': 'Zookeeper address',
     'ocsp_web_common_property_zk': 'Zookeeper address',

@@ -295,3 +295,57 @@ ul.ui-autocomplete{
 table a{
   cursor: pointer;
 }
+
+.ribbon {
+  background-color: #a00;
+  box-shadow: 0 0 10px #888;
+  left: -4.6em;
+  moz-box-shadow: 0 0 10px #888;
+  moz-transform: rotate(-45deg);
+  ms-transform: rotate(-45deg);
+  o-transform: rotate(-45deg);
+  overflow: hidden;
+  position: absolute;
+  top: 46px;
+  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+  webkit-box-shadow: 0 0 10px #888;
+  webkit-transform: rotate(-45deg);
+  white-space: nowrap;
+  width: 19em;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.ribbon a {
+  border: 1px solid #faa;
+  color: #fff;
+  display: block;
+  font: bold 81.25% 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  margin: 1px 0;
+  padding: 10px 50px;
+  text-align: center;
+  text-decoration: none;
+  text-shadow: 0 0 5px #444;
+  pointer-events: none;
+}
+
+.cep {
+  background-color: #a00;
+  box-shadow: 0 0 10px #888;
+  color: #FFF;
+}
+
+.affix {
+  top: 0;
+  width: 100%;
+  z-index: 9999;
+}
+
+.affix + .container-fluid {
+  padding-top: 70px;
+}
+
+.navbar-brand.logo {
+  padding: 10px 15px;
+}
