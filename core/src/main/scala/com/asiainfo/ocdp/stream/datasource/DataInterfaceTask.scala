@@ -94,7 +94,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     }
 
     if (StringUtils.isEmpty(groupID)) {
-      val def_group_name = DataSourceConstant.GROUP_ID_DEF + taskConf.getId + taskConf.getName
+      val def_group_name = DataSourceConstant.GROUP_ID_DEF + taskConf.getId
       logWarning("no group_id , use default : " + def_group_name)
       dsconf.set(DataSourceConstant.GROUP_ID_KEY, def_group_name)
     }
