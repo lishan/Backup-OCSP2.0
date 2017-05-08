@@ -1,11 +1,306 @@
 <div class="row">
-  <div class="col-md-2">
-    <abn-tree tree-data="example_treedata" on-select="my_tree_handler(branch)">
-    </abn-tree>
+  <div class="container-fluid">
+    <div class="inner-addon left-addon">
+      <i class="glyphicon glyphicon-search"></i>
+      <input type="text" class="form-control" placeholder="通过关键字查询">
+    </div>
   </div>
-  <div class="col-md-10">
-    <div class="alert alert-danger alert-dismissible" role="alert" ng-if="viewtest !== ''">
-      {{viewtest}}
+</div>
+<div class="row" style="margin-top: 20px;">
+  <div class="container-fluid">
+    <div class="col-md-4">
+      <div class="row">
+        <div class="col-xs-6">
+          <button type="button" class="btn btn-default btn-block dropdown-toggle" data-toggle="dropdown"
+                  aria-haspopup="true" aria-expanded="false">
+            新增 <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" style="left: auto">
+            <li>
+              <a href="">分级</a>
+            </li>
+            <li>
+              <a href="">事件</a>
+            </li>
+          </ul>
+        </div>
+        <div class="col-xs-6">
+          <button type="button" class="btn btn-default btn-block dropdown-toggle" data-toggle="dropdown"
+                  aria-haspopup="true" aria-expanded="false">
+            操作 <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" style="left: auto">
+            <li>
+              <a href="">启用</a>
+            </li>
+            <li>
+              <a href="">停用</a>
+            </li>
+            <li>
+              <a href="">审核</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading">事件列表</div>
+        <div class="panel-body">
+          <abn-tree tree-data="treedata" on-select="changeEvent(branch)" icon-leaf="fa fa-gear">
+          </abn-tree>
+        </div>
+      </div>
+    </div>
+    <div id="mainFrame" ng-form name="mainForm">
+      <div class="col-md-8" ng-if="item">
+        <div style="margin-top: 10px;">
+          <div class="version-slider">
+            <div class="icon-chevron-box pull-left">
+              <i class="glyphicon glyphicon-chevron-left icon-2x"></i>
+            </div>
+            <div class="icon-chevron-box pull-left">
+              <i class="glyphicon glyphicon-chevron-right icon-2x"></i>
+            </div>
+            <div class="flow-element pull-left">
+              <div class="version-box">
+                <div class="version-info box pull-right displayed">
+                  <div class="top-label">
+                    <span class="badge">V2</span>
+                    <span class="author pull-right">admin</span>
+                  </div>
+                  <div class="content">3 hours ago</div>
+                  <div class="stack-label">HDP-2.5></div>
+                  <div class="current-label">
+                      <span class="label label-success label-current icon-ok" data-toggle="tooltip"
+                            data-original-title="当前">
+                        <i class="glyphicon glyphicon-ok"></i>
+                      </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flow-element pull-left">
+              <div class="version-box">
+                <div class="version-info box pull-right displayed">
+                  <div class="top-label">
+                    <span class="badge">V1</span>
+                    <span class="author pull-right">admin</span>
+                  </div>
+                  <div class="content">3 hours ago</div>
+                  <div class="stack-label">HDP-2.5></div>
+                  <div class="current-label">
+                      <span class="label label-success label-current icon-ok" data-toggle="tooltip"
+                            data-original-title="当前">
+                        <i class="glyphicon glyphicon-ok"></i>
+                      </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading">规则</div>
+            <div class="panel-body">
+              <div class="form-group">
+                <label>关联的流*</label>
+                <ui-select ng-model="item.task" ng-required="true" append-to-body="true">
+                  <ui-select-match>
+                    <span ng-bind="$select.selected.name"></span>
+                  </ui-select-match>
+                  <ui-select-choices
+                    repeat="task in (tasks | filter: $select.search) track by task.id">
+                    <span ng-bind="task.name"></span>
+                  </ui-select-choices>
+                </ui-select>
+                <span class="redtip" ng-if="item.task === undefined">{{'ocsp_web_common_027' | translate}}</span>
+              </div>
+              <div class="form-group">
+                <label>{{'ocsp_web_streams_manage_017' | translate}}*</label>
+                <input type="text" class="form-control" ng-model="item.name" name="eventsName" required>
+                <span class="redtip"
+                      ng-show="mainForm['eventsName'].$touched && mainForm['eventsName'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
+              </div>
+              <div class="form-group">
+                <label>{{'ocsp_web_streams_manage_018' | translate}}*</label>
+                <tokenfield inputs="{{selectedJob.input.fields}}" labels="{{selectedJob.labels}}"
+                            ng-model="item.select_expr" name="eventsFields" required="true">
+                </tokenfield>
+                <span class="redtip"
+                      ng-show="mainForm['eventsFields'].$touched && mainForm['eventsFields'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
+              </div>
+              <div class="form-group">
+                <label>{{'ocsp_web_streams_manage_019' | translate}}*</label>
+                <input type="text" class="form-control" ng-model="item.delim" name="eventsDelim" required>
+                <span class="redtip"
+                      ng-show="mainForm['eventsDelim'].$touched && mainForm['eventsDelim'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
+              </div>
+              <div class="form-group">
+                <label>{{'ocsp_web_streams_manage_013' | translate}}</label>
+                <input type="text" class="form-control" ng-model="item.filter_expr">
+              </div>
+              <div class="form-group">
+                <label>{{'ocsp_web_streams_manage_020' | translate}}({{'ocsp_web_common_023' | translate}})*</label>
+                <input type="number" class="form-control" ng-model="item.interval" name="eventsInterval"
+                       ng-pattern="/^(0|[1-9][0-9]*)$/" required>
+                <span class="redtip"
+                      ng-show="mainForm['eventsInterval'].$touched && mainForm['eventsInterval'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
+                <span class="redtip"
+                      ng-show="mainForm['eventsInterval'].$touched && mainForm['eventsInterval'].$error.pattern">{{'ocsp_web_common_034' | translate}}</span>
+              </div>
+              <div class="form-group">
+                <label>{{'ocsp_web_streams_manage_014' | translate}}*</label>
+                <input type="text" class="form-control" ng-model="item.output.uniqueKey"
+                       name="eventsUniqueKey" required>
+                <span class="redtip"
+                      ng-show="mainForm['eventsUniqueKey'].$touched && mainForm['eventsUniqueKey'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
+              </div>
+              <div class="form-group">
+                <label>{{'ocsp_web_streams_manage_021' | translate}}*</label>
+                <ui-select ng-model="item.output.datasource" ng-required="true" append-to-body="true">
+                  <ui-select-match>
+                    <span ng-bind="$select.selected.name"></span>
+                  </ui-select-match>
+                  <ui-select-choices
+                    repeat="datasource in (datasources | filter: $select.search) track by datasource.id">
+                    <span ng-bind="datasource.name"></span>
+                  </ui-select-choices>
+                </ui-select>
+                <span class="redtip"
+                      ng-if="item.output.datasource === undefined">{{'ocsp_web_common_027' | translate}}</span>
+              </div>
+              <div class="form-group" ng-if="item.output.datasource.type === 'kafka'">
+                <label>{{'ocsp_web_streams_manage_010' | translate}}*</label>
+                <input type="text" class="form-control" ng-model="item.output.topic" required>
+                <span class="redtip"
+                      ng-if="item.output.topic === undefined">{{'ocsp_web_common_027' | translate}}</span>
+              </div>
+              <div class="form-group" ng-if="item.output.datasource.type === 'codis'">
+                <label>{{'ocsp_web_streams_manage_022' | translate}}*</label>
+                <input type="text" class="form-control" ng-model="item.output.codisKeyPrefix" required>
+                <span class="redtip" ng-if="item.output.codisKeyPrefix === undefined">{{'ocsp_web_common_027' | translate}}</span>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              订阅
+            </div>
+            <div class="panel-body">
+              <div class="form-group">
+                <label>{{'ocsp_web_streams_manage_040' | translate}}*</label>
+                <ui-select ng-model="item.audit.type" ng-required="true"
+                           name="eventsAudit"
+                           append-to-body="true"
+                           on-select="onSelect(item)">
+                  <ui-select-match>
+                    <span ng-bind="$select.selected.displayName"></span>
+                  </ui-select-match>
+                  <ui-select-choices
+                    repeat="type.name as type in (auditTypes | filter: $select.search) track by type.name">
+                    <span ng-bind="type.displayName"></span>
+                  </ui-select-choices>
+                </ui-select>
+                <span class="redtip"
+                      ng-show="mainForm['eventsAudit'].$touched && mainForm['eventsAudit'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
+              </div>
+              <div class="form-group" ng-if="item.audit.type !== undefined && item.audit.type === 'none'">
+                <label>{{'ocsp_web_streams_manage_041' | translate}}</label>
+                <div class="row" ng-repeat="period in item.audit.periods">
+                  <div class="col-md-2">
+                    <button type="button" class="btn btn-success btn-circle" ng-click="add(item.audit.periods)"><i
+                      class="glyphicon glyphicon-plus"></i></button>
+                    <button type="button" class="btn btn-danger btn-circle"
+                            ng-click="remove(item.audit.periods, $index)"><i class="glyphicon glyphicon-remove"></i>
+                    </button>
+                  </div>
+                  <div class="col-md-5">
+                    <p class="input-group">
+                      <input type="text" class="form-control" datetime-picker="yyyy-MM-dd HH:mm" required
+                             timepicker-options="{showMeridian: false}"
+                             button-bar="false" ng-model="period.start" is-open="period.t1"
+                             datepicker-append-to-body="true">
+                      <span class="input-group-btn">
+                                          <button type="button" class="btn btn-default" ng-click="period.t1 = true;"><i
+                                            class="glyphicon glyphicon-calendar"></i></button>
+                                        </span>
+                    </p>
+                  </div>
+                  <div class="col-md-5">
+                    <p class="input-group">
+                      <input type="text" class="form-control" datetime-picker="yyyy-MM-dd HH:mm" required
+                             timepicker-options="{showMeridian: false}"
+                             button-bar="false" ng-model="period.end" is-open="period.t2"
+                             datepicker-append-to-body="true">
+                      <span class="input-group-btn">
+                                          <button type="button" class="btn btn-default" ng-click="period.t2 = true;"><i
+                                            class="glyphicon glyphicon-calendar"></i></button>
+                                        </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group"
+                   ng-if="item.audit.type !== 'always' && item.audit.type !== undefined && item.audit.type !== 'none'">
+                <label>{{'ocsp_web_streams_manage_041' | translate}}</label>
+                <div class="row" ng-repeat="period in item.audit.periods">
+                  <div class="col-md-2">
+                    <button type="button" class="btn btn-success btn-circle" ng-click="add(item.audit.periods)"><i
+                      class="glyphicon glyphicon-plus"></i></button>
+                    <button type="button" class="btn btn-danger btn-circle"
+                            ng-click="remove(item.audit.periods, $index)"><i class="glyphicon glyphicon-remove"></i>
+                    </button>
+                  </div>
+                  <div class="col-md-5">
+                    <p class="input-group">
+                      <input type="text" class="form-control" ng-model="period.s" required ng-pattern="/^[1-7]$/"
+                             uib-tooltip="{{'ocsp_web_streams_manage_042' | translate}} 1-7"
+                             tooltip-placement="top"
+                             tooltip-trigger="'mouseenter'" ng-if="item.audit.type === 'week'">
+                      <input type="text" class="form-control" ng-model="period.s" required
+                             uib-tooltip="{{'ocsp_web_streams_manage_042' | translate}} 1-31"
+                             ng-pattern="/^([1-9]|[1-2]\d|30|31)$/"
+                             tooltip-placement="top"
+                             tooltip-trigger="'mouseenter'" ng-if="item.audit.type === 'month'">
+                      <span class="input-group-btn" style="width:0px;"></span>
+                      <input type="text" class="form-control" datetime-picker="HH:mm" enable-date="false" required
+                             timepicker-options="{showMeridian: false}"
+                             button-bar="false" ng-model="period.start" is-open="period.t1"
+                             datepicker-append-to-body="true">
+                      <span class="input-group-btn">
+                                          <button type="button" class="btn btn-default" ng-click="period.t1 = true;"><i
+                                            class="glyphicon glyphicon-time"></i></button>
+                                        </span>
+                    </p>
+                  </div>
+                  <div class="col-md-5">
+                    <p class="input-group">
+                      <input type="text" class="form-control" ng-model="period.d" required ng-pattern="/^[1-7]$/"
+                             uib-tooltip="{{'ocsp_web_streams_manage_042' | translate}} 1-7"
+                             tooltip-placement="top"
+                             tooltip-trigger="'mouseenter'" ng-if="item.audit.type === 'week'">
+                      <input type="text" class="form-control" ng-model="period.d" required
+                             uib-tooltip="{{'ocsp_web_streams_manage_042' | translate}} 1-31"
+                             ng-pattern="/^([1-9]|[1-2]\d|30|31)$/"
+                             tooltip-placement="top"
+                             tooltip-trigger="'mouseenter'" ng-if="item.audit.type === 'month'">
+                      <span class="input-group-btn" style="width:0px;"></span>
+                      <input type="text" class="form-control" datetime-picker="HH:mm" enable-date="false" required
+                             timepicker-options="{showMeridian: false}"
+                             button-bar="false" ng-model="period.end" is-open="period.t2"
+                             datepicker-append-to-body="true">
+                      <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" ng-click="period.t2 = true;"><i
+                              class="glyphicon glyphicon-time"></i></button>
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div froala="froalaOptions" ng-model="item.note"></div>
+          <button class="btn btn-primary" ng-click="update()" style="margin-top: 10px;margin-bottom: 10px;">保存</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

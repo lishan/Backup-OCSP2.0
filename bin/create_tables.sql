@@ -259,17 +259,15 @@ CREATE TABLE `STREAM_EXCEPTION` (
 -- Table structure for table `STREAM_EVENT_TYPE_MAPPING`
 --
 
-DROP TABLE IF EXISTS `STREAM_EVENT_TYPE_MAPPING`;
+DROP TABLE IF EXISTS `STREAM_TYPE_STRUCTURE`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `STREAM_EVENT_TYPE_MAPPING` (
-  `event_id` int(16) NOT NULL ,
-  `type` varchar(30) NOT NULL,
+CREATE TABLE `STREAM_TYPE_STRUCTURE` (
+  `id` int(16) NOT NULL AUTO_INCREMENT,
   `type_name` varchar(255) NOT NULL,
-  `parent_type` varchar(30) NOT NULL,
+  `parent_type` int(16) DEFAULT NULL,
   `children_types` varchar(30) NOT NULL,
-  PRIMARY KEY (`event_id`),
-  FOREIGN KEY (event_id) references STREAM_EVENT(id)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -281,13 +279,13 @@ DROP TABLE IF EXISTS `STREAM_HISTORY_CONFIG`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `STREAM_HISTORY_CONFIG` (
-  `config_id` INTEGER NOT NULL AUTO_INCREMENT,
-  `component_name` varchar(256) NOT NULL ,
-  `version` varchar(256) NOT NULL,
+  `config_id` int(11) NOT NULL AUTO_INCREMENT,
+  `component_name` varchar(256) NOT NULL,
+  `version` varchar(256) DEFAULT '',
   `config_data` text NOT NULL,
-  `create_timestamp` varchar(500) NOT NULL,
+  `create_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `user_name` varchar(256) NOT NULL,
-  `note` text ,
+  `note` text,
   PRIMARY KEY (`config_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -299,20 +297,20 @@ CREATE TABLE `STREAM_HISTORY_CONFIG` (
 DROP TABLE IF EXISTS `STREAM_EVENT_CEP`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `STREAM_EVENT_ CEP` (
-  `event_id` int(16) NOT NULL ,
-  `type` varchar(30) ,
-  `code` varchar(256) ,
-  `source` varchar(256) ,
-  `monitor_fields` varchar(512) ,
-  `reserve_1` varchar(512) ,
-  `reserve_2` varchar(512) ,
-  `reserve_3` varchar(512) ,
-  `reserve_4` varchar(512) ,
-  `reserve_5` varchar(512) ,
+CREATE TABLE `STREAM_EVENT_CEP` (
+  `event_id` int(16) NOT NULL,
+  `type` int(16) DEFAULT NULL,
+  `code` varchar(256) DEFAULT NULL,
+  `source` varchar(256) DEFAULT NULL,
+  `monitor_fields` varchar(512) DEFAULT NULL,
+  `reserve_1` varchar(512) DEFAULT NULL,
+  `reserve_2` varchar(512) DEFAULT NULL,
+  `reserve_3` varchar(512) DEFAULT NULL,
+  `reserve_4` varchar(512) DEFAULT NULL,
+  `reserve_5` varchar(512) DEFAULT NULL,
   PRIMARY KEY (`event_id`),
-  FOREIGN KEY (event_id) references STREAM_EVENT(id)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+  FOREIGN KEY (`event_id`) REFERENCES `STREAM_EVENT` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 

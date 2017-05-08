@@ -461,7 +461,7 @@ angular.module('ocspApp')
           for(let i in $scope.selectedJob.events){
             if($scope.selectedJob.events[i].PROPERTIES !== undefined && $scope.selectedJob.events[i].PROPERTIES !== null) {
               $scope.selectedJob.events[i].PROPERTIES = JSON.parse($scope.selectedJob.events[i].PROPERTIES);
-              if($scope.selectedJob.events[i].PROPERTIES.props !== undefined && $scope.selectedJob.events[i].PROPERTIES.props.length > 0) {             	
+              if($scope.selectedJob.events[i].PROPERTIES.props !== undefined && $scope.selectedJob.events[i].PROPERTIES.props.length > 0) {
                 for (let j in $scope.selectedJob.events[i].PROPERTIES.props) {
                   if ($scope.selectedJob.events[i].PROPERTIES.props[j].pname === "userKeyIdx") {
                     $scope.selectedJob.events[i].userKeyIdx = $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue;
@@ -489,8 +489,8 @@ angular.module('ocspApp')
                       }
                     }
                   }
-                  if($scope.selectedJob.events[i].PROPERTIES.props.length === 1) { 
-                  	$scope.selectedJob.events[i].audit={ type : "always", periods : []};	
+                  if($scope.selectedJob.events[i].PROPERTIES.props.length === 1) {
+                  	$scope.selectedJob.events[i].audit={ type : "always", periods : []};
                   }
           		}
 
@@ -511,7 +511,7 @@ angular.module('ocspApp')
 	          }
         	  }
           	}
-  		  }	
+  		  }
           _dealWith($scope.selectedJob.status);
           _drawGraph($scope.selectedJob, labels);
           _graphs(arr.charts.data);

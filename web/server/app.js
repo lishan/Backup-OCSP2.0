@@ -43,6 +43,8 @@ app.use('/api/event', require('./api/event'));
 app.use('/api/config', require('./api/globalconfig'));
 app.use('/api/user', require('./api/user'));
 app.use('/api/chart', require('./api/chart'));
+app.use('/api/typestructure', require('./api/typestructure'));
+app.use('/api/history', require('./api/history'));
 
 //rest api for BI
 app.use('/ocsp/' +version_api+ '/api/events', require('./api/events'));

@@ -317,6 +317,7 @@ router.post("/", function(req, res){
           let eventPromises = [];
           for (let i in events) {
             events[i].output.id = result[i].dataValues.id;
+            events[i].owner = req.query.username;
             createEvents(events, i, task.diid, 1);
             eventPromises.push(EventDef.create(events[i], {transaction: t}));
           }

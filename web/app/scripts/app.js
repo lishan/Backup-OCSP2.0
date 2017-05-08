@@ -32,7 +32,8 @@ angular
     'ui.bootstrap.datetimepicker',
     'angularMoment',
     'chart.js',
-    'angularBootstrapNavTree'
+    'angularBootstrapNavTree',
+    'froala'
   ])
   .config(function ($routeProvider) {
     $routeProvider

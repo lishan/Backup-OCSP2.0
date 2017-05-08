@@ -30,7 +30,10 @@
     "bootstrap-tokenfield": "bootstrap-tokenfield-ocsp#^0.12.2",
     "bootstrap-application-wizard": "bootstrap-application-wizard-ocsp#^1.0.4",
     "angular-chart.js": "^1.1.1",
-    "angular-bootstrap-nav-tree": "*"
+    "angular-bootstrap-nav-tree": "*",
+    "components-font-awesome": "^4.7.0",
+    "froala-wysiwyg-editor": "^2.6.0",
+    "angular-froala": "^2.6.0"
   },
   "devDependencies": {
     "angular-mocks": "1.4.5"
@@ -43,6 +46,16 @@
         "less/bootstrap.less",
         "dist/css/bootstrap.css",
         "dist/js/bootstrap.js"
+      ]
+    },
+    "froala-wysiwyg-editor": {
+      "main": [
+        "css/froala_editor.min.css",
+        "css/froala_style.min.css",
+        "js/froala_editor.min.js",
+        "js/plugins/align.min.js",
+        "js/plugins/quote.min.js",
+        "js/plugins/lists.min.js"
       ]
     }
   },
