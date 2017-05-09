@@ -36,7 +36,11 @@ angular.module('ocspApp')
         templateUrl: 'stackedModal.html',
         size: 'md',
         scope: $scope,
+        backdrop: 'static',
         controller: ['$scope', function($scope) {
+          $scope.closeModal = function(){
+            modal.close();
+          };
           $scope.inputSpark = function(){
             $http.post("/api/prop/spark", {spark: $scope.spark}).success(function(){
               modal.close();

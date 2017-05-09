@@ -472,3 +472,7 @@ table a {
   margin-right: 5px;
   outline: none;
 }
+
+.modal-dialog {
+  margin-top: 90px;
+}

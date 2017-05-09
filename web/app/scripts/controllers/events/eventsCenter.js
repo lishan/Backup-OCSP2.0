@@ -1,14 +1,74 @@
 'use strict';
 
 angular.module('ocspApp')
-  .controller('EventsCenterCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', '$q', 'moment', ($scope, $rootScope, $http, Notification, $filter, $q, moment)=>{
+  .controller('EventsCenterCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', '$q', '$uibModal', ($scope, $rootScope, $http, Notification, $filter, $q, $uibModal)=>{
     $rootScope.init('cep');
     $scope.treedata = [];
-    $scope.item = null;
+    _init();
 
     $scope.onSelect = function(item){
       //Clear periods when select audit type
       item.audit.periods = [{}];
+    };
+
+    $scope.openCreateType = ()=>{
+      let modal = $uibModal.open({
+        animation: true,
+        ariaLabelledBy: 'modal-title-bottom',
+        ariaDescribedBy: 'modal-body-bottom',
+        templateUrl: 'type.html',
+        size: 'md',
+        backdrop: 'static',
+        scope: $scope,
+        controller: ['$scope', 'Notification', function($scope, Notification) {
+          $scope.newType = {};
+          $scope.closeModal = function(){
+            modal.close();
+          };
+          $scope.saveType = function () {
+            if($("#typeForm .ng-invalid").length === 0) {
+              $http.post("/api/typestructure", {newType: $scope.newType}).then(function(){
+                _init();
+                modal.close();
+                Notification.success($filter('translate')('ocsp_web_common_026'));
+              });
+            }
+          };
+        }]
+      });
+    };
+
+    $scope.openCreateEvent = ()=>{
+      let modal = $uibModal.open({
+        animation: true,
+        ariaLabelledBy: 'modal-title-bottom',
+        ariaDescribedBy: 'modal-body-bottom',
+        templateUrl: 'event.html',
+        size: 'lg',
+        backdrop: 'static',
+        scope: $scope,
+        controller: ['$scope', 'Notification', function($scope, Notification) {
+          $scope.newEvent = {
+            output: {}
+          };
+          $scope.closeModal = function(){
+            modal.close();
+          };
+          $scope.saveEvent = function () {
+            if($("#eventForm .ng-invalid").length === 0) {
+              $http.post("/api/event/", {event: $scope.newEvent}).success(function(data){
+                $scope.newEvent.id = data.id;
+                $http.post("/api/history/event", {event: {config_data: $scope.newEvent,
+                  note: $scope.newEvent.note, version: $scope.newEvent.version}}).success(function(){
+                  _init();
+                  modal.close();
+                  Notification.success($filter('translate')('ocsp_web_common_026'));
+                });
+              });
+            }
+          };
+        }]
+      });
     };
 
     function _getHistory(id) {
@@ -20,6 +80,9 @@ angular.module('ocspApp')
           $scope.history[0].first = true;
           if ($scope.history[0].config_data) {
             $scope.item = JSON.parse($scope.history[0].config_data);
+            if(!$scope.item.audit) {
+              $scope.item.audit={ type : "always", periods : []};
+            }
           }
           $scope.item.note = null;
           $scope.item.version = null;
@@ -176,17 +239,30 @@ angular.module('ocspApp')
       }
     };
 
-    $q.all({structure: $http.get('/api/typestructure'), events: $http.get('/api/event/all'), datasource: $http.get('/api/datasource'), outputinterface: $http.get('/api/datainterface/output'), streams: $http.get('/api/task')}).then((arr)=>{
-      let tree = arr.structure.data;
-      let events = arr.events.data;
-      $scope.tasks = arr.streams.data;
-      $scope.datasources = arr.datasource.data;
-      $scope.output = arr.outputinterface.data;
-      for(let i in events){
-        _findNodeTree(tree, events[i]);
-      }
-      _noLeaf(tree);
-      $scope.treedata = tree;
-    });
+    function _init() {
+      $q.all({
+        structure: $http.get('/api/typestructure'),
+        types: $http.get('/api/typestructure/all'),
+        events: $http.get('/api/event/all'),
+        datasource: $http.get('/api/datasource'),
+        outputinterface: $http.get('/api/datainterface/output'),
+        streams: $http.get('/api/task')
+      }).then((arr) => {
+        $scope.history = null;
+        $scope.item = null;
+        $scope.hook = 0;
+        let tree = arr.structure.data;
+        let events = arr.events.data;
+        $scope.tasks = arr.streams.data;
+        $scope.types = arr.types.data;
+        $scope.datasources = arr.datasource.data;
+        $scope.output = arr.outputinterface.data;
+        for (let i in events) {
+          _findNodeTree(tree, events[i]);
+        }
+        _noLeaf(tree);
+        $scope.treedata = tree;
+      });
+    }
 
   }]);

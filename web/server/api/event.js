@@ -4,6 +4,8 @@ let sequelize = require('../sequelize');
 let Sequelize = require('sequelize');
 let EventDef = require('../model/STREAM_EVENT')(sequelize, Sequelize);
 let CEP = require('../model/STREAM_EVENT_CEP')(sequelize, Sequelize);
+let Interface = require('../model/STREAM_DATAINTERFACE')(sequelize, Sequelize);
+let randomstring = require("randomstring");
 let config = require('../config');
 let trans = config[config.trans || 'zh'];
 let moment = require('moment');
@@ -23,11 +25,13 @@ router.get('/diid/:id', function(req, res){
   });
 });
 
-function _createEvent(event, diid, status) {
+function _createEvent(event, status) {
   event.p_event_id = 0;
   //Only event contains PROPERTIES instead pf properties
   event.PROPERTIES = {"props": [], "output_dis": []};
-  event.diid = event.task.diid;
+  if(event.task) {
+    event.diid = event.task.diid;
+  }
   event.status = status;
   if(event.select_expr !== undefined && event.select_expr !== "") {
     event.select_expr = event.select_expr.replace(/\s/g, '');
@@ -83,17 +87,151 @@ function _createEvent(event, diid, status) {
   event.PROPERTIES = JSON.stringify(event.PROPERTIES);
 }
 
+function _dealDataInterfaceProperties(dataInterface, dsid, type) {
+  dataInterface.dsid = dsid;
+  dataInterface.type = type;
+  dataInterface.status = 1;
+  dataInterface.properties = {"props": [], "userFields": [], "fields": []};
+  if(dataInterface.delim !== undefined && dataInterface.delim === "|"){
+    dataInterface.delim = "\\|";
+  }
+  if(dataInterface.delim === undefined){
+    dataInterface.delim = "";
+  }
+  let _parseFields = function (properties, fields, name) {
+    if(fields === undefined){
+      return [];
+    }
+    fields = fields.replace(/\s/g, '');
+    let splits = fields.split(",");
+    for (let i in splits) {
+      if (splits[i] !== undefined && splits[i] !== "") {
+        properties[name].push({
+          "pname": splits[i].trim(),
+          "ptype": "String"
+        });
+      }
+    }
+    return splits;
+  };
+  if (dataInterface.fields !== undefined && dataInterface.fields !== ""){
+    dataInterface.properties.props.push({
+      "pname" : "field.numbers",
+      "pvalue" : _parseFields(dataInterface.properties, dataInterface.fields, "fields").length
+    });
+  }
+  if (dataInterface.topic !== undefined){
+    dataInterface.properties.props.push({
+      "pname" : "topic",
+      "pvalue" : dataInterface.topic
+    });
+  }
+  if (dataInterface.uniqueKey !== undefined){
+    dataInterface.properties.props.push({
+      "pname" : "uniqKeys",
+      "pvalue" : dataInterface.uniqueKey
+    });
+  }
+  if (dataInterface.codisKeyPrefix !== undefined){
+    dataInterface.properties.props.push({
+      "pname" : "codisKeyPrefix",
+      "pvalue" : dataInterface.codisKeyPrefix
+    });
+  }
+  if (dataInterface.inputs !== undefined && dataInterface.inputs.length > 0){
+    dataInterface.properties.sources = [];
+    for(let i in dataInterface.inputs){
+      if(dataInterface.inputs[i].delim !== undefined && dataInterface.inputs[i].delim === "|"){
+        dataInterface.inputs[i].delim = "\\|";
+      }
+      if(dataInterface.inputs[i].delim === undefined){
+        dataInterface.inputs[i].delim = "";
+      }
+      let result = {
+        "pname": dataInterface.inputs[i].name,
+        "delim": dataInterface.inputs[i].delim,
+        "topic": dataInterface.inputs[i].topic,
+        "userFields":[],
+        "fields":[]
+      };
+      _parseFields(result, dataInterface.inputs[i].fields, "fields");
+      if(dataInterface.inputs[i].userFields !== undefined && dataInterface.inputs[i].userFields.length > 0) {
+        for (let j in dataInterface.inputs[i].userFields) {
+          result.userFields.push({
+            "pname": dataInterface.inputs[i].userFields[j].name,
+            "pvalue": dataInterface.inputs[i].userFields[j].value,
+            "undefined": "on"
+          });
+        }
+      }
+      dataInterface.properties.sources.push(result);
+    }
+  }
+  dataInterface.properties = JSON.stringify(dataInterface.properties);
+}
+
+function _createOrUpdateOutputDataInterface(event, t) {
+  event.output.name = event.name + "_" + randomstring.generate(10);
+  if(event.output.datasource !== undefined && event.output.datasource.id !== undefined){
+    _dealDataInterfaceProperties(event.output, event.output.datasource.id, 1);
+  }else{
+    _dealDataInterfaceProperties(event.output, null, 1);
+  }
+  if(event.output.id === undefined || event.output.id === null) {
+    return Interface.create(event.output, {transaction: t});
+  }else{
+    return Interface.update(event.output, {where: {id : event.output.id}, transaction: t});
+  }
+}
+
 router.put('/:id', function(req, res){
   let username = req.query.username;
   let event = req.body.event;
-  _createEvent(event, event.output.id, event.status ? 1 : 0);
   sequelize.transaction(function (t) {
-    return sequelize.Promise.all([
-      EventDef.update(event, {where: {id: event.id}, transaction: t}),
-      CEP.update(event.cep, {where: {event_id: event.id}, transaction: t}),
-    ])
+    return _createOrUpdateOutputDataInterface(event, t).then(function(result) {
+      event.output = result.dataValues;
+      _createEvent(event, event.status ? 1 : 0);
+      if(event.parent){
+        event.cep.type = event.parent.id;
+      }
+      return sequelize.Promise.all([
+        EventDef.update(event, {where: {id: event.id}, transaction: t}),
+        CEP.update(event.cep, {where: {event_id: event.id}, transaction: t}),
+      ])
+    });
   }).then(function(){
     res.send({success: true});
+  }, function(){
+    res.status(500).send(trans.databaseError);
+  }).catch(function () {
+    res.status(500).send(trans.databaseError);
+  });
+});
+
+router.post('/', function(req, res){
+  let username = req.query.username;
+  let event = req.body.event;
+  let id = null;
+  sequelize.transaction(function (t) {
+    return _createOrUpdateOutputDataInterface(event, t).then(function(result){
+      event.output = result.dataValues;
+      _createEvent(event, 0);
+      event.owner = username;
+      return EventDef.create(event, {transaction: t}).then(function (data) {
+        if (data.dataValues && data.dataValues.id) {
+          event.cep.event_id = data.dataValues.id;
+          id = data.dataValues.id;
+          if(event.parent){
+            event.cep.type = event.parent.id;
+          }
+          return CEP.create(event.cep, {transaction: t});
+        } else {
+          return sequelize.Promise.reject();
+        }
+      });
+    });
+  }).then(function(){
+    res.send({success: true, id: id});
   }, function(){
     res.status(500).send(trans.databaseError);
   }).catch(function () {

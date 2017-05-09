@@ -34,8 +34,12 @@ angular.module('ocspApp')
         ariaDescribedBy: 'modal-body-bottom',
         templateUrl: 'stackedModal.html',
         size: 'lg',
+        backdrop: 'static',
         scope: $scope,
         controller: ['$scope', 'Notification', function($scope, Notification) {
+          $scope.closeModal = function(){
+            modal.close();
+          };
           $scope.saveDatasource = function () {
             if($("#mainFrame .ng-invalid").length === 0) {
               if (confirm($filter('translate')('ocsp_web_system_manage_004'))) {

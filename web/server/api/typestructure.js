@@ -61,7 +61,42 @@ router.get('/', function(req, res){
       _dealWithStructure(result[i], data);
     }
     res.send(result);
+  }, ()=>{
+    res.status(500).send(trans.databaseError);
   });
+});
+
+router.get('/all', function(req, res){
+  Structure.findAll().then((data) => {
+    res.send(data);
+  }, ()=> {
+    res.status(500).send(trans.databaseError);
+  });
+});
+
+router.post('/', function(req, res){
+  let newType = req.body.newType;
+  if(newType.parent) {
+    newType.parent_type = newType.parent.id;
+  }
+  newType.children_types = "[]";
+  sequelize.transaction(function (t) {
+    return Structure.create(newType, {transaction: t}).then(function(data){
+      if(newType.parent && newType.parent.children_types) {
+        newType.parent.children_types = JSON.parse(newType.parent.children_types);
+        newType.parent.children_types.push(data.dataValues.id);
+        newType.parent.children_types = JSON.stringify(newType.parent.children_types);
+        return Structure.update(newType.parent, {where : {id: newType.parent.id}, transaction: t});
+      }
+    });
+  }).then(function(){
+    res.send({success: true});
+  },function(){
+    res.status(500).send(trans.databaseError);
+  }).catch(function(){
+    res.status(500).send(trans.databaseError);
+  });
+
 });
 
 module.exports = router;

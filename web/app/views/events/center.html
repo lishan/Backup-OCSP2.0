@@ -6,6 +6,7 @@
     </div>
   </div>
 </div>
+<ng-include src="'views/events/modal.html'"></ng-include>
 <div class="row" style="margin-top: 20px;">
   <div class="container-fluid">
     <div class="col-md-4">
@@ -17,10 +18,10 @@
           </button>
           <ul class="dropdown-menu" style="left: auto">
             <li>
-              <a href="" ng-click>分级</a>
+              <a href="" ng-click="openCreateType()">分级</a>
             </li>
             <li>
-              <a href="">事件</a>
+              <a href="" ng-click="openCreateEvent()">事件</a>
             </li>
           </ul>
         </div>
@@ -82,6 +83,21 @@
           <div class="panel panel-default">
             <div class="panel-heading">设置</div>
             <div class="panel-body">
+              <div class="form-group">
+                <label>分级</label>
+                <ui-select ng-model="item.parent" ng-required="true" name="eventTypes" append-to-body="true">
+                  <ui-select-match>
+                    <span ng-bind="$select.selected.type_name"></span>
+                  </ui-select-match>
+                  <ui-select-choices
+                    repeat="eventType in (types | filter: $select.search) track by eventType.id">
+                    <span ng-bind="eventType.type_name"></span>
+                  </ui-select-choices>
+                </ui-select>
+                <span class="redtip" ng-messages="mainForm.eventTypes.$error" ng-if="mainForm.eventTypes.$touched">
+                <div ng-message="required">{{'ocsp_web_common_027' | translate}}</div>
+              </span>
+              </div>
               <div class="form-group">
                 <label>事件编码</label>
                 <input type="text" class="form-control" ng-model="item.cep.code" name="eventsCode" required>
