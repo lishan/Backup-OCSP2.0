@@ -20,6 +20,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: false
     },
+    id: {
+      type: DataTypes.INTEGER(11),
+      allowNull: false,
+    },
     create_timestamp: {
       type: DataTypes.TIME,
       allowNull: false,

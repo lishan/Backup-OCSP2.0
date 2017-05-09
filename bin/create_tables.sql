@@ -282,6 +282,7 @@ CREATE TABLE `STREAM_HISTORY_CONFIG` (
   `config_id` int(11) NOT NULL AUTO_INCREMENT,
   `component_name` varchar(256) NOT NULL,
   `version` varchar(256) DEFAULT '',
+  `id` int(11) NOT NULL,
   `config_data` text NOT NULL,
   `create_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `user_name` varchar(256) NOT NULL,

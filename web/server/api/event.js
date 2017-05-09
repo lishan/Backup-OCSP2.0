@@ -87,9 +87,16 @@ router.put('/:id', function(req, res){
   let username = req.query.username;
   let event = req.body.event;
   _createEvent(event, event.output.id, event.status ? 1 : 0);
-  EventDef.update(event, {where: {id: event.id}}).then(function(){
+  sequelize.transaction(function (t) {
+    return sequelize.Promise.all([
+      EventDef.update(event, {where: {id: event.id}, transaction: t}),
+      CEP.update(event.cep, {where: {event_id: event.id}, transaction: t}),
+    ])
+  }).then(function(){
     res.send({success: true});
   }, function(){
+    res.status(500).send(trans.databaseError);
+  }).catch(function () {
     res.status(500).send(trans.databaseError);
   });
 });

@@ -15,6 +15,7 @@ router.post('/event', function(req, res){
     let event = req.body.event;
     event.component_name = "event";
     event.user_name = username;
+    event.id = event.config_data.id;
     event.config_data = JSON.stringify(event.config_data);
     History.create(event).then(function(){
       res.send({success: true});
@@ -23,6 +24,25 @@ router.post('/event', function(req, res){
     });
   }else{
     res.status(500).send(trans.authError);
+  }
+});
+
+router.get('/:id', function(req, res){
+  let usertype = req.query.usertype;
+  let username = req.query.username;
+  let event_id = req.params.id;
+  if(usertype === "admin") {
+    History.findAll({where : {id: event_id}, order: '`create_timestamp` DESC'}).then(function(events){
+      res.send(events);
+    },function(){
+      res.status(500).send(trans.databaseError);
+    })
+  }else{
+    History.findAll({where : {id: event_id, user_name: username}, order: '`create_timestamp` DESC'}).then(function(events){
+      res.send(events);
+    },function(){
+      res.status(500).send(trans.databaseError);
+    })
   }
 });
 

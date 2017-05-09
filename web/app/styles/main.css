@@ -415,9 +415,10 @@ table a {
   border-radius: 4px;
   border: 1px solid #d2d9dd;
   font-size: 11px;
+  outline: none;
 }
 
-.version-slider .flow-element .version-box .box:hover {
+.version-slider .flow-element .version-box .box:hover, .version-slider .flow-element .version-box .box.active {
   background-color: #e6f1f6;
 }
 
@@ -459,6 +460,15 @@ table a {
   color: #808080;
 }
 
+.version-slider .icon-chevron-box.disabled {
+  cursor: not-allowed;
+}
+
+.version-slider .icon-chevron-box {
+  outline: none;
+}
+
 .abn-tree i {
   margin-right: 5px;
+  outline: none;
 }
