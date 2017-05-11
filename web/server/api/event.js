@@ -185,58 +185,71 @@ function _createOrUpdateOutputDataInterface(event, t) {
 }
 
 router.put('/:id', function(req, res){
-  let username = req.query.username;
   let event = req.body.event;
-  sequelize.transaction(function (t) {
-    return _createOrUpdateOutputDataInterface(event, t).then(function(result) {
-      event.output = result.dataValues;
-      _createEvent(event, event.status ? 1 : 0);
-      if(event.parent){
-        event.cep.type = event.parent.id;
-      }
-      return sequelize.Promise.all([
-        EventDef.update(event, {where: {id: event.id}, transaction: t}),
-        CEP.update(event.cep, {where: {event_id: event.id}, transaction: t}),
-      ])
-    });
-  }).then(function(){
-    res.send({success: true});
-  }, function(){
-    res.status(500).send(trans.databaseError);
-  }).catch(function () {
+  EventDef.find({attributes: ["owner"], where: {id: event.id}}).then((owner)=> {
+    if(owner && owner.dataValues && owner.dataValues.owner === req.query.username) {
+      sequelize.transaction(function (t) {
+        return _createOrUpdateOutputDataInterface(event, t).then(function (result) {
+          event.output = result.dataValues;
+          _createEvent(event, event.status ? 1 : 0);
+          if (event.parent) {
+            event.cep.type = event.parent.id;
+          }
+          return sequelize.Promise.all([
+            EventDef.update(event, {where: {id: event.id}, transaction: t}),
+            CEP.update(event.cep, {where: {event_id: event.id}, transaction: t}),
+          ])
+        });
+      }).then(function () {
+        res.send({success: true});
+      }, function () {
+        res.status(500).send(trans.databaseError);
+      }).catch(function () {
+        res.status(500).send(trans.databaseError);
+      });
+    }else{
+      res.status(500).send(trans.authError);
+    }
+  }, ()=> {
     res.status(500).send(trans.databaseError);
   });
+
 });
 
 router.post('/', function(req, res){
   let username = req.query.username;
-  let event = req.body.event;
-  let id = null;
-  sequelize.transaction(function (t) {
-    return _createOrUpdateOutputDataInterface(event, t).then(function(result){
-      event.output = result.dataValues;
-      _createEvent(event, 0);
-      event.owner = username;
-      return EventDef.create(event, {transaction: t}).then(function (data) {
-        if (data.dataValues && data.dataValues.id) {
-          event.cep.event_id = data.dataValues.id;
-          id = data.dataValues.id;
-          if(event.parent){
-            event.cep.type = event.parent.id;
+  let usertype = req.query.usertype;
+  if(usertype !== "admin") {
+    let event = req.body.event;
+    let id = null;
+    sequelize.transaction(function (t) {
+      return _createOrUpdateOutputDataInterface(event, t).then(function (result) {
+        event.output = result.dataValues;
+        _createEvent(event, 0);
+        event.owner = username;
+        return EventDef.create(event, {transaction: t}).then(function (data) {
+          if (data.dataValues && data.dataValues.id) {
+            event.cep.event_id = data.dataValues.id;
+            id = data.dataValues.id;
+            if (event.parent) {
+              event.cep.type = event.parent.id;
+            }
+            return CEP.create(event.cep, {transaction: t});
+          } else {
+            return sequelize.Promise.reject();
           }
-          return CEP.create(event.cep, {transaction: t});
-        } else {
-          return sequelize.Promise.reject();
-        }
+        });
       });
+    }).then(function () {
+      res.send({success: true, id: id});
+    }, function () {
+      res.status(500).send(trans.databaseError);
+    }).catch(function () {
+      res.status(500).send(trans.databaseError);
     });
-  }).then(function(){
-    res.send({success: true, id: id});
-  }, function(){
-    res.status(500).send(trans.databaseError);
-  }).catch(function () {
-    res.status(500).send(trans.databaseError);
-  });
+  }else{
+    res.status(500).send(trans.authError);
+  }
 });
 
 router.get('/findId/:id', function(req, res){

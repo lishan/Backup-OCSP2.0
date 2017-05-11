@@ -18,10 +18,10 @@
           </button>
           <ul class="dropdown-menu" style="left: auto">
             <li>
-              <a href="" ng-click="openCreateType()">分级</a>
+              <a href="" ng-click="openCreateType()" ng-if="isAdmin()">分级</a>
             </li>
             <li>
-              <a href="" ng-click="openCreateEvent()">事件</a>
+              <a href="" ng-click="openCreateEvent()" ng-if="!isAdmin()">事件</a>
             </li>
           </ul>
         </div>
@@ -228,9 +228,9 @@
                              button-bar="false" ng-model="period.start" is-open="period.t1"
                              datepicker-append-to-body="true">
                       <span class="input-group-btn">
-                                          <button type="button" class="btn btn-default" ng-click="period.t1 = true;"><i
-                                            class="glyphicon glyphicon-calendar"></i></button>
-                                        </span>
+                        <button type="button" class="btn btn-default" ng-click="period.t1 = true;"><i
+                          class="glyphicon glyphicon-calendar"></i></button>
+                      </span>
                     </p>
                   </div>
                   <div class="col-md-5">
@@ -240,9 +240,9 @@
                              button-bar="false" ng-model="period.end" is-open="period.t2"
                              datepicker-append-to-body="true">
                       <span class="input-group-btn">
-                                          <button type="button" class="btn btn-default" ng-click="period.t2 = true;"><i
-                                            class="glyphicon glyphicon-calendar"></i></button>
-                                        </span>
+                        <button type="button" class="btn btn-default" ng-click="period.t2 = true;"><i
+                          class="glyphicon glyphicon-calendar"></i></button>
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -275,9 +275,10 @@
                              button-bar="false" ng-model="period.start" is-open="period.t1"
                              datepicker-append-to-body="true">
                       <span class="input-group-btn">
-                                          <button type="button" class="btn btn-default" ng-click="period.t1 = true;"><i
-                                            class="glyphicon glyphicon-time"></i></button>
-                                        </span>
+                        <button type="button" class="btn btn-default" ng-click="period.t1 = true;">
+                          <i class="glyphicon glyphicon-time"></i>
+                        </button>
+                      </span>
                     </p>
                   </div>
                   <div class="col-md-5">
@@ -297,8 +298,9 @@
                              button-bar="false" ng-model="period.end" is-open="period.t2"
                              datepicker-append-to-body="true">
                       <span class="input-group-btn">
-                            <button type="button" class="btn btn-default" ng-click="period.t2 = true;"><i
-                              class="glyphicon glyphicon-time"></i></button>
+                        <button type="button" class="btn btn-default" ng-click="period.t2 = true;">
+                          <i class="glyphicon glyphicon-time"></i>
+                        </button>
                       </span>
                     </p>
                   </div>
@@ -306,7 +308,7 @@
               </div>
             </div>
           </div>
-          <div class="panel panel-default">
+          <div class="panel panel-default" ng-if="!isAdmin()">
             <div class="panel-heading">提交</div>
             <div class="panel-body">
               <div class="form-group">
@@ -318,7 +320,7 @@
               </div>
             </div>
           </div>
-          <button class="btn btn-primary" ng-click="update()" style="margin-top: 10px;margin-bottom: 10px;">保存</button>
+          <button class="btn btn-primary" ng-click="update()" style="margin-top: 10px;margin-bottom: 10px;" ng-disabled="isAdmin()">保存</button>
         </div>
       </div>
     </div>

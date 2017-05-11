@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('ocspApp')
-  .controller('EventsCenterCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', '$q', '$uibModal', ($scope, $rootScope, $http, Notification, $filter, $q, $uibModal)=>{
+  .controller('EventsCenterCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', '$q', '$uibModal', 'moment', ($scope, $rootScope, $http, Notification, $filter, $q, $uibModal, moment)=>{
     $rootScope.init('cep');
     $scope.treedata = [];
     _init();
@@ -26,6 +26,11 @@ angular.module('ocspApp')
             modal.close();
           };
           $scope.saveType = function () {
+            angular.forEach($scope.typeForm.$error, function (field) {
+              angular.forEach(field, function(errorField){
+                errorField.$setTouched();
+              });
+            });
             if($("#typeForm .ng-invalid").length === 0) {
               $http.post("/api/typestructure", {newType: $scope.newType}).then(function(){
                 _init();
@@ -55,6 +60,11 @@ angular.module('ocspApp')
             modal.close();
           };
           $scope.saveEvent = function () {
+            angular.forEach($scope.eventForm.$error, function (field) {
+              angular.forEach(field, function(errorField){
+                errorField.$setTouched();
+              });
+            });
             if($("#eventForm .ng-invalid").length === 0) {
               $http.post("/api/event/", {event: $scope.newEvent}).success(function(data){
                 $scope.newEvent.id = data.id;
@@ -78,14 +88,7 @@ angular.module('ocspApp')
         if ($scope.history.length > 0) {
           $scope.history[0].active = true;
           $scope.history[0].first = true;
-          if ($scope.history[0].config_data) {
-            $scope.item = JSON.parse($scope.history[0].config_data);
-            if(!$scope.item.audit) {
-              $scope.item.audit={ type : "always", periods : []};
-            }
-          }
-          $scope.item.note = null;
-          $scope.item.version = null;
+          parseItem($scope.history[0]);
           if ($scope.history.length > 4) {
             for (let i = 4; i < $scope.history.length; i++) {
               $scope.history[i].hide = true;
@@ -122,13 +125,26 @@ angular.module('ocspApp')
       }
     };
 
+    function parseItem(record) {
+      if (record && record.config_data) {
+        $scope.item = JSON.parse(record.config_data);
+        if (!$scope.item.audit) {
+          $scope.item.audit = {type: "always", periods: []};
+        }
+        if ($scope.item.audit.periods && $scope.item.audit.periods.length > 0) {
+          for (let i in $scope.item.audit.periods) {
+            $scope.item.audit.periods[i].start = moment($scope.item.audit.periods[i].start).toDate();
+            $scope.item.audit.periods[i].end = moment($scope.item.audit.periods[i].end).toDate();
+          }
+        }
+      }
+      $scope.item.note = null;
+      $scope.item.version = null;
+    }
+
     $scope.pressClick = (record)=> {
       if(!record.active) {
-        if(record.config_data) {
-          $scope.item = JSON.parse(record.config_data);
-        }
-        $scope.item.note = null;
-        $scope.item.version = null;
+        parseItem(record);
         if ($scope.history.length > 0) {
           for (let i in $scope.history) {
             $scope.history[i].active = false;

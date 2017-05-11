@@ -19,13 +19,17 @@ angular.module('ocspApp').factory('UsInterceptor', ['$q', 'usSpinnerService', '$
       return response;
     },
     'responseError': (reason) => {
-      let url = reason.config.url;
-      //Use $injector to load service dynamically in case of circle dependencies
-      if(!htmlRequest(url) && !url.startsWith("/api/task/status") && !url.startsWith("/api/chart/taskData/")) {
-        usSpinnerService.stop('spinner');
+      if (reason) {
+        let url = reason.config.url;
+        //Use $injector to load service dynamically in case of circle dependencies
+        if (!htmlRequest(url) && !url.startsWith("/api/task/status") && !url.startsWith("/api/chart/taskData/")) {
+          usSpinnerService.stop('spinner');
+        }
+        let Notification = $injector.get('Notification');
+        if (reason.data && reason.data !== "") {
+          Notification.error(reason.data);
+        }
       }
-      let Notification = $injector.get('Notification');
-      Notification.error(reason.data);
       return $q.reject(reason);
     },
   };

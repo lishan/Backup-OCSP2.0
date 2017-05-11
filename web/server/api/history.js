@@ -11,7 +11,7 @@ let router = express.Router();
 router.post('/event', function(req, res){
   let usertype = req.query.usertype;
   let username = req.query.username;
-  if(usertype === "admin") {
+  if(usertype !== "admin") {
     let event = req.body.event;
     event.component_name = "event";
     event.user_name = username;
