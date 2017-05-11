@@ -111,7 +111,7 @@
             <div class="panel-body">
               <div class="form-group">
                 <label>关联的流*</label>
-                <ui-select ng-model="item.task" ng-required="true" append-to-body="true">
+                <ui-select ng-model="item.task" ng-required="true" append-to-body="true" on-select="selectStream($item)">
                   <ui-select-match>
                     <span ng-bind="$select.selected.name"></span>
                   </ui-select-match>
@@ -130,7 +130,7 @@
               </div>
               <div class="form-group">
                 <label>{{'ocsp_web_streams_manage_018' | translate}}*</label>
-                <tokenfield inputs="{{selectedJob.input.fields}}" labels="{{selectedJob.labels}}"
+                <tokenfield inputs="{{item.inputFields}}" labels="{{item.labels}}"
                             ng-model="item.select_expr" name="eventsFields" required="true">
                 </tokenfield>
                 <span class="redtip"

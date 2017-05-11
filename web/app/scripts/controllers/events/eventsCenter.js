@@ -47,7 +47,8 @@ angular.module('ocspApp')
         events: $http.get('/api/event/all'),
         datasource: $http.get('/api/datasource'),
         outputinterface: $http.get('/api/datainterface/output'),
-        streams: $http.get('/api/task')
+        streams: $http.get('/api/task'),
+        labels: $http.get('/api/label')
       }).then((arr) => {
         $scope.history = null;
         $scope.item = null;
@@ -58,6 +59,7 @@ angular.module('ocspApp')
         $scope.types = arr.types.data;
         $scope.datasources = arr.datasource.data;
         $scope.output = arr.outputinterface.data;
+        $scope.inputLabels = arr.labels.data;
         for (let i in events) {
           _findNodeTree(tree, events[i]);
         }
@@ -73,7 +75,37 @@ angular.module('ocspApp')
       item.audit.periods = [{}];
     };
 
-    function parseItem(record) {
+    function _parseFields(diid, event) {
+      $q.all({
+        datainterface: $http.get('/api/datainterface/' + diid),
+        labels: $http.get('/api/label/diid/' + diid)
+      }).then(function (arr) {
+        if (arr.datainterface && arr.datainterface.data) {
+          let inputDi = JSON.parse(arr.datainterface.data[0].properties);
+          let result = "";
+          if (inputDi.fields) {
+            if (inputDi.fields.length > 0) {
+              result = inputDi.fields[0].pname;
+            }
+            for (let i = 1; i < inputDi.fields.length; i++) {
+              result += "," + inputDi.fields[i].pname;
+            }
+          }
+          event.inputFields = result;
+        }
+        let labels = [];
+        for (let i in arr.labels.data) {
+          for (let j in $scope.inputLabels) {
+            if (arr.labels.data[i].label_id === $scope.inputLabels[j].id) {
+              labels.push($scope.inputLabels[j]);
+            }
+          }
+        }
+        event.labels = labels;
+      });
+    }
+
+    function _parseItem(record) {
       if (record && record.config_data) {
         $scope.item = JSON.parse(record.config_data);
         if (!$scope.item.audit) {
@@ -84,6 +116,9 @@ angular.module('ocspApp')
             $scope.item.audit.periods[i].start = moment($scope.item.audit.periods[i].start).toDate();
             $scope.item.audit.periods[i].end = moment($scope.item.audit.periods[i].end).toDate();
           }
+        }
+        if($scope.item.task) {
+          _parseFields($scope.item.task.diid, $scope.item);
         }
       }
       $scope.item.note = null;
@@ -138,6 +173,9 @@ angular.module('ocspApp')
           $scope.closeModal = function(){
             modal.close();
           };
+          $scope.selectEventStream = function($item){
+            _parseFields($item.diid, $scope.newEvent);
+          };
           $scope.saveEvent = function () {
             angular.forEach($scope.eventForm.$error, function (field) {
               angular.forEach(field, function(errorField){
@@ -167,7 +205,7 @@ angular.module('ocspApp')
         if ($scope.history.length > 0) {
           $scope.history[0].active = true;
           $scope.history[0].first = true;
-          parseItem($scope.history[0]);
+          _parseItem($scope.history[0]);
           if ($scope.history.length > 4) {
             for (let i = 4; i < $scope.history.length; i++) {
               $scope.history[i].hide = true;
@@ -206,7 +244,7 @@ angular.module('ocspApp')
 
     $scope.pressClick = (record)=> {
       if(!record.active) {
-        parseItem(record);
+        _parseItem(record);
         if ($scope.history.length > 0) {
           for (let i in $scope.history) {
             $scope.history[i].active = false;
@@ -280,6 +318,10 @@ angular.module('ocspApp')
             });
         }
       }
+    };
+
+    $scope.selectStream = function($item) {
+      _parseFields($item.diid, $scope.item);
     };
 
   }]);
