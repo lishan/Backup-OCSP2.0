@@ -36,13 +36,13 @@ router.get('/:id', function(req, res){
       res.send(events);
     },function(){
       res.status(500).send(trans.databaseError);
-    })
+    });
   }else{
     History.findAll({where : {id: event_id, user_name: username}, order: '`create_timestamp` DESC'}).then(function(events){
       res.send(events);
     },function(){
       res.status(500).send(trans.databaseError);
-    })
+    });
   }
 });
 

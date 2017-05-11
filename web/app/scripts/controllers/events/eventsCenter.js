@@ -4,12 +4,91 @@ angular.module('ocspApp')
   .controller('EventsCenterCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', '$q', '$uibModal', 'moment', ($scope, $rootScope, $http, Notification, $filter, $q, $uibModal, moment)=>{
     $rootScope.init('cep');
     $scope.treedata = [];
+
+    function _findNodeTree(tree, event){
+      if(!event.STREAM_EVENT_CEP){
+        return;
+      }
+      if(tree && tree.length > 0) {
+        for (let i in tree) {
+          if (tree[i].id === event.STREAM_EVENT_CEP.type) {
+            if (!tree[i].children) {
+              tree[i].children = [];
+            }
+            tree[i].children.push({
+              id: event.id,
+              type: "event",
+              label: event.name,
+            });
+            return;
+          } else if (tree[i].children && tree[i].children.length > 0) {
+            _findNodeTree(tree[i].children, event);
+          }
+        }
+      }
+    }
+
+    function _noLeaf(tree){
+      if(tree && tree.length > 0) {
+        for (let i in tree) {
+          if ((!tree[i].children || tree[i].children.length === 0) && tree[i].type && tree[i].type === "type") {
+            tree[i].noLeaf = true;
+          } else {
+            _noLeaf(tree[i].children);
+          }
+        }
+      }
+    }
+
+    function _init() {
+      $q.all({
+        structure: $http.get('/api/typestructure'),
+        types: $http.get('/api/typestructure/all'),
+        events: $http.get('/api/event/all'),
+        datasource: $http.get('/api/datasource'),
+        outputinterface: $http.get('/api/datainterface/output'),
+        streams: $http.get('/api/task')
+      }).then((arr) => {
+        $scope.history = null;
+        $scope.item = null;
+        $scope.hook = 0;
+        let tree = arr.structure.data;
+        let events = arr.events.data;
+        $scope.tasks = arr.streams.data;
+        $scope.types = arr.types.data;
+        $scope.datasources = arr.datasource.data;
+        $scope.output = arr.outputinterface.data;
+        for (let i in events) {
+          _findNodeTree(tree, events[i]);
+        }
+        _noLeaf(tree);
+        $scope.treedata = tree;
+      });
+    }
+
     _init();
 
     $scope.onSelect = function(item){
       //Clear periods when select audit type
       item.audit.periods = [{}];
     };
+
+    function parseItem(record) {
+      if (record && record.config_data) {
+        $scope.item = JSON.parse(record.config_data);
+        if (!$scope.item.audit) {
+          $scope.item.audit = {type: "always", periods: []};
+        }
+        if ($scope.item.audit.periods && $scope.item.audit.periods.length > 0) {
+          for (let i in $scope.item.audit.periods) {
+            $scope.item.audit.periods[i].start = moment($scope.item.audit.periods[i].start).toDate();
+            $scope.item.audit.periods[i].end = moment($scope.item.audit.periods[i].end).toDate();
+          }
+        }
+      }
+      $scope.item.note = null;
+      $scope.item.version = null;
+    }
 
     $scope.openCreateType = ()=>{
       let modal = $uibModal.open({
@@ -125,23 +204,6 @@ angular.module('ocspApp')
       }
     };
 
-    function parseItem(record) {
-      if (record && record.config_data) {
-        $scope.item = JSON.parse(record.config_data);
-        if (!$scope.item.audit) {
-          $scope.item.audit = {type: "always", periods: []};
-        }
-        if ($scope.item.audit.periods && $scope.item.audit.periods.length > 0) {
-          for (let i in $scope.item.audit.periods) {
-            $scope.item.audit.periods[i].start = moment($scope.item.audit.periods[i].start).toDate();
-            $scope.item.audit.periods[i].end = moment($scope.item.audit.periods[i].end).toDate();
-          }
-        }
-      }
-      $scope.item.note = null;
-      $scope.item.version = null;
-    }
-
     $scope.pressClick = (record)=> {
       if(!record.active) {
         parseItem(record);
@@ -184,41 +246,6 @@ angular.module('ocspApp')
       height: 100
     };
 
-    function _findNodeTree(tree, event){
-      if(!event.STREAM_EVENT_CEP){
-        return;
-      }
-      if(tree && tree.length > 0) {
-        for (let i in tree) {
-          if (tree[i].id === event.STREAM_EVENT_CEP.type) {
-            if (!tree[i].children) {
-              tree[i].children = [];
-            }
-            tree[i].children.push({
-              id: event.id,
-              type: "event",
-              label: event.name,
-            });
-            return;
-          } else if (tree[i].children && tree[i].children.length > 0) {
-            _findNodeTree(tree[i].children, event);
-          }
-        }
-      }
-    }
-
-    function _noLeaf(tree){
-      if(tree && tree.length > 0) {
-        for (let i in tree) {
-          if ((!tree[i].children || tree[i].children.length === 0) && tree[i].type && tree[i].type === "type") {
-            tree[i].noLeaf = true;
-          } else {
-            _noLeaf(tree[i].children);
-          }
-        }
-      }
-    }
-
     function _changeNameWhenUpdateEvent(tree, item){
       if(tree && tree.length > 0) {
         for (let i in tree) {
@@ -254,31 +281,5 @@ angular.module('ocspApp')
         }
       }
     };
-
-    function _init() {
-      $q.all({
-        structure: $http.get('/api/typestructure'),
-        types: $http.get('/api/typestructure/all'),
-        events: $http.get('/api/event/all'),
-        datasource: $http.get('/api/datasource'),
-        outputinterface: $http.get('/api/datainterface/output'),
-        streams: $http.get('/api/task')
-      }).then((arr) => {
-        $scope.history = null;
-        $scope.item = null;
-        $scope.hook = 0;
-        let tree = arr.structure.data;
-        let events = arr.events.data;
-        $scope.tasks = arr.streams.data;
-        $scope.types = arr.types.data;
-        $scope.datasources = arr.datasource.data;
-        $scope.output = arr.outputinterface.data;
-        for (let i in events) {
-          _findNodeTree(tree, events[i]);
-        }
-        _noLeaf(tree);
-        $scope.treedata = tree;
-      });
-    }
 
   }]);

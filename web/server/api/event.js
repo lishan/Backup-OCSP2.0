@@ -198,7 +198,7 @@ router.put('/:id', function(req, res){
           return sequelize.Promise.all([
             EventDef.update(event, {where: {id: event.id}, transaction: t}),
             CEP.update(event.cep, {where: {event_id: event.id}, transaction: t}),
-          ])
+          ]);
         });
       }).then(function () {
         res.send({success: true});
