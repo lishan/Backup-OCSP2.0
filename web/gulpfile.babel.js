@@ -255,8 +255,13 @@ gulp.task('copy:fonts', function () {
     .pipe(gulp.dest(yeoman.dist + '/fonts'));
 });
 
+gulp.task('fontsAwesome', function () {
+  return gulp.src(yeoman.app + '/bower_components/components-font-awesome/fonts/**/*')
+    .pipe(gulp.dest(yeoman.dist + '/fonts'));
+});
+
 gulp.task('build', ['clean:dist', 'clean:server', 'clean:client'], function (cb) {
-  runSequence(['config', 'lib', 'images', 'favicon', 'copy:extras', 'copy:fonts', 'client:rename', 'pageNotFound'], cb);
+  runSequence(['config', 'lib', 'images', 'favicon', 'copy:extras', 'copy:fonts', 'fontsAwesome', 'client:rename', 'pageNotFound'], cb);
 });
 
 gulp.task('war', ['build'], () => {

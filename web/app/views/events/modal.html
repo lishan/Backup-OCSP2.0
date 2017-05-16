@@ -29,6 +29,14 @@
             <span class="redtip"
                   ng-show="eventForm['eventsCode'].$touched && eventForm['eventsCode'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
           </div>
+          <div class="form-group">
+            <label>事件标识</label>
+            <input type="text" class="form-control" ng-model="newEvent.cep.identifier">
+          </div>
+          <div class="form-group">
+            <label>事件的业务含义</label>
+            <input type="text" class="form-control" ng-model="newEvent.description">
+          </div>
         </div>
       </div>
       <div class="panel panel-default">
@@ -124,6 +132,27 @@
       </div>
       <div class="form-group">
         <button type="button" class="btn btn-primary" ng-click="saveEvent()">{{'ocsp_web_common_009' | translate}}</button>
+      </div>
+    </form>
+  </div>
+</script>
+<script type="text/ng-template" id="search.html">
+  <div class="modal-header">
+    <button type="button" class="close" ng-click="closeModal()"><span aria-hidden="true">&times;</span></button>
+    <h3 class="modal-title">搜索</h3>
+  </div>
+  <div class="modal-body">
+    <form name="typeForm" id="searchForm">
+      <div class="form-group">
+        <label>{{'ocsp_web_common_011' | translate}}</label>
+        <input type="text" name="name" class="form-control" ng-model="searchItem.name">
+      </div>
+      <div class="form-group">
+        <label>事件编码</label>
+        <input type="text" class="form-control" ng-model="searchItem.code" name="eventsCode">
+      </div>
+      <div class="form-group">
+        <button type="button" class="btn btn-primary" ng-click="search()">搜索</button>
       </div>
     </form>
   </div>

@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <div class="inner-addon left-addon">
       <i class="glyphicon glyphicon-search"></i>
-      <input type="text" class="form-control" placeholder="通过关键字查询">
+      <input type="text" class="form-control" placeholder="通过关键字查询" ng-click="openSearchModal()" ng-model="searchItem">
     </div>
   </div>
 </div>
@@ -103,6 +103,14 @@
                 <input type="text" class="form-control" ng-model="item.cep.code" name="eventsCode" required>
                 <span class="redtip"
                       ng-show="mainForm['eventsCode'].$touched && mainForm['eventsCode'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
+              </div>
+              <div class="form-group">
+                <label>事件标识</label>
+                <input type="text" class="form-control" ng-model="item.cep.identifier">
+              </div>
+              <div class="form-group">
+                <label>事件的业务含义</label>
+                <input type="text" class="form-control" ng-model="item.description">
               </div>
             </div>
           </div>

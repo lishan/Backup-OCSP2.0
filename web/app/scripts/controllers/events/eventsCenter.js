@@ -157,6 +157,30 @@ angular.module('ocspApp')
       });
     };
 
+    $scope.openSearchModal = ()=>{
+      let modal = $uibModal.open({
+        animation: true,
+        ariaLabelledBy: 'modal-title-bottom',
+        ariaDescribedBy: 'modal-body-bottom',
+        templateUrl: 'search.html',
+        size: 'lg',
+        backdrop: 'static',
+        scope: $scope,
+        controller: ['$scope', 'Notification', function($scope, Notification) {
+          $scope.searchItem = {};
+          $scope.closeModal = function(){
+            modal.close();
+          };
+          $scope.search = function () {
+            if($("#searchForm .ng-invalid").length === 0) {
+              modal.close();
+              $scope.$parent.searchItem = $scope.searchItem;
+            }
+          };
+        }]
+      });
+    };
+
     $scope.openCreateEvent = ()=>{
       let modal = $uibModal.open({
         animation: true,

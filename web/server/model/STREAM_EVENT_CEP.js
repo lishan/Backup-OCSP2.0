@@ -19,6 +19,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
+    identifier: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     monitor_fields: {
       type: DataTypes.STRING,
       allowNull: true
