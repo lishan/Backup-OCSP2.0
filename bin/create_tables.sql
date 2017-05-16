@@ -302,6 +302,7 @@ CREATE TABLE `STREAM_EVENT_CEP` (
   `event_id` int(16) NOT NULL,
   `type` int(16) DEFAULT NULL,
   `code` varchar(256) DEFAULT NULL,
+  `identifier` varchar(256) DEFAULT NULL,
   `source` varchar(256) DEFAULT NULL,
   `monitor_fields` varchar(512) DEFAULT NULL,
   `reserve_1` varchar(512) DEFAULT NULL,
