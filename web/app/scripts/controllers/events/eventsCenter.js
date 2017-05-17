@@ -207,6 +207,10 @@ angular.module('ocspApp')
               });
             });
             if($("#eventForm .ng-invalid").length === 0) {
+              if($scope.newEvent.note) {
+                $scope.newEvent.note = $scope.newEvent.note.replace(/[<p>|</p>]/g, "");
+                $scope.newEvent.note = `<p>${$scope.newEvent.note}</p>`;
+              }
               $http.post("/api/event/", {event: $scope.newEvent}).success(function(data){
                 $scope.newEvent.id = data.id;
                 $http.post("/api/history/event", {event: {config_data: $scope.newEvent,
@@ -300,14 +304,6 @@ angular.module('ocspApp')
       }
     };
 
-    $scope.froalaOptions = {
-      toolbarButtons : ['bold', 'italic', 'underline', '|',
-        'align', 'formatOL', 'formatUL', '|', 'quote', 'selectAll'
-      ],
-      placeholderText: '请输入提交纪要',
-      height: 100
-    };
-
     function _changeNameWhenUpdateEvent(tree, item){
       if(tree && tree.length > 0) {
         for (let i in tree) {
@@ -333,6 +329,10 @@ angular.module('ocspApp')
           });
           Notification.error($filter('translate')('ocsp_web_common_032'));
         }else {
+          if($scope.item.note) {
+            $scope.item.note = $scope.item.note.replace(/[<p>|</p>]/g, "");
+            $scope.item.note = `<p>${$scope.item.note}</p>`;
+          }
           $q.all({event: $http.put("/api/event/" + $scope.item.id, {event: $scope.item}),
             history: $http.post("/api/history/event", {event: {config_data: $scope.item, note: $scope.item.note, version: $scope.item.version}})})
             .then(function(){

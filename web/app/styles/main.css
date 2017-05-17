@@ -454,6 +454,7 @@ table a {
 .version-slider .flow-element .version-box .box .current-label {
   text-align: center;
   padding: 2px 5px;
+  margin-top: -4px;
 }
 
 .version-slider .icon-chevron-box .glyphicon-chevron-left:hover, .version-slider .icon-chevron-box .glyphicon-chevron-right:hover {
@@ -475,4 +476,24 @@ table a {
 
 .modal-dialog {
   margin-top: 90px;
+}
+
+.ta-root {
+  outline: none;
+}
+
+.ta-editor.form-control.editor-height, .ta-scroll-window.form-control.editor-height {
+  height: 100px;
+  min-height: 100px;
+  overflow: hidden;
+  font-family: inherit;
+  font-size: 100%;
+}
+
+.form-control.editor-height > .ta-bind {
+  min-height: 100px;
+}
+
+.form-control.editor-height .placeholder-text::before {
+  color: #999999;
 }

@@ -33,7 +33,7 @@ angular
     'angularMoment',
     'chart.js',
     'angularBootstrapNavTree',
-    'froala'
+    'textAngular'
   ])
   .config(function ($routeProvider) {
     $routeProvider

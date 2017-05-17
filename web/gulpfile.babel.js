@@ -250,6 +250,11 @@ gulp.task('copy:extras', function () {
     .pipe(gulp.dest(yeoman.dist));
 });
 
+gulp.task('copy:jqueryImages', function () {
+  return gulp.src(yeoman.app + '/bower_components/jquery-ui/themes/ui-lightness/images/**/*')
+    .pipe(gulp.dest(yeoman.dist + '/styles/images'));
+});
+
 gulp.task('copy:fonts', function () {
   return gulp.src(yeoman.app + '/bower_components/bootstrap/fonts/**/*')
     .pipe(gulp.dest(yeoman.dist + '/fonts'));
@@ -261,7 +266,7 @@ gulp.task('fontsAwesome', function () {
 });
 
 gulp.task('build', ['clean:dist', 'clean:server', 'clean:client'], function (cb) {
-  runSequence(['config', 'lib', 'images', 'favicon', 'copy:extras', 'copy:fonts', 'fontsAwesome', 'client:rename', 'pageNotFound'], cb);
+  runSequence(['config', 'lib', 'images', 'favicon', 'copy:extras', 'copy:fonts', 'fontsAwesome', 'copy:jqueryImages', 'client:rename', 'pageNotFound'], cb);
 });
 
 gulp.task('war', ['build'], () => {
