@@ -40,6 +40,21 @@ angular.module('ocspApp')
       }
     }
 
+    function _findTypesName(type){
+      if(type.children_types){
+        let types = JSON.parse(type.children_types);
+        for(let i in types){
+          for(let j in $scope.types){
+            if(types[i] === $scope.types[j].id){
+              $scope.types[j].vname = type.vname + "/" + $scope.types[j].type_name;
+              _findTypesName($scope.types[j]);
+              break;
+            }
+          }
+        }
+      }
+    }
+
     function _init() {
       $q.all({
         structure: $http.get('/api/typestructure'),
@@ -62,6 +77,12 @@ angular.module('ocspApp')
         $scope.inputLabels = arr.labels.data;
         for (let i in events) {
           _findNodeTree(tree, events[i]);
+        }
+        for(let i in $scope.types){
+          if(!$scope.types[i].parent_type){
+            $scope.types[i].vname = "/" + $scope.types[i].type_name;
+            _findTypesName($scope.types[i]);
+          }
         }
         _noLeaf(tree);
         $scope.treedata = tree;
@@ -122,7 +143,10 @@ angular.module('ocspApp')
         }
       }
       $scope.item.note = null;
-      $scope.item.version = null;
+      if($scope.history[0] && $scope.history[0].config_data) {
+        let history = JSON.parse($scope.history[0].config_data);
+        $scope.item.version = (parseInt(history.version) ? parseInt(history.version) : 0) + 1;
+      }
     }
 
     $scope.openCreateType = ()=>{
@@ -166,16 +190,23 @@ angular.module('ocspApp')
         size: 'lg',
         backdrop: 'static',
         scope: $scope,
-        controller: ['$scope', 'Notification', function($scope, Notification) {
+        controller: ['$scope', function($scope) {
           $scope.searchItem = {};
           $scope.closeModal = function(){
             modal.close();
           };
           $scope.search = function () {
-            if($("#searchForm .ng-invalid").length === 0) {
-              modal.close();
-              $scope.$parent.searchItem = $scope.searchItem;
-            }
+            $http.post("/api/event/search", {searchItem: $scope.searchItem}).success(function(events){
+              $http.get('/api/typestructure').success(function(tree){
+                for (let i in events) {
+                  _findNodeTree(tree, events[i]);
+                }
+                _noLeaf(tree);
+                $scope.$parent.treedata = tree;
+                $scope.$parent.searchItem = JSON.stringify($scope.searchItem);
+                modal.close();
+              });
+            });
           };
         }]
       });
@@ -211,6 +242,7 @@ angular.module('ocspApp')
                 $scope.newEvent.note = $scope.newEvent.note.replace(/[<p>|</p>]/g, "");
                 $scope.newEvent.note = `<p>${$scope.newEvent.note}</p>`;
               }
+              $scope.newEvent.version = "1";
               $http.post("/api/event/", {event: $scope.newEvent}).success(function(data){
                 $scope.newEvent.id = data.id;
                 $http.post("/api/history/event", {event: {config_data: $scope.newEvent,

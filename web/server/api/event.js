@@ -314,5 +314,63 @@ router.get('/all', function(req, res){
   }
 });
 
+router.post('/search', function(req, res){
+  let username = req.query.username;
+  let usertype = req.query.usertype;
+  let item = req.body.searchItem;
+  let rules = {
+    where:{
+      $and:[]
+    },
+    include: {
+      model: CEP,
+      where:{
+        $and: []
+      }
+    }
+  };
+  if(usertype !== "admin") {
+    rules.where.$and.push({
+      owner: username
+    });
+  }
+  if(item.parent){
+    rules.include.where.$and.push({
+      type : item.parent.id
+    });
+  }
+  if(item.task){
+    rules.where.$and.push({
+      diid : item.task.diid
+    });
+  }
+  if(item.code){
+    rules.include.where.$and.push({
+      code : {
+        $like : "%" + item.code + "%"
+      }
+    });
+  }
+  if(item.name){
+    rules.where.$and.push({
+      name : {
+        $like : "%" + item.name + "%"
+      }
+    });
+  }
+  if(item.description){
+    rules.where.$and.push({
+      description : {
+        $like : "%" + item.description + "%"
+      }
+    });
+  }
+  EventDef.findAll(rules).then(function(events){
+    res.send(events);
+  }, function(){
+    res.status(500).send(trans.databaseError);
+  });
+});
+
 
 module.exports = router;

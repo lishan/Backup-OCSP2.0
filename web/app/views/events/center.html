@@ -87,11 +87,11 @@
                 <label>分级</label>
                 <ui-select ng-model="item.parent" ng-required="true" name="eventTypes" append-to-body="true">
                   <ui-select-match>
-                    <span ng-bind="$select.selected.type_name"></span>
+                    <span ng-bind="$select.selected.vname"></span>
                   </ui-select-match>
                   <ui-select-choices
                     repeat="eventType in (types | filter: $select.search) track by eventType.id">
-                    <span ng-bind="eventType.type_name"></span>
+                    <span ng-bind="eventType.vname"></span>
                   </ui-select-choices>
                 </ui-select>
                 <span class="redtip" ng-messages="mainForm.eventTypes.$error" ng-if="mainForm.eventTypes.$touched">
@@ -99,7 +99,7 @@
               </span>
               </div>
               <div class="form-group">
-                <label>事件编码</label>
+                <label>事件编码*</label>
                 <input type="text" class="form-control" ng-model="item.cep.code" name="eventsCode" required>
                 <span class="redtip"
                       ng-show="mainForm['eventsCode'].$touched && mainForm['eventsCode'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
@@ -119,7 +119,7 @@
             <div class="panel-body">
               <div class="form-group">
                 <label>关联的流*</label>
-                <ui-select ng-model="item.task" ng-required="true" append-to-body="true" on-select="selectStream($item)">
+                <ui-select ng-model="item.task" ng-required="true" append-to-body="true" on-select="selectStream($item)" disabled="true">
                   <ui-select-match>
                     <span ng-bind="$select.selected.name"></span>
                   </ui-select-match>
@@ -319,10 +319,6 @@
           <div class="panel panel-default" ng-if="!isAdmin()">
             <div class="panel-heading">提交</div>
             <div class="panel-body">
-              <div class="form-group">
-                <label>版本号</label>
-                <input type="text" class="form-control" name="versionNumber" ng-model="item.version">
-              </div>
               <div class="form-group">
                 <div text-angular ng-model="item.note" ta-toolbar="[['bold', 'italics', 'underline']]"
                      ta-text-editor-class="form-control editor-height"
