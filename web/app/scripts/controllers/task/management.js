@@ -229,7 +229,7 @@ angular.module('ocspApp')
       events: []
     };
 
-    function init() {
+    function _init() {
       // Use for create new task
       $scope.task = {
         input: {
@@ -250,7 +250,7 @@ angular.module('ocspApp')
       });
     }
 
-    init();
+    _init();
 
     $scope.update = function(){
       if($scope.selectedJob.id === undefined || $scope.selectedJob.id === null){
@@ -575,7 +575,7 @@ angular.module('ocspApp')
             events: []
           };
           Notification.success($filter('translate')('ocsp_web_common_026'));
-          init();
+          _init();
           defer.resolve();
         });
       }
