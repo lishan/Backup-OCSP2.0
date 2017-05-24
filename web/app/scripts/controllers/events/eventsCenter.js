@@ -1,9 +1,16 @@
 'use strict';
 
 angular.module('ocspApp')
-  .controller('EventsCenterCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', '$q', '$uibModal', 'moment', ($scope, $rootScope, $http, Notification, $filter, $q, $uibModal, moment)=>{
+  .controller('EventsCenterCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', '$q', '$uibModal', 'moment', '$sce', ($scope, $rootScope, $http, Notification, $filter, $q, $uibModal, moment, $sce)=>{
     $rootScope.init('cep');
     $scope.treedata = [];
+
+    function _status(status){
+      switch(status){
+        case 0: return $sce.trustAsHtml(`<span class="label label-danger">停止</span>`);
+        case 1: return $sce.trustAsHtml(`<span class="label label-success">启动</span>`);
+      }
+    }
 
     function _findNodeTree(tree, event){
       if(!event.STREAM_EVENT_CEP){
@@ -18,7 +25,8 @@ angular.module('ocspApp')
             tree[i].children.push({
               id: event.id,
               type: "event",
-              label: event.name,
+              label: _status(event.status) + " " +  event.name,
+              status: event.status
             });
             return;
           } else if (tree[i].children && tree[i].children.length > 0) {
@@ -65,9 +73,6 @@ angular.module('ocspApp')
         streams: $http.get('/api/task'),
         labels: $http.get('/api/label')
       }).then((arr) => {
-        $scope.history = null;
-        $scope.item = null;
-        $scope.hook = 0;
         let tree = arr.structure.data;
         let events = arr.events.data;
         $scope.tasks = arr.streams.data;
@@ -89,6 +94,10 @@ angular.module('ocspApp')
       });
     }
 
+    $scope.history = null;
+    $scope.item = null;
+    $scope.branch = null;
+    $scope.hook = 0;
     _init();
 
     $scope.onSelect = function(item){
@@ -279,8 +288,18 @@ angular.module('ocspApp')
       $scope.history = null;
       $scope.item = null;
       if(branch.type === "event"){
+        $scope.branch = branch;
         let id = branch.id;
         _getHistory(id);
+      }
+    };
+
+    $scope.changeStatus = (status) => {
+      if(confirm("Are you sure?")){
+        $http.post("/api/event/change/" + $scope.branch.id, {status: status}).success(function(){
+          _init();
+          Notification.success($filter('translate')('ocsp_web_common_026'));
+        });
       }
     };
 

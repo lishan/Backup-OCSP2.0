@@ -25,6 +25,31 @@ router.get('/diid/:id', function(req, res){
   });
 });
 
+router.post('/change/:id', function(req, res){
+  let status = req.body.status;
+  let username = req.query.username;
+  sequelize.transaction(function(t) {
+    return EventDef.find({where: {id: req.params.id}, transaction: t}).then(function (event) {
+      let result = event.dataValues;
+      if(result.status === status){
+        return sequelize.Promise.reject();
+      }
+      if(result.owner !== username){
+        return sequelize.Promise.reject();// Only owner can change status
+      }
+      result.status = status;
+      return EventDef.update(result, {where: {id: req.params.id}, transaction: t});
+    });
+  }).then(function(){
+    res.send({success: true});
+  },function(){
+    res.status(500).send(trans.databaseError);
+  }).catch(function (e) {
+    console.log(e);
+    res.status(500).send(trans.databaseError);
+  });
+});
+
 function _createEvent(event, status) {
   event.p_event_id = 0;
   //Only event contains PROPERTIES instead pf properties

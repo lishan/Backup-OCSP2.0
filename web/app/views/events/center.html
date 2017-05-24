@@ -30,15 +30,12 @@
                   aria-haspopup="true" aria-expanded="false">
             操作 <span class="caret"></span>
           </button>
-          <ul class="dropdown-menu" style="left: auto">
-            <li>
-              <a href="">启用</a>
+          <ul class="dropdown-menu" style="left: auto" ng-if="branch" id="actions">
+            <li ng-class="{1: 'disabled'}[branch.status]">
+              <a href="" ng-click="changeStatus(1)">启用</a>
             </li>
-            <li>
-              <a href="">停用</a>
-            </li>
-            <li>
-              <a href="">审核</a>
+            <li ng-class="{0: 'disabled'}[branch.status]">
+              <a href="" ng-click="changeStatus(0)">停用</a>
             </li>
           </ul>
         </div>
