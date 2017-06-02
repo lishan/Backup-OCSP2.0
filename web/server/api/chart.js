@@ -115,13 +115,11 @@ router.get('/status', (req,res) => {
       type: sequelize.QueryTypes.SELECT}
       ).then((data) => {
         if(data !== null && data !== undefined && data.length > 0) {
-          for(let i in data) {
-            let tmp = data[i];
-            let tmpId = tmp.task_id -1;
-            batchtime[tmpId] = tmp.run_time?  (Number(tmp.run_time)/ 1000).toFixed(2): 0; //convert ms to s
-            mem_storage[0][tmpId]=tmp.use_mem?  (tmp.use_mem/ 1024).toFixed(2): 0; //convert B to KB
-            mem_storage[1][tmpId]=tmp.rem_mem?  (tmp.rem_mem/ 1024).toFixed(2): 0;
-          }
+          let tmp = data[0];
+          let tmpId = 0;
+          batchtime[tmpId] = tmp.run_time?  (Number(tmp.run_time)/ 1000).toFixed(2): 0; //convert ms to s
+          mem_storage[0][tmpId]=tmp.use_mem?  (tmp.use_mem/ 1024).toFixed(2): 0; //convert B to KB
+          mem_storage[1][tmpId]=tmp.rem_mem?  (tmp.rem_mem/ 1024).toFixed(2): 0;
         }
         //if no data
         batchtime.push(0);

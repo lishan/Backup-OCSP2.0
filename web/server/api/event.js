@@ -42,10 +42,7 @@ router.post('/change/:id', function(req, res){
     });
   }).then(function(){
     res.send({success: true});
-  },function(){
-    res.status(500).send(trans.databaseError);
-  }).catch(function (e) {
-    console.log(e);
+  }).catch(function () {
     res.status(500).send(trans.databaseError);
   });
 });
