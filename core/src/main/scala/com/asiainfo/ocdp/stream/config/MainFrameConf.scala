@@ -28,7 +28,7 @@ object MainFrameConf {
     initSystemProps()
     initCodisProps()
 
-    println("= = " * 20 +" finish initMainFrameConf")
+    logger.info("Finish initMainFrameConf")
   }
 
   /**

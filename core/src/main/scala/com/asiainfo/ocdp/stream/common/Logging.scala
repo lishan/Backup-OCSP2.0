@@ -10,6 +10,7 @@ import org.slf4j.{Logger, LoggerFactory}
  */
 trait Logging {
 
+  System.setProperty("OCSP_LOG_PATH", CommonConstant.ocspLogPath)
   PropertyConfigurator.configure(CommonConstant.log4jConfFile)
 
   // Make the log field transient so that objects with Logging can

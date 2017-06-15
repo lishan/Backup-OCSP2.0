@@ -100,7 +100,7 @@ function startStream(){
 
         CLASSPATH=`getClassPath`
 
-        nohup java -cp ${CLASSPATH} com.asiainfo.ocdp.stream.manager.MainFrameManager &>> ${STREAM_HOME}/logs/MainFrameManager.log&
+        nohup java -cp ${CLASSPATH} com.asiainfo.ocdp.stream.manager.MainFrameManager &>> ${STREAM_HOME}/logs/MainFrameManager.out&
         pid=`echo $!`
 
         sleep 1
@@ -109,6 +109,7 @@ function startStream(){
 
         if [ $? -eq 0 ]; then
             echo ${pid} > ${STREAM_HOME}/logs/stream_pid.log
+            chmod 777 ${STREAM_HOME}/logs/MainFrameManager.log
             success "Start the server successfully."
             success "Please check log ${STREAM_HOME}/logs/MainFrameManager.log for details."
         else
