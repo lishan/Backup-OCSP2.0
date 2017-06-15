@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `STREAM_DATAINTERFACE`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `STREAM_DATAINTERFACE` (
   `id` int(16) NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
+  `name` varchar(255) NOT NULL,
   `type` int(11) NOT NULL,
   `dsid` int(16) NOT NULL,
   `filter_expr` text,
@@ -47,7 +47,7 @@ DROP TABLE IF EXISTS `STREAM_DATASOURCE`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `STREAM_DATASOURCE` (
   `id` int(16) NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
+  `name` varchar(255) NOT NULL,
   `type` varchar(20) NOT NULL,
   `status` int(11) NOT NULL DEFAULT '0',
   `description` varchar(500) DEFAULT NULL,
@@ -76,7 +76,7 @@ DROP TABLE IF EXISTS `STREAM_EVENT`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `STREAM_EVENT` (
   `id` int(16) NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
+  `name` varchar(255) NOT NULL,
   `diid` int(16) NOT NULL,
   `select_expr` text,
   `filter_expr` text,
@@ -120,7 +120,7 @@ DROP TABLE IF EXISTS `STREAM_LABEL_DEFINITION`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `STREAM_LABEL_DEFINITION` (
   `id` int(16) NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
+  `name` varchar(255) NOT NULL,
   `class_name` varchar(100) NOT NULL,
   `properties` text,
   `owner` varchar(255) DEFAULT NULL,
@@ -166,7 +166,7 @@ DROP TABLE IF EXISTS `STREAM_TASK`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `STREAM_TASK` (
   `id` int(16) NOT NULL AUTO_INCREMENT,
-  `name` varchar(16) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
   `appID` varchar(256) DEFAULT NULL,
   `type` int(11) NOT NULL,
   `receive_interval` int(11) NOT NULL DEFAULT '5',
@@ -223,7 +223,7 @@ DROP TABLE IF EXISTS `STREAM_USER`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `STREAM_USER` (
   `id` int(16) NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
+  `name` varchar(255) NOT NULL,
   `password` varchar(200) NOT NULL DEFAULT '',
   `description` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`)
