@@ -7,6 +7,7 @@ dataSource.driverClassName=com.mysql.jdbc.Driver
 dataSource.url=jdbc:mysql://@MYSQL_ADDR@/@MYSQL_DATABASE@
 dataSource.username=@MYSQL_UNAME@
 dataSource.password=@MYSQL_PWD@
+dataSource.maxWait=10000
 jdbcRealm.dataSource=$dataSource
 jdbcRealm.authenticationQuery=select password from STREAM_USER where name = ?
 jpamRealm=com.asiainfo.rspc.auth.realm.JPamRealm
