@@ -203,9 +203,7 @@ object MainFrameManager extends Logging {
     if (StringUtils.isBlank(appJars)){
       logError("Can not find core jar")
     }
-
-    val streamConf = " --conf " + "\"spark.yarn.am.extraJavaOptions=file:" + CommonConstant.log4jConfFile + "\""
-
+    
     val streamClass = " --class com.asiainfo.ocdp.stream.manager.StreamApp"
     val executor_memory = " --executor-memory " + conf.getExecutor_memory
 
@@ -234,7 +232,7 @@ object MainFrameManager extends Logging {
         logInfo("The value of queue is invalid, remove --queue parameter")
         queue = ""
       }
-			cmd += streamConf + streamClass + master + deploy_mode + executor_memory + executor_cores + driver_memory + num_executors + queue + jars + " " + appJars + " " + tid
+			cmd += streamClass + master + deploy_mode + executor_memory + executor_cores + driver_memory + num_executors + queue + jars + " " + appJars + " " + tid
     }
     logInfo("Executor submit shell : " + cmd)
     TaskCommand(tid, cmd)
