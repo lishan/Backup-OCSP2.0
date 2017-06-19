@@ -121,7 +121,7 @@ object LabelManager extends Logging{
               val newcache = resultTuple._2
               rule_caches = rule_caches.updated(label.conf.getId, newcache)
             }
-            case Failure(t) => logError("Failed to execute datainterface attachLabel" + label + ".attachLabel")
+            case Failure(t) => logError(s"Failed to execute attachLabel for ${label}", t)
           }
         })
 
