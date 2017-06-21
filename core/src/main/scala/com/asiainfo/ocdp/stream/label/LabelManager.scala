@@ -7,6 +7,7 @@ import com.asiainfo.ocdp.stream.constant.LabelConstant
 import com.asiainfo.ocdp.stream.tools.{CacheFactory, CacheQryThreadPool, Json4sUtils}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{immutable, mutable}
@@ -15,7 +16,8 @@ import scala.util.{Failure, Success, Try}
 /**
   * The execLabels method will be executed in Executor.
   */
-object LabelManager extends Logging{
+object LabelManager{
+  val logger = LoggerFactory.getLogger(this.getClass)
 
   def execLabels(df: DataFrame): RDD[String] = {
 
@@ -46,7 +48,7 @@ object LabelManager extends Logging{
           val qryRes = Try(label.getQryKeys(currentLine))
           qryRes match {
             case Success(qryKeys) => if (qryKeys != null && qryKeys.nonEmpty) labelQryKeysSet ++= qryKeys
-            case Failure(t) => logError("Failed to execute datainterface getQryKeys" + label + ".getQryKeys")
+            case Failure(t) => logger.error("Failed to execute datainterface getQryKeys" + label + ".getQryKeys")
           }
         })
       })
@@ -72,7 +74,7 @@ object LabelManager extends Logging{
         cachemap_old = CacheFactory.getManager.getMultiCacheByKeys(keyList, qryCacheService).toMap
       } catch {
         case ex: Exception =>
-          logError("= = " * 15 + " got exception in EventSource while get cache")
+          logger.error("= = " * 15 + " got exception in EventSource while get cache")
           throw ex
       }
       val f2 = System.currentTimeMillis()
@@ -121,7 +123,7 @@ object LabelManager extends Logging{
               val newcache = resultTuple._2
               rule_caches = rule_caches.updated(label.conf.getId, newcache)
             }
-            case Failure(t) => logError(s"Failed to execute attachLabel for ${label}", t)
+            case Failure(t) => logger.error(s"Failed to execute attachLabel for ${label}", t)
           }
         })
 

@@ -8,6 +8,8 @@ import org.json4s.JsonAST._
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 import com.asiainfo.ocdp.stream.common.Logging
+import org.slf4j.LoggerFactory
+
 import scala.collection.immutable.HashMap
 import scala.collection.{immutable, mutable}
 import scala.collection.mutable.ArrayBuffer
@@ -16,7 +18,8 @@ import scala.util.{Failure, Success, Try}
 /**
  * Created by tsingfu on 15/8/18.
  */
-object Json4sUtils extends Logging {
+object Json4sUtils {
+  val logger = LoggerFactory.getLogger(this.getClass)
 
   /**
     *
@@ -296,7 +299,7 @@ object Json4sUtils extends Logging {
     result match {
       case Success(s) => result.get
       case Failure(f) => {
-        logError("Can not transform json to Map[String, List[Map[String, String]]]")
+        logger.error("Can not transform json to Map[String, List[Map[String, String]]]")
         new HashMap[String, List[Map[String, String]]]
       }
     }
