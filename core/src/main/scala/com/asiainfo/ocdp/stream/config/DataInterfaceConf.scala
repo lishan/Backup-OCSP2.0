@@ -29,11 +29,16 @@ class DataInterfaceConf extends BaseConf {
 //  @BeanProperty var baseItemsSize: Int = 0
 */
   @BeanProperty var commonSchema: StructType = null
+  @BeanProperty var allItemsSchema: StructType = null//commonSchema + case when fields
   @BeanProperty var dataSchemas: Array[DataSchema] = null
   @BeanProperty var interval: Int = 1
 
   @BeanProperty var uniqKeysDelim: String = ","
   @BeanProperty var uniqKeyValuesDelim: String = "_"
+
+  @BeanProperty var separator: String = "\\|"
+  @BeanProperty var numPartitions: Int = -1
+  @BeanProperty var repartitionEnable: Boolean = true
 
   def getTopicSet(): Set[String] = {
     dataSchemas.map(dataSchema => dataSchema.getTopic).toSet

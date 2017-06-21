@@ -12,12 +12,15 @@ import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.service.{DataInterfaceServer, TaskServer}
 import com.asiainfo.ocdp.stream.tools._
 import com.asiainfo.ocdp.stream.common.ComFunc
+import kafka.message.MessageAndMetadata
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.streaming.{StreamingContext, Time}
 import org.apache.spark.{Accumulator, SparkContext}
+import org.apache.spark.sql.types.StructType
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 
@@ -39,23 +42,24 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
   conf.setInterval(interval)
 
-  private def transform[T: ClassTag](input: T, dataSchema: DataSchema,
-          totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): Option[Row] = {
+  private def transform[T: ClassTag](input: T, dataSchema: DataSchema, commonSchema: StructType,
+                                     totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): Option[(String, String)] = {
 
     val delim = dataSchema.getDelim
+    val tup = input.asInstanceOf[(String, MessageAndMetadata[String, String])]
     var topic = ""
     val source = {
       if (CommonConstant.MulTopic) {
-        val tup = input.asInstanceOf[(String, String)]
         topic = tup._1
-        tup._2
+        tup._2.message()
       } else {
         input.asInstanceOf[String]
       }
     }
     val inputArr = source.split(delim, -1)
+    val schema = dataSchema.getRawSchema.fieldNames
 
-		totalRecordsCounter.add(1)
+    totalRecordsCounter.add(1)
 
     val valid = {
       if (CommonConstant.MulTopic) topic == dataSchema.getTopic && inputArr.size == dataSchema.getRawSchemaSize
@@ -64,7 +68,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
     if (valid) {
       reservedRecordsCounter.add(1)
-      Some(Row.fromSeq(inputArr))
+      val message = (for(field <- commonSchema.fieldNames if schema.indexOf(field) >=0) yield inputArr(schema.indexOf(field))).mkString(StringUtils.replace(delim, "\\", ""))
+      Some((tup._2.key(), message))
     } else {
       None
     }
@@ -102,44 +107,63 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
   private def toDataFrame[R: ClassTag](rdd: RDD[R], ssc: SparkContext, totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): DataFrame = {
 
-    var mixDF : DataFrame = null
+    var unionRDD : RDD[(String, String)] = null
     val broadDiConf = BroadcastManager.getBroadDiConf()
     val dataSchemas = broadDiConf.value.getDataSchemas
+    val partitionsList = ArrayBuffer[Int]()
 
     for (dataSchema <- dataSchemas) {
 
-      val rowRDD = withUptime("1.kafka RDD 转换成 rowRDD"){
+      val kvRDD = withUptime("1.kafka RDD 转换成 rowRDD"){
         rdd.map( input => {
-          transform(input, dataSchema, totalRecordsCounter, reservedRecordsCounter)
+          transform(input, dataSchema, broadDiConf.value.getCommonSchema, totalRecordsCounter, reservedRecordsCounter)
         }).collect { case Some(row) => row }
       }
 
-      if (rowRDD.partitions.size > 0) {
+      partitionsList += kvRDD.partitions.length
 
-        val schema = dataSchema.getRawSchema()
-        val commonSchema = dataSchema.getUsedItemsSchema
-        val rawFrame: DataFrame = withUptime("2.rowRDD 转换成 DataFrame"){
-          //sqlc.createDataFrame(rowRDD, schema)
-          ComFunc.Func.createDataFrame(ssc, rowRDD, schema)
-        }
+      if (kvRDD.partitions.size > 0) {
 
-        val filter_expr = conf.get("filter_expr")
-        val tDF = withUptime("3.DataFrame 最初过滤不规则数据"){
-          if (filter_expr != null && filter_expr.trim != "")
-            rawFrame.selectExpr(commonSchema.fieldNames: _*).filter(filter_expr)
-          else
-            rawFrame.selectExpr(commonSchema.fieldNames: _*)
-        }
-
-        if (null == mixDF)
-          mixDF = tDF
+        if (null == unionRDD)
+          unionRDD = kvRDD
         else
-          mixDF = mixDF.unionAll(tDF)
+          unionRDD = unionRDD.union(kvRDD)
 
       } else
         println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
     }
-    mixDF
+
+    var numPartitions = broadDiConf.value.getNumPartitions
+    if (numPartitions <= 0){
+      numPartitions = partitionsList.max
+    }
+
+    logInfo(s"repartition to ${numPartitions} which is max of ${partitionsList} since repartitionEnable=${conf.getRepartitionEnable}")
+
+    var repartition_unionRDD: RDD[(String, String)] = null
+    if (conf.getRepartitionEnable){
+      repartition_unionRDD = unionRDD.repartition(numPartitions)
+    }
+    else{
+      repartition_unionRDD = unionRDD
+    }
+
+    val rowRDD = repartition_unionRDD.map( input => {
+      val inputArr = input._2.split(conf.getSeparator, -1)
+      Row.fromSeq(inputArr)
+    })
+    val df = ComFunc.Func.createDataFrame(ssc, rowRDD, conf.getCommonSchema)
+    val filter_expr = conf.get("filter_expr")
+
+    logInfo(s"All fields is ${conf.getAllItemsSchema.fieldNames.toList}")
+
+    withUptime("3.DataFrame 最初过滤不规则数据"){
+      if (StringUtils.isNotEmpty(filter_expr))
+        df.selectExpr(conf.getAllItemsSchema.fieldNames: _*).filter(filter_expr)
+      else
+        df.selectExpr(conf.getAllItemsSchema.fieldNames: _*)
+    }
+
   }
 
   final def process(ssc: StreamingContext) = {
@@ -198,10 +222,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
           }
 
           labelRDD.persist()
-
-          val availableRecords = labelRDD.count()
-
-          reservedRecordsCounter.setValue(currentReservedRecordsCounterValue + availableRecords)
 
           // read.json为spark sql 动作类提交job
           val enhancedDF = withUptime("5.RDD 转换成 DataFrame"){

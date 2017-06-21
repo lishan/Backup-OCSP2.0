@@ -27,7 +27,7 @@ class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf) extends Stream
   val mGroupId = mDsConf.get(DataSourceConstant.GROUP_ID_KEY)
   val mKC = new KafkaCluster(mKafkaParams)
 
-  final def createStreamMulData(taskConf: TaskConf): DStream[(String, String)] = {
+  final def createStreamMulData(taskConf: TaskConf): DStream[(String, MessageAndMetadata[String, String])] = {
 
     val partitionsE = mKC.getPartitions(mTopicsSet)
     logInfo("Init Direct Kafka Stream : brokers->" + mDsConf.get(DataSourceConstant.BROKER_LIST_KEY)
@@ -55,8 +55,8 @@ class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf) extends Stream
       logInfo("using offset : " + lo)
     }
 
-    KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder, (String, String)](
-      mSSC, mKafkaParams, consumerOffsets, (m: MessageAndMetadata[String, String]) => (m.topic, m.message()))
+    KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder, (String, MessageAndMetadata[String, String])](
+      mSSC, mKafkaParams, consumerOffsets, (m: MessageAndMetadata[String, String]) => (m.topic, m))
   }
 
   final def createStream(taskConf: TaskConf): DStream[String] = {

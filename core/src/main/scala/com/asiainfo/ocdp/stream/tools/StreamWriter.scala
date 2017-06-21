@@ -60,7 +60,7 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
     if (numPartitions < 0){
       numPartitions = jsonRDD.partitions.length/10
       if(numPartitions < 1){
-        numPartitions = 1
+        numPartitions = jsonRDD.partitions.length
       }
     }
 
