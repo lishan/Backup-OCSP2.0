@@ -38,7 +38,6 @@ class DataInterfaceConf extends BaseConf {
 
   @BeanProperty var separator: String = "\\|"
   @BeanProperty var numPartitions: Int = -1
-  @BeanProperty var repartitionEnable: Boolean = true
 
   def getTopicSet(): Set[String] = {
     dataSchemas.map(dataSchema => dataSchema.getTopic).toSet

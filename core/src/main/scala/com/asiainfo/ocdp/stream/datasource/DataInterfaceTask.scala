@@ -133,15 +133,15 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
     }
 
-    var numPartitions = broadDiConf.value.getNumPartitions
-    if (numPartitions <= 0){
-      numPartitions = partitionsList.max
-    }
-
-    logInfo(s"repartition to ${numPartitions} which is max of ${partitionsList} since repartitionEnable=${conf.getRepartitionEnable}")
-
     var repartition_unionRDD: RDD[(String, String)] = null
-    if (conf.getRepartitionEnable){
+    if (dataSchemas.length>1){
+      var numPartitions = broadDiConf.value.getNumPartitions
+      if (numPartitions <= 0){
+        numPartitions = partitionsList.max
+      }
+
+      logInfo(s"repartition to ${numPartitions} which is max of ${partitionsList} since there are ${dataSchemas.length} data schemas.")
+
       repartition_unionRDD = unionRDD.repartition(numPartitions)
     }
     else{
