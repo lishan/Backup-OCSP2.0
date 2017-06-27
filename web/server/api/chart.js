@@ -44,7 +44,8 @@ router.get('/taskData/:id',(req,res)=>{
 
   sequelize.Promise.all(promises).then(()=>{
     res.status(200).send({dealData,batchtime,mem_storage,runtimetimestamps});
-  }, () => {
+  }).catch(function(err){
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });
@@ -136,7 +137,7 @@ router.get('/status', (req,res) => {
       }
     }
 
-    sequelize.Promise.all(promises).then(()=>{
+    return sequelize.Promise.all(promises).then(()=>{
       for(let i in tasks) {
         let tmp = tasks[i].dataValues;
         running.push(tmp.running_time?  (tmp.running_time/ 60000).toFixed(2): 0);
@@ -159,10 +160,9 @@ router.get('/status', (req,res) => {
       records[0].push(0);
       records[1].push(0);
       res.status(200).send({status,names,batchtime,running,count,records,mem_storage});
-    },()=>{
-      res.status(500).send(trans.databaseError);
     });
-  }, () => {
+  }).catch(function(err){
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });

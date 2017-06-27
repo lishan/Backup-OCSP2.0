@@ -11,7 +11,8 @@ let router = express.Router();
 router.get('/', function(req, res){
   Datasource.findAll({where: {status : {'$gt' : 0}}}).then(function (datasource){
     res.send(datasource);
-  }, function(){
+  }).catch(function(err){
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });
@@ -51,12 +52,12 @@ router.post('/', function (req, res) {
       }
     }).then(function () {
       res.send({success: true});
-    }, function () {
-      res.status(500).send(trans.databaseError);
-    }).catch(function () {
+    }).catch(function (err) {
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
+    console.error("Non admin user cannot change data sources");
     res.status(500).send(trans.authError);
   }
 });
@@ -75,9 +76,8 @@ router.put('/', function (req, res) {
       });
     }).then(function () {
       res.send({success: true});
-    }, function () {
-      res.status(500).send(trans.databaseError);
-    }).catch(function () {
+    }).catch(function (err) {
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{

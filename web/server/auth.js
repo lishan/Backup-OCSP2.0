@@ -11,6 +11,7 @@ module.exports = (req, res, next) => {
       (error, message) => {
         if (error === null) {
           if(message.includes("Failed")) {
+            console.error(message);
             res.status(500).send(trans.authError);
           }else{
             next();

@@ -41,14 +41,16 @@ router.get('/', function(req, res){
     Task.findAll().then((tasks) => {
       _getRunningTime(tasks);
       res.send(tasks);
-    }, () => {
+    }).catch(function(err){
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
     Task.findAll({where: {owner : username}}).then((tasks) => {
       _getRunningTime(tasks);
       res.send(tasks);
-    }, () => {
+    }).catch(function(err){
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }
@@ -61,14 +63,16 @@ router.get('/status', function(req,res){
     Task.findAll({attributes: ['id', 'status', 'start_time', 'stop_time']}).then(function (tasks) {
       _getRunningTime(tasks);
       res.send(tasks);
-    }, function () {
+    }).catch(function (err) {
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
     Task.findAll({attributes: ['id', 'status', 'start_time', 'stop_time'], where: {owner : username}}).then(function (tasks) {
       _getRunningTime(tasks);
       res.send(tasks);
-    }, function () {
+    }).catch(function (err) {
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }
@@ -96,9 +100,8 @@ router.post('/change/:id', function(req, res){
     });
   }).then(function(){
     res.send({success: true});
-  },function(){
-    res.status(500).send(trans.databaseError);
-  }).catch(function () {
+  }).catch(function (err) {
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });
@@ -326,9 +329,8 @@ router.post("/", function(req, res){
       });
     }).then(function () {
       res.send({success: true});
-    }, function () {
-      res.status(500).send(trans.databaseError);
-    }).catch(function () {
+    }).catch(function (err) {
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }
@@ -341,7 +343,7 @@ router.put("/", function(req, res) {
   let events = req.body.task.events;
   Task.find({attributes: ["owner"], where: {id: task.id}}).then((owner)=> {
     if(owner && owner.dataValues && owner.dataValues.owner === req.query.username) {
-      sequelize.transaction(function (t) {
+      return sequelize.transaction(function (t) {
         let promises = [];
         promises.push(Label.max("id", {transaction: t}));
         promises.push(EventDef.findAll({where: {diid: inputInterface.id}, transaction: t}));
@@ -395,15 +397,13 @@ router.put("/", function(req, res) {
         });
       }).then(function () {
         res.send({success: true});
-      }, function () {
-        res.status(500).send(trans.databaseError);
-      }).catch(function () {
-        res.status(500).send(trans.databaseError);
       });
     }else{
+      console.error("Only stream owner can change stream properties");
       res.status(500).send(trans.authError);
     }
-  }, () => {
+  }).catch(function(err){
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });

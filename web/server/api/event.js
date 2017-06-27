@@ -20,7 +20,8 @@ router.get('/diid/:id', function(req, res){
     }
   }).then(function (events){
     res.send(events);
-  }, function(){
+  }).catch(function(err){
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });
@@ -42,7 +43,8 @@ router.post('/change/:id', function(req, res){
     });
   }).then(function(){
     res.send({success: true});
-  }).catch(function () {
+  }).catch(function (err) {
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });
@@ -210,7 +212,7 @@ router.put('/:id', function(req, res){
   let event = req.body.event;
   EventDef.find({attributes: ["owner"], where: {id: event.id}}).then((owner)=> {
     if(owner && owner.dataValues && owner.dataValues.owner === req.query.username) {
-      sequelize.transaction(function (t) {
+      return sequelize.transaction(function (t) {
         return _createOrUpdateOutputDataInterface(event, t).then(function (result) {
           event.output = result.dataValues;
           _createEvent(event, event.status ? 1 : 0);
@@ -224,15 +226,13 @@ router.put('/:id', function(req, res){
         });
       }).then(function () {
         res.send({success: true});
-      }, function () {
-        res.status(500).send(trans.databaseError);
-      }).catch(function () {
-        res.status(500).send(trans.databaseError);
       });
     }else{
+      console.error("Only owner can change his events");
       res.status(500).send(trans.authError);
     }
-  }, ()=> {
+  }).catch(function(err){
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 
@@ -264,12 +264,12 @@ router.post('/', function(req, res){
       });
     }).then(function () {
       res.send({success: true, id: id});
-    }, function () {
-      res.status(500).send(trans.databaseError);
-    }).catch(function () {
+    }).catch(function (err) {
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
+    console.error("Non admin user cannot change events");
     res.status(500).send(trans.authError);
   }
 });
@@ -287,7 +287,8 @@ router.get('/findId/:id', function(req, res){
       }
     }).then(function(event){
       res.send(event);
-    }, function(){
+    }).catch(function(err){
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
@@ -301,7 +302,8 @@ router.get('/findId/:id', function(req, res){
       }
     }).then(function(event){
       res.send(event);
-    }, function(){
+    }).catch(function(err){
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }
@@ -317,7 +319,8 @@ router.get('/all', function(req, res){
       }
     }).then(function(events){
       res.send(events);
-    }, function(){
+    }).catch(function(err){
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
@@ -330,7 +333,8 @@ router.get('/all', function(req, res){
       }
     }).then(function(events){
       res.send(events);
-    }, function(){
+    }).catch(function(err){
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }
@@ -389,7 +393,8 @@ router.post('/search', function(req, res){
   }
   EventDef.findAll(rules).then(function(events){
     res.send(events);
-  }, function(){
+  }).catch(function(err){
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });

@@ -11,7 +11,8 @@ let router = express.Router();
 router.get('/', function(req, res){
   Prop.findAll({where: {status: 1}}).then(function (properties) {
     res.send(properties);
-  }, function () {
+  }).catch(function (err) {
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });
@@ -19,7 +20,8 @@ router.get('/', function(req, res){
 router.get('/spark', function(req,res){
   Prop.find({attributes: ['id','value'], where : {name: 'SPARK_HOME'}}).then(function (properties){
     res.send(properties);
-  }, function(){
+  }).catch(function(err){
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });
@@ -38,9 +40,8 @@ router.post('/spark', function(req, res){
     });
   }).then(function(){
     res.send({success: true});
-  },function(){
-    res.status(500).send(trans.databaseError);
-  }).catch(function () {
+  }).catch(function (err) {
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });
@@ -55,12 +56,12 @@ router.post('/', function(req, res){
     }
     sequelize.Promise.all(promises).then(function () {
       res.send({success: true});
-    }, function () {
-      res.status(500).send(trans.databaseError);
-    }).catch(function () {
+    }).catch(function (err) {
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
+    console.error("Only admin user can change system properties");
     res.status(500).send(trans.authError);
   }
 });

@@ -27,13 +27,15 @@ router.get('/', function(req, res){
   if(usertype === "admin") {
     Label.findAll().then(function (labels) {
       res.send(labels);
-    }, function () {
+    }).catch(function (err) {
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
     Label.findAll({where: {$or: [{owner: username}, {owner: "ocspadmin"}]}}).then(function (labels) {
       res.send(labels);
-    }, function () {
+    }).catch(function (err) {
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }
@@ -50,9 +52,8 @@ router.post('/', function(req, res){
   }
   sequelize.Promise.all(promises).then(function(){
     res.send({success : true});
-  },function(){
-    res.status(500).send(trans.databaseError);
-  }).catch(function(){
+  }).catch(function(err){
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 
@@ -66,7 +67,8 @@ router.get('/diid/:id', function(req, res){
     order: '`p_label_id` ASC'
   }).then(function (labels){
     res.send(labels);
-  }, function(){
+  }).catch(function(err){
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });
@@ -78,6 +80,7 @@ router.post('/upload', upload.single('file'), function(req, res){
     fs.createReadStream(jarName)
       .pipe(unzip.Parse())
       .once('error', function () {
+        console.error("Cannot parse file " + req.file.originalname.replace(/\.jar/g, "") + "_" + username + ".jar");
         reject("Cannot parse file " + req.file.originalname.replace(/\.jar/g, "") + "_" + username + ".jar");
       })
       .on('entry', function (entry) {
@@ -93,6 +96,7 @@ router.post('/upload', upload.single('file'), function(req, res){
               classname: filename
             });
           }else{
+            console.error("Filename error " + filename);
             reject("Filename error " + filename);
           }
         }
@@ -130,7 +134,8 @@ router.post('/upload', upload.single('file'), function(req, res){
           }).then((data)=>{
             message = message.replace("owner", data.dataValues.owner);
             res.status(500).send(message);
-          },()=>{
+          }).catch(function(err){
+            console.error(err);
             res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
           });
         }else{
@@ -166,7 +171,8 @@ router.post('/upload', upload.single('file'), function(req, res){
           }).then((data)=>{
             message = message.replace("owner", data.dataValues.owner);
             res.status(500).send(message);
-          },()=>{
+          }).catch(function(err){
+            console.error(err);
             res.status(500).send(trans.uploadError + path.join(__dirname, "../../uploads"));
           });
         }else{
@@ -174,7 +180,8 @@ router.post('/upload', upload.single('file'), function(req, res){
         }
       });
     }
-  },() => {
+  }).catch(function(err){
+    console.error(err);
     res.status(500).send(trans.uploadError + path.join(__dirname,"../../uploads"));
   });
 });

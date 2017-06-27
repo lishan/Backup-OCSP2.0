@@ -4,6 +4,7 @@ let config = require('../config');
 let router = express.Router();
 let sequelize = require('../sequelize');
 let Sequelize = require('sequelize');
+let trans = config[config.trans || 'zh'];
 let Prop = require('../model/STREAM_SYSTEMPROP')(sequelize, Sequelize);
 
 router.get('/links', function(req, res){
@@ -17,6 +18,9 @@ router.get('/cepEnable', function(req, res){
     }else{
       res.send(false);
     }
+  }).catch((err)=>{
+    console.error(err);
+    res.status(500).send(trans.databaseError);
   });
 });
 

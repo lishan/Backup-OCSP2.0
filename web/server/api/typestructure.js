@@ -61,7 +61,8 @@ router.get('/', function(req, res){
       _dealWithStructure(result[i], data);
     }
     res.send(result);
-  }, ()=>{
+  }).catch(function(err){
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });
@@ -69,7 +70,8 @@ router.get('/', function(req, res){
 router.get('/all', function(req, res){
   Structure.findAll().then((data) => {
     res.send(data);
-  }, ()=> {
+  }).catch( function(err){
+    console.error(err);
     res.status(500).send(trans.databaseError);
   });
 });
@@ -93,12 +95,12 @@ router.post('/', function(req, res){
       });
     }).then(function () {
       res.send({success: true});
-    }, function () {
-      res.status(500).send(trans.databaseError);
-    }).catch(function () {
+    }).catch(function (err) {
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
+    console.error("Authenticate Failed, non admin user cannot use this router");
     res.status(500).send(trans.authError);
   }
 

@@ -20,18 +20,22 @@ router.post('/login', function (req, res) {
             (err, message) => {
               if (err === null) {
                 if(message.includes("Failed")) {
+                  console.error("Authenticate Failed, shiro failed");
                   res.send({status: false});
                 }else{
                   res.send({status: true, token});
                 }
               } else {
+                console.error(err);
                 res.status(500).send(trans.authError);
               }
             });
         }else{
+          console.error("Authenticate shiro is disabled");
           res.send({status: true, token});
         }
       }else{
+        console.error(error);
         res.status(500).send(trans.authError);
       }
   });
@@ -42,10 +46,12 @@ router.get('/', function(req, res){
   if(usertype === "admin") {
     User.findAll({attributes: ['id', 'name', 'description']}).then(function (users) {
       res.send(users);
-    }, function () {
+    }).catch(function (err) {
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
+    console.error("Authenticate Failed, non admin user cannot use this router");
     res.status(500).send(trans.authError);
   }
 });
@@ -68,6 +74,7 @@ router.put('/', function(req, res){
               }
               resolve();
             } else {
+              console.error(error);
               reject(trans.authError);
             }
           });
@@ -94,15 +101,15 @@ router.put('/', function(req, res){
           promises.push(User.destroy({where: {id: dbUsers[i].dataValues.id}}));
         }
       }
-      sequelize.Promise.all(promises).then(function () {
+      return sequelize.Promise.all(promises).then(function () {
         res.send({success: true});
-      }, function () {
-        res.status(500).send(trans.databaseError);
       });
-    }, () => {
+    }).catch(function(err){
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
+    console.error("Authenticate Failed, non admin user cannot use this router");
     res.status(500).send(trans.authError);
   }
 });
@@ -124,16 +131,20 @@ router.post('/change', function(req, res){
                 res.send({status: false});
               });
             }else{
+              console.error(error);
               res.status(500).send(trans.authError);
             }
           });
       } else {
+        console.error(`Find user error, username ${user.name}`);
         res.send({status: false});
       }
-    }, function () {
+    }).catch(function (err) {
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
+    console.error("Authenticate Failed, non admin user cannot use this router");
     res.status(500).send(trans.authError);
   }
 });

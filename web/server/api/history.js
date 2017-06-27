@@ -19,10 +19,12 @@ router.post('/event', function(req, res){
     event.config_data = JSON.stringify(event.config_data);
     History.create(event).then(function(){
       res.send({success: true});
-    }, function(){
+    }).catch(function(err){
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
+    console.error("Non admin user cannot get this event");
     res.status(500).send(trans.authError);
   }
 });
@@ -34,13 +36,15 @@ router.get('/:id', function(req, res){
   if(usertype === "admin") {
     History.findAll({where : {id: event_id}, order: '`create_timestamp` DESC'}).then(function(events){
       res.send(events);
-    },function(){
+    }).catch(function(err){
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }else{
     History.findAll({where : {id: event_id, user_name: username}, order: '`create_timestamp` DESC'}).then(function(events){
       res.send(events);
-    },function(){
+    }).catch(function(err){
+      console.error(err);
       res.status(500).send(trans.databaseError);
     });
   }
