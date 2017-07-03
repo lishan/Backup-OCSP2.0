@@ -17,7 +17,7 @@ import org.apache.commons.lang.StringUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.streaming.{StreamingContext, Time}
-import org.apache.spark.{Accumulator, SparkContext}
+import org.apache.spark.{Accumulator, HashPartitioner, SparkContext}
 import org.apache.spark.sql.types.StructType
 
 import scala.collection.mutable.ArrayBuffer
@@ -142,7 +142,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
       logInfo(s"repartition to ${numPartitions} which is max of ${partitionsList} since there are ${dataSchemas.length} data schemas.")
 
-      repartition_unionRDD = unionRDD.repartition(numPartitions)
+      repartition_unionRDD = unionRDD.partitionBy(new HashPartitioner(numPartitions))
     }
     else{
       repartition_unionRDD = unionRDD
