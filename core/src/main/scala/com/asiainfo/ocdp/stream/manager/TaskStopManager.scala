@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 /**
  * Created by leo on 8/30/15.
  */
-class TaskStopManager(ssc: StreamingContext, taskId: String) extends Logging {
+class TaskStopManager(ssc: StreamingContext, taskId: String, stopGracefully: Boolean) extends Logging {
 
   val delaySeconds = MainFrameConf.systemProps.getInt("delaySeconds", 10)
   val periodSeconds = MainFrameConf.systemProps.getInt("periodSeconds", 60)
@@ -42,7 +42,7 @@ class TaskStopManager(ssc: StreamingContext, taskId: String) extends Logging {
     res match {
       case Success(status) => {
         if ((TaskConstant.PRE_STOP == status || TaskConstant.PRE_RESTART == status) && !ssc.sparkContext.isStopped) {
-          ssc.stop(true, true)
+          ssc.stop(true, stopGracefully)
         }
       }
       case Failure(t) => logError("Failed to get task status from database! " + t.getStackTrace.toString())

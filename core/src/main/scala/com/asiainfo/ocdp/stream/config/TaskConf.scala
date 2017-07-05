@@ -23,6 +23,7 @@ class TaskConf() extends BaseConf{
   @BeanProperty var recovery_mode: String = ""
   @BeanProperty var diid: String = ""
   @BeanProperty var owner: String = ""
+  @BeanProperty var stopGracefully: Boolean = true
 
 
   override def toString = s"TaskConf($id, $name, $status)"

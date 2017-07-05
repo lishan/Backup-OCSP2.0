@@ -37,7 +37,7 @@ object StreamApp extends Logging {
     //2 启动 streamingContext
     val ssc = new StreamingContext(sc, Seconds(taskConf.getReceive_interval))
     //    ssc.addStreamingListener(new ReceiveRecordNumListener())
-    new TaskStopManager(ssc, taskConf.getId)
+    new TaskStopManager(ssc, taskConf.getId, taskConf.getStopGracefully)
 
     //将ssc存放到sscManager中
     SscManager.initSsc(ssc)
@@ -52,6 +52,10 @@ object StreamApp extends Logging {
         logInfo("Start task " + taskConf.getId + " success !")
       }
       ssc.awaitTermination()
+      if (taskConf.stopGracefully && !ssc.sparkContext.isStopped){
+        logInfo("Sleep 30s to wait sc stopped...")
+        Thread.sleep(30000)
+      }
     } catch {
       case e: Exception => {
         e.printStackTrace()
@@ -75,12 +79,16 @@ object StreamApp extends Logging {
         logError("stream task goes wrong!" + err.getStackTrace)
       }
     } finally {
-      ssc.stop()
       //若task的状态是PRE_RESTART 则将数据库中的task status设为1,准备启动;
       //否则将数据库中task status设为0,停止状态
       val res = Try(taskServer.checkTaskStatus(taskConf.getId))
       res match {
         case Success(status) => {
+          if (TaskConstant.RUNNING == status){
+            logWarning(s"Task '${taskConf.getId}' is running so stop it...")
+            ssc.stop()
+          }
+
           if (TaskConstant.PRE_START == status || TaskConstant.PRE_RESTART == status ){
             taskServer.RestartTask(taskConf.getId)
             logInfo("Restarting task " + taskConf.getId + " ...")
@@ -92,10 +100,11 @@ object StreamApp extends Logging {
         case Failure(e) => {
           //do nothing when can not connect db
           logError("error to get task status from db " + e.getStackTrace)
+          System.exit(255)
         }
       }
 
-      sys.exit()
+      System.exit(0)
     }
 
   }
