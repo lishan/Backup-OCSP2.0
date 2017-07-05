@@ -41,8 +41,8 @@ class TaskStopManager(ssc: StreamingContext, taskId: String) extends Logging {
     val res = Try(taskServer.checkTaskStatus(id))
     res match {
       case Success(status) => {
-        if (TaskConstant.PRE_STOP == status || TaskConstant.PRE_RESTART == status) {
-          ssc.stop()
+        if ((TaskConstant.PRE_STOP == status || TaskConstant.PRE_RESTART == status) && !ssc.sparkContext.isStopped) {
+          ssc.stop(true, true)
         }
       }
       case Failure(t) => logError("Failed to get task status from database! " + t.getStackTrace.toString())

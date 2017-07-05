@@ -24,6 +24,7 @@ object MainFrameManager extends Logging {
   val delaySeconds = MainFrameConf.systemProps.getInt("delaySeconds", 10)
   val periodSeconds = MainFrameConf.systemProps.getInt("periodSeconds", 30)
   val startTimeOutSeconds = MainFrameConf.systemProps.getInt("startTimeOutSeconds", 120)
+  val stopTimeOutSeconds = MainFrameConf.systemProps.getInt("stopTimeOutSeconds", 300)
 
   var lastCheckTime = System.currentTimeMillis()
 
@@ -114,10 +115,10 @@ object MainFrameManager extends Logging {
         case TaskConstant.PRE_STOP => {
           if (pre_stop_tasks.contains(taskId)) {
             val stop_time = pre_stop_tasks.get(taskId).get
-            if (stop_time + startTimeOutSeconds * 1000 >= System.currentTimeMillis()) {
+            if (System.currentTimeMillis() - stop_time >= stopTimeOutSeconds * 1000) {
               //              taskServer.stopTask(taskId)
               pre_stop_tasks.remove(taskId)
-              logInfo("Task " + taskId + " prepare stop " + startTimeOutSeconds + " s has time out , stop fail ! please check driver log message !")
+              logInfo("Task " + taskId + " prepare stop " + stopTimeOutSeconds + " s has time out , stop fail ! please check driver log message !")
             }
           } else {
             pre_stop_tasks.put(taskId, System.currentTimeMillis())
