@@ -57,20 +57,16 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
       numPartitions = numPartitionsCustom.toInt
     }
 
-    if (numPartitions < 0){
-      numPartitions = jsonRDD.partitions.length/10
-      if(numPartitions < 1){
-        numPartitions = jsonRDD.partitions.length
-      }
-    }
-
-
     logInfo(s"The number of partitions is $numPartitions")
     val extraID = MainFrameConf.systemProps.getBoolean(MainFrameConf.EXTRAID, false)
 
     logInfo(s"Send records to ${conf.outIFIds(0).dsConf} for event ${conf.id}")
 
-    jsonRDD.coalesce(numPartitions).mapPartitions(iter => {
+    (if (numPartitions < 0){
+      jsonRDD
+    }else{
+      jsonRDD.coalesce(numPartitions)
+    }).mapPartitions(iter => {
       val diConf = conf.outIFIds(0)
       val messages = ArrayBuffer[KeyedMessage[String, String]]()
       val it = iter.toList.map(jsonstr =>
