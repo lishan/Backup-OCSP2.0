@@ -225,22 +225,9 @@ class DataInterfaceServer extends Logging with Serializable {
       eventarr += event
     })
 
-    //根据event的依赖关系排序
-    val eventIDMap = eventarr.map(event => (event.conf.id, event)).toMap
+    logInfo("All events are : " + eventarr.toList)
 
-    val resultArray = ArrayBuffer[String]()
-
-    eventarr.foreach(event => eventSort(event.conf.id, resultArray, eventIDMap))
-
-    val result = ArrayBuffer[Event]()
-
-    resultArray.foreach(id => {
-      result += eventIDMap(id)
-    })
-
-    logInfo("All events in order: " + result.toList)
-
-    result.toArray
+    eventarr.toArray
   }
 
   def getSubjectInfoById(id: String): SubjectConf = {
