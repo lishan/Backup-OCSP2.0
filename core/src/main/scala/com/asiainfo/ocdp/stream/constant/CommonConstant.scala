@@ -16,4 +16,6 @@ object CommonConstant {
   val KafakPartitionOffsetFile = new File(baseDir, "../conf/offset.xml").getCanonicalPath()
   val MulTopic = true
   val ocspLogPath = new File(baseDir, "../logs").getCanonicalPath
+
+  val ocspConfPath = new File(baseDir, "../conf").getCanonicalPath
 }

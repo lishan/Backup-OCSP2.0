@@ -9,10 +9,6 @@ import org.slf4j.{Logger, LoggerFactory}
  * Created by leo on 9/8/15.
  */
 trait Logging {
-
-  System.setProperty("OCSP_LOG_PATH", CommonConstant.ocspLogPath)
-  PropertyConfigurator.configure(CommonConstant.log4jConfFile)
-
   // Make the log field transient so that objects with Logging can
   // be serialized and used on another machine
   @transient private var log_ : Logger = null

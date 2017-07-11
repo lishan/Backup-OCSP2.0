@@ -100,7 +100,7 @@ function startStream(){
 
         CLASSPATH=`getClassPath`
 
-        nohup java -cp ${CLASSPATH} com.asiainfo.ocdp.stream.manager.MainFrameManager &>> ${STREAM_HOME}/logs/MainFrameManager.out&
+        nohup java -cp ${CLASSPATH} -Dlog4j.configuration=file:${STREAM_HOME}/conf/log4j.properties com.asiainfo.ocdp.stream.manager.MainFrameManager &>> ${STREAM_HOME}/logs/MainFrameManager.out&
         pid=`echo $!`
 
         sleep 1

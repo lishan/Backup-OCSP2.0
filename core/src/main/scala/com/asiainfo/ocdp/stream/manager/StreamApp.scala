@@ -1,7 +1,7 @@
 package com.asiainfo.ocdp.stream.manager
 
 import com.asiainfo.ocdp.stream.common.{Logging, SscManager}
-import com.asiainfo.ocdp.stream.constant.{ExceptionConstant, TaskConstant}
+import com.asiainfo.ocdp.stream.constant.{CommonConstant, ExceptionConstant, TaskConstant}
 import com.asiainfo.ocdp.stream.service.TaskServer
 import org.apache.spark.streaming.{Seconds, StreamingContext, StreamingContextState}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -22,6 +22,9 @@ object StreamApp extends Logging {
     }
 
     val taskId = args(0)
+
+    System.setProperty("OCSP_LOG_PATH", CommonConstant.ocspLogPath)
+    System.setProperty("OCSP_TASK_ID", taskId)
 
     val taskConf = taskServer.getTaskInfoById(taskId)
 

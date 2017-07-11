@@ -17,7 +17,7 @@ class Task extends Actor with Logging {
     case taskCmd: TaskCommand => {
       try {
         logInfo("Start task id : " + taskCmd.taskId)
-        taskCmd.cmd #>> new File(CommonConstant.appLogFile + taskCmd.taskId + ".log") !
+        taskCmd.cmd #>> new File(CommonConstant.appLogFile + "_" + taskCmd.taskId + ".out") !
       } finally {
         context.stop(self)
       }

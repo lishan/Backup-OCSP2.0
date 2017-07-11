@@ -19,6 +19,7 @@ import scala.util.{Failure, Success, Try}
  * Created by tsingfu on 15/8/26.
  */
 object MainFrameManager extends Logging {
+  System.setProperty("OCSP_LOG_PATH", CommonConstant.ocspLogPath)
   logBegin
   private val waiter = new ContextWaiter
   val delaySeconds = MainFrameConf.systemProps.getInt("delaySeconds", 10)
@@ -182,6 +183,10 @@ object MainFrameManager extends Logging {
       cmd = s"sudo -u ${owner} ${spark_home}/bin/spark-submit "
     }
 
+    val files = s"--files ${CommonConstant.ocspConfPath}/executor-log4j.properties"
+    val executor_extraJavaOptions = " --conf spark.executor.extraJavaOptions=-Dlog4j.configuration=executor-log4j.properties"
+    val driver_java_options = s" --driver-java-options -Dlog4j.configuration=file:${CommonConstant.ocspConfPath}/driver-log4j.properties"
+
     val deploy_mode = " --deploy-mode client"
     val master = " --master " + MainFrameConf.systemProps.get("master")
 
@@ -233,7 +238,7 @@ object MainFrameManager extends Logging {
         logInfo("The value of queue is invalid, remove --queue parameter")
         queue = ""
       }
-			cmd += streamClass + master + deploy_mode + executor_memory + executor_cores + driver_memory + num_executors + queue + jars + " " + appJars + " " + tid
+			cmd += files + executor_extraJavaOptions + driver_java_options + streamClass + master + deploy_mode + executor_memory + executor_cores + driver_memory + num_executors + queue + jars + " " + appJars + " " + tid
     }
     logInfo("Executor submit shell : " + cmd)
     TaskCommand(tid, cmd)
