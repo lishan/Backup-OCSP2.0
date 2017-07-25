@@ -183,9 +183,9 @@ object MainFrameManager extends Logging {
       cmd = s"sudo -u ${owner} ${spark_home}/bin/spark-submit "
     }
 
-    val files = s"--files ${CommonConstant.ocspConfPath}/executor-log4j.properties"
-    val executor_extraJavaOptions = " --conf spark.executor.extraJavaOptions=-Dlog4j.configuration=executor-log4j.properties"
-    val driver_java_options = s" --driver-java-options -Dlog4j.configuration=file:${CommonConstant.ocspConfPath}/driver-log4j.properties"
+    val files = s"--files ${CommonConstant.ocspConfPath}/executor-log4j.properties,${CommonConstant.ocspConfPath}/key.conf,${CommonConstant.ocspConfPath}/v.keytab"
+    val executor_extraJavaOptions = " --conf spark.executor.extraJavaOptions=-Dlog4j.configuration=executor-log4j.properties spark.executor.extraJavaOptions=-Djava.security.auth.login.config=key.conf"
+    val driver_java_options = s" --driver-java-options -Dlog4j.configuration=file:${CommonConstant.ocspConfPath}/driver-log4j.properties -Djava.security.auth.login.config=key.conf"
 
     val deploy_mode = " --deploy-mode client"
     val master = " --master " + MainFrameConf.systemProps.get("master")
