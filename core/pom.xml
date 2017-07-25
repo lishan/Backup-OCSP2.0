@@ -15,14 +15,6 @@
         <build.time>${timestamp}</build.time>
     </properties>
 
-    <!--repositories>
-        <repository>
-            <id>hortonworks</id>
-            <name>hortonworks repo</name>
-            <url>http://repo.hortonworks.com/content/repositories/releases/</url>
-        </repository>
-    </repositories-->
-
     <build>
         <resources>
             <resource>
@@ -104,26 +96,20 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-kafka-0-10-connector_2.10</artifactId>
-                    <version>1.0.1</version>
-                    <scope>system</scope>
-                    <systemPath>${project.basedir}/../lib/spark-kafka-0-10-connector_2.10-1.0.1.jar</systemPath>
-                </dependency>
-                <!--dependency>
-                    <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-streaming-kafka_${scala.binary.version}</artifactId>
+                    <artifactId>spark-streaming-kafka-0-8_${scala.binary.version}</artifactId>
                     <version>${spark.version}</version>
-                </dependency-->
-                <!--dependency>
+                </dependency>
+                <dependency>
                     <groupId>org.apache.kafka</groupId>
                     <artifactId>kafka_2.11</artifactId>
                     <version>0.8.2.1</version>
-                </dependency-->
+                </dependency>
                 <dependency>
                     <groupId>io.codis.jodis</groupId>
                     <artifactId>jodis</artifactId>
                     <version>0.3.0</version>
                 </dependency>
+
                 <!--for mysql-->
                 <dependency>
                     <groupId>mysql</groupId>
@@ -293,29 +279,11 @@
                     <version>2.2.1</version>
                     <scope>test</scope>
                 </dependency>
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.11</artifactId>
-                <version>0.10.1.1</version>
-            </dependency>
+
                 <dependency>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-streaming-kafka_2.10</artifactId>
-                    <version>1.6.2</version>
-                </dependency>
-                <!--version>1.6.2.2.4.2.107-1</version-->
-                <dependency>
-                    <groupId>com.hortonworks</groupId>
-                    <artifactId>spark-kafka-0-10-connector-main_2.10</artifactId>
-                    <version>1.0.1</version>
-                    <scope>system</scope>
-                    <systemPath>${project.basedir}/../lib/spark-kafka-0-10-connector_2.10-1.0.1.jar</systemPath>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-streaming_2.10</artifactId>
-                    <version>1.6.2</version>
-                    <scope>provided</scope>
+                    <artifactId>spark-streaming-kafka-assembly_2.10</artifactId>
+                    <version>1.6.0</version>
                 </dependency>
                 <dependency>
                     <groupId>org.talend.libraries</groupId>
@@ -354,8 +322,8 @@
                         </executions>
                         <configuration>
                         <excludes>
-                            <exclude>com/asiainfo/ocdp/stream/spark2/**</exclude>
-                            <exclude>com/asiainfo/ocdp/stream/core2_0/**</exclude>
+                        <exclude>com/asiainfo/ocdp/stream/spark2/**</exclude>
+                        <exclude>com/asiainfo/ocdp/stream/core2_0/**</exclude>
                         </excludes>
                         </configuration>
                     </plugin>

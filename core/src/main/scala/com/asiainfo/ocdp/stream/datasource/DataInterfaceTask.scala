@@ -14,7 +14,6 @@ import com.asiainfo.ocdp.stream.tools._
 import com.asiainfo.ocdp.stream.common.ComFunc
 import kafka.message.MessageAndMetadata
 import org.apache.commons.lang.StringUtils
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.streaming.{StreamingContext, Time}
@@ -76,39 +75,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     }
   }
 
-  private def transform2[T: ClassTag](input: T, dataSchema: DataSchema, commonSchema: StructType,
-                                     totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): Option[(String, String)] = {
-
-    val delim = dataSchema.getDelim
-    val data = input.asInstanceOf[ConsumerRecord[String, String]]
-    var topic = ""
-    val source = {
-      if (CommonConstant.MulTopic) {
-        topic = data.topic()
-        data.value()
-      } else {
-        input.asInstanceOf[String]
-      }
-    }
-    val inputArr = source.split(delim, -1)
-    val schema = dataSchema.getRawSchema.fieldNames
-
-    totalRecordsCounter.add(1)
-
-    val valid = {
-      if (CommonConstant.MulTopic) topic == dataSchema.getTopic && inputArr.size == dataSchema.getRawSchemaSize
-      else inputArr.size == dataSchema.getRawSchemaSize
-    }
-
-    if (valid) {
-      reservedRecordsCounter.add(1)
-      val message = (for(field <- commonSchema.fieldNames if schema.indexOf(field) >=0) yield inputArr(schema.indexOf(field))).mkString(StringUtils.replace(delim, "\\", ""))
-      Some((data.key(), message))
-    } else {
-      None
-    }
-  }
-
   private def confCheck() = {
     /*
      * check the conf in Driver
@@ -150,7 +116,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
       val kvRDD = withUptime("1.kafka RDD 转换成 rowRDD"){
         rdd.map( input => {
-          transform2(input, dataSchema, broadDiConf.value.getCommonSchema, totalRecordsCounter, reservedRecordsCounter)
+          transform(input, dataSchema, broadDiConf.value.getCommonSchema, totalRecordsCounter, reservedRecordsCounter)
         }).collect { case Some(row) => row }
       }
 
@@ -208,15 +174,11 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     //val sqlc = new SQLContext(ssc.sparkContext)
 
     //1 根据输入数据接口配置，生成数据流 DStream
-    /*
     val dataSource = StreamingSourceFactory.createDataSource(ssc, conf)
     val inputStream = {
       if (CommonConstant.MulTopic) dataSource.createStreamMulData(taskConf)
       else dataSource.createStream(taskConf)
     }
-    */
-    val dataSource = new KafkaReaderAuth(ssc, conf)
-    val inputStream = dataSource.createStreamMulData(taskConf)
 
     //1.2 根据输入数据接口配置，生成构造 sparkSQL DataFrame 的 structType
     // 全量字段: baseItems + udfItems
