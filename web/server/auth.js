@@ -6,7 +6,7 @@ module.exports = (req, res, next) => {
   let url = req.originalUrl;
   const prefix = "./server/lib/";
   let token = req.query.token;
-  if(!url.includes("/api/user/login") && enableAuth){
+  if(!url.includes("/api/user/login") && !url.includes("/api/config/cepEnable") && enableAuth){
     exec(`LC_ALL=en java -Dconfig=${prefix}${shiroConfig} -Dtype=decrypt -Dtoken=${token} -jar ${prefix}${jarPack}`,
       (error, message) => {
         if (error === null) {

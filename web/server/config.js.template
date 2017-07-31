@@ -23,6 +23,7 @@ module.exports = {
   trans: "zh",
   jarPack: "auth-1.0-SNAPSHOT.jar",
   enableAuth: true,
+  logging: false,
   shiroConfig: "shiro.ini",
   zh: {
     databaseError: "请检查数据库配置",

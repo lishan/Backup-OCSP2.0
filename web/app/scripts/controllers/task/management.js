@@ -4,8 +4,8 @@
  * For job management main page controller
  */
 angular.module('ocspApp')
-  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', '$rootScope', '$interval', '$uibModal', '$filter', 'moment', 'strService', 'CONFIGS',
-    function ($scope, $http, Notification, $q, $rootScope, $interval, $uibModal, $filter, moment, strService, CONFIGS) {
+  .controller('TaskManagementCtrl', ['$scope', '$http', 'Notification', '$q', '$rootScope', '$interval', '$uibModal', '$filter', 'moment', 'strService', 'CONFIGS', '$ngConfirm',
+    function ($scope, $http, Notification, $q, $rootScope, $interval, $uibModal, $filter, moment, strService, CONFIGS, $ngConfirm) {
     $rootScope.init('task');
     //i18n
     $scope.localLang = {
@@ -158,26 +158,9 @@ angular.module('ocspApp')
       }
     };
 
-    $scope.changeStatus = function(item){
-      let name = item.name;
-      if(!item.enable){
-        return;
-      }
-      let status = 0;
-      if(name === $filter('translate')('ocsp_web_streams_manage_024')){
-        status = 1;
-      }else if(name === $filter('translate')('ocsp_web_streams_manage_025')){
-        status = 3;
-      }else if(name === $filter('translate')('ocsp_web_streams_manage_026')){
-        status = 4;
-      }else if(name === $filter('translate')('ocsp_web_streams_manage_027')){
-        if(confirm("Are you sure?")){
-          status = "delete";
-        }else{
-          return;
-        }
-      }
-      if($scope.selectedJob.id === undefined || $scope.selectedJob.id === null){
+    function _changeStatus(status){
+      if(!$scope.selectedJob){
+        //TODO: Globalization
         Notification.error("Cannot update null task");
       }else{
         $http.post("/api/task/change/" + $scope.selectedJob.id, {status: status}).success(function(){
@@ -185,6 +168,42 @@ angular.module('ocspApp')
           _dealWith(status);
           Notification.success($filter('translate')('ocsp_web_common_026'));
         });
+      }
+    }
+
+    $scope.changeStatus = function(item){
+      let name = item.name;
+      if(!item.enable){
+        return;
+      }
+      let status = 0;
+      if(name === $filter('translate')('ocsp_web_streams_manage_027')){
+        $ngConfirm({
+          title: $filter('translate')('ocsp_web_common_038'),
+          content: $filter('translate')('ocsp_web_common_039'),
+          scope: $scope,
+          buttons:{
+            ok:{
+              text: $filter('translate')("ocsp_web_common_021"),
+              action: function(){
+                status = "delete";
+                _changeStatus(status);
+              }
+            },
+            cancel:{
+              text: $filter('translate')("ocsp_web_common_020"),
+            }
+          }
+        });
+      }else{
+        if (name === $filter('translate')('ocsp_web_streams_manage_024')) {
+          status = 1;
+        } else if (name === $filter('translate')('ocsp_web_streams_manage_025')) {
+          status = 3;
+        } else if (name === $filter('translate')('ocsp_web_streams_manage_026')) {
+          status = 4;
+        }
+        _changeStatus(status);
       }
     };
 
@@ -568,17 +587,33 @@ angular.module('ocspApp')
 
     $scope.submitMethod = function(){
       let defer = $q.defer();
-      if(confirm("Save task?")) {
-        $http.post("/api/task", {task: $scope.task}).success(function(){
-          $scope.task = {
-            input: {},
-            events: []
-          };
-          Notification.success($filter('translate')('ocsp_web_common_026'));
-          _init();
-          defer.resolve();
-        });
-      }
+      $ngConfirm({
+        title: $filter('translate')('ocsp_web_common_038'),
+        content: $filter('translate')('ocsp_web_common_039'),
+        scope: $scope,
+        buttons:{
+          ok:{
+            text: $filter('translate')("ocsp_web_common_021"),
+            action: function(){
+              $http.post("/api/task", {task: $scope.task}).success(function(){
+                $scope.task = {
+                  input: {},
+                  events: []
+                };
+                Notification.success($filter('translate')('ocsp_web_common_026'));
+                _init();
+                defer.resolve();
+              });
+            }
+          },
+          cancel:{
+            text: $filter('translate')("ocsp_web_common_020"),
+            action: function(){
+              defer.reject();
+            }
+          }
+        }
+      });
       return defer.promise;
     };
 

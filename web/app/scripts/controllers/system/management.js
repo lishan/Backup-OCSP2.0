@@ -4,7 +4,7 @@
  * For label management main page controller
  */
 angular.module('ocspApp')
-  .controller('SystemManagementCtrl', ['$scope', '$http', 'Notification', '$q', '$rootScope', '$filter', '$uibModal', function ($scope, $http, Notification, $q, $rootScope, $filter, $uibModal) {
+  .controller('SystemManagementCtrl', ['$scope', '$http', 'Notification', '$q', '$rootScope', '$filter', '$uibModal', '$ngConfirm', function ($scope, $http, Notification, $q, $rootScope, $filter, $uibModal, $ngConfirm) {
     $rootScope.init('system');
     function init() {
       $q.all({prop: $http.get('/api/prop'), datasource: $http.get('/api/datasource')}).then(function(arr){
@@ -27,6 +27,7 @@ angular.module('ocspApp')
     $scope.trans = function(str){
       return str.replace(/\./g, '_');
     };
+
     $scope.openSparkModal = function(){
       let modal = $uibModal.open({
         animation: true,
@@ -42,14 +43,27 @@ angular.module('ocspApp')
           };
           $scope.saveDatasource = function () {
             if($("#mainFrame .ng-invalid").length === 0) {
-              if (confirm($filter('translate')('ocsp_web_system_manage_004'))) {
-                $http.post("/api/datasource", {data: $scope.newDatasource}).success(function () {
-                  modal.close();
-                  $scope.newDatasource = {};
-                  Notification.success($filter('translate')('ocsp_web_common_026'));
-                  init();
-                });
-              }
+              $ngConfirm({
+                title: $filter('translate')('ocsp_web_common_038'),
+                content: $filter('translate')('ocsp_web_common_039'),
+                scope: $scope,
+                buttons:{
+                  ok:{
+                    text: $filter('translate')("ocsp_web_common_021"),
+                    action: function(){
+                      $http.post("/api/datasource", {data: $scope.newDatasource}).success(function () {
+                        modal.close();
+                        $scope.newDatasource = {};
+                        Notification.success($filter('translate')('ocsp_web_common_026'));
+                        init();
+                      });
+                    }
+                  },
+                  cancel:{
+                    text: $filter('translate')("ocsp_web_common_020"),
+                  }
+                }
+              });
             }
           };
         }]

@@ -295,12 +295,10 @@ angular.module('ocspApp')
     };
 
     $scope.changeStatus = (status) => {
-      if(confirm("Are you sure?")){
-        $http.post("/api/event/change/" + $scope.branch.id, {status: status}).success(function(){
-          _init();
-          Notification.success($filter('translate')('ocsp_web_common_026'));
-        });
-      }
+      $http.post("/api/event/change/" + $scope.branch.id, {status: status}).success(function(){
+        _init();
+        Notification.success($filter('translate')('ocsp_web_common_026'));
+      });
     };
 
     $scope.rightSlide = () => {

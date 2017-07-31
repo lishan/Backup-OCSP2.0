@@ -33,7 +33,8 @@ angular
     'angularMoment',
     'chart.js',
     'angularBootstrapNavTree',
-    'textAngular'
+    'textAngular',
+    'cp.ngConfirm'
   ])
   .config(function ($routeProvider) {
     $routeProvider
