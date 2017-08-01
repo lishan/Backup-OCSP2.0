@@ -37,68 +37,68 @@
 <![endif]-->
 
 <!-- Add your site or application content here -->
-<div class="header">
-  <span us-spinner spinner-key="spinner"></span>
-  <div class="navbar navbar-oc" role="navigation" data-spy="affix">
-    <div class="container-fluid">
-      <div class="ribbon dev" ng-if="cep"><a href="" class="ng-scope ng-binding">{{'ocsp_web_common_037' | translate}}</a></div>
-      <div class="col-md-offset-1 col-md-10">
+<nav class="navbar navbar-oc navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="ribbon dev" ng-if="cep"><a href="" class="ng-scope ng-binding">{{'ocsp_web_common_037' | translate}}</a></div>
+    <div class="row">
+      <div class="col-lg-offset-1 col-lg-10">
         <div class="navbar-header">
           <a href="#/" class="navbar-brand logo">
             <img src="/images/logo-white.png" style="height: 32px;" alt="ocsp" title="ocsp">
             <span class="brand">{{'ocsp_web_common_000' | translate}}</span>
           </a>
           <!--<button type="button" class="navbar-toggle" data-toggle="sidebar" data-target=".sidebar">-->
-            <!--<span class="sr-only">Toggle navigation</span>-->
-            <!--<span class="icon-bar"></span>-->
-            <!--<span class="icon-bar"></span>-->
-            <!--<span class="icon-bar"></span>-->
+          <!--<span class="sr-only">Toggle navigation</span>-->
+          <!--<span class="icon-bar"></span>-->
+          <!--<span class="icon-bar"></span>-->
+          <!--<span class="icon-bar"></span>-->
           <!--</button>-->
         </div>
 
-        <div class="collapse navbar-collapse" id="js-navbar-collapse">
-          <form class="navbar-form navbar-right" style="margin-left: 10px;" ng-if="username !== null">
-            <button class="dropdown-toggle btn btn-default" data-toggle="dropdown" role="button" aria-haspopup="true"
-               aria-expanded="false">
-              <i class="glyphicon glyphicon-user"></i>
-              {{username}} <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu">
-              <li><a href="" ng-click="logout()">{{'ocsp_web_common_004' | translate}}</a></li>
-            </ul>
-          </form>
-          <ul class="nav navbar-nav navbar-right">
+        <div class="collapse navbar-collapse navbar-right">
+          <ul class="nav navbar-nav hidden-sm hidden-xs">
             <li ng-if="username !== null && isAdmin()"><a ng-class="{true:'active'}[tab === 'dashboard']" href="#/dashboard">{{'ocsp_web_dashboard_name' | translate}}</a></li>
             <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'task']" href="#/task_management">{{'ocsp_web_streams_manage_000' | translate}}</a></li>
             <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'system']" href="#/system_management">{{'ocsp_web_system_manage_000' | translate}}</a></li>
             <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'label']" href="#/label_management">{{'ocsp_web_label_manage_000' | translate}}</a></li>
             <li ng-if="username !== null"><a ng-class="{true:'active'}[tab === 'user']" href="#/user_management">{{'ocsp_web_user_manage_000' | translate}}</a></li>
             <li ng-if="username !== null && cep"><div style="margin-left: 10px;"><a href="#/events_center" class="cep btn btn-default navbar-btn" ng-class="{true:'active'}[tab === 'cep']">{{'ocsp_web_common_037' | translate}}</a></div></li>
+            <li class="dropdown" ng-if="username !== null">
+              <div style="margin-left: 10px;">
+                <a class="btn btn-default dropdown-toggle navbar-btn" data-toggle="dropdown">
+                  <i class="glyphicon glyphicon-user"></i>
+                  {{username}} <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a href="" ng-click="logout()">{{'ocsp_web_common_004' | translate}}</a></li>
+                </ul>
+              </div>
+            </li>
           </ul>
         </div>
       </div>
     </div>
   </div>
-</div>
+</nav>
 
-<div class="container-fluid" style="padding-top: 50px">
-  <!--<div class="col-xs-7 col-sm-3 col-md-2 sidebar sidebar-left sidebar-animate">-->
-    <!--<ul class="nav navbar-stacked">-->
-      <!--<li><a href="#/job_management">{{'job_manage' | translate}}</a></li>-->
-      <!--<li><a href="#/label_management">{{'label_manage' | translate}}</a></li>-->
-      <!--<li><a ng-href="#/system_management">{{'system_manage' | translate}}</a></li>-->
-      <!--<li><a ng-href="#/">{{'user_manage' | translate}}</a></li>-->
-    <!--</ul>-->
-  <!--</div>-->
-  <div class="col-md-10 col-md-offset-1">
-    <div ng-view=""></div>
+<div class="container-fluid" style="min-height: 100%; margin-top: -50px;">
+  <span us-spinner spinner-key="spinner"></span>
+  <div class="col-lg-10 col-lg-offset-1" style="margin-top: 115px;">
+    <div ng-view="">
+    </div>
   </div>
 </div>
 
-<div class="container-fluid">
-  <div class="col-md-10 col-md-offset-1">
-    <div class="footer">
-      © 2016-2017 AsiaInfo,Inc. OCSP team
+<div class="container-fluid" style="height:50px;">
+  <div class="row">
+    <div class="footer col-lg-12">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-lg-8 col-lg-offset-1" style="margin-top: 15px;">
+            © 2016-2017 AsiaInfo,Inc. OCSP team
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
