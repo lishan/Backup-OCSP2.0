@@ -5,7 +5,8 @@ import java.util.Properties
 
 import com.asiainfo.ocdp.stream.common.{BroadcastManager, ComFunc, Logging}
 import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, EventConf, MainFrameConf}
-import kafka.producer.KeyedMessage
+//import kafka.producer.KeyedMessage
+import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.commons.lang.math.NumberUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SaveMode}
@@ -68,7 +69,7 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
       jsonRDD.coalesce(numPartitions)
     }).mapPartitions(iter => {
       val diConf = conf.outIFIds(0)
-      val messages = ArrayBuffer[KeyedMessage[String, String]]()
+      val messages = ArrayBuffer[ProducerRecord[String, String]]()
       val it = iter.toList.map(jsonstr =>
         {
           val line = Json4sUtils.jsonStr2Map(jsonstr)
@@ -80,8 +81,8 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
               conf.id + delim + msg_head + delim + sdf.format(System.currentTimeMillis)
             else
               msg_head + delim + sdf.format(System.currentTimeMillis) }
-          if (key == null) messages.append(new KeyedMessage[String, String](topic, msg))
-          else messages.append(new KeyedMessage[String, String](topic, key, msg))
+          if (key == null) messages.append(new ProducerRecord[String, String](topic, msg))
+          else messages.append(new ProducerRecord[String, String](topic, key, msg))
           key
         })
       val msgList = messages.toList

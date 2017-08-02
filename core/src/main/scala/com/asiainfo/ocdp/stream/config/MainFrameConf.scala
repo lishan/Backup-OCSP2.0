@@ -21,6 +21,7 @@ object MainFrameConf {
 
   val MONITOR_TASK_MONITOR_ENABLE = "ocsp.monitor.task-monitor.enable"
   val EXTRAID = "ocsp.event.append-id.enable"
+  val KERBEROS_ENABLE = "ocsp.kerberos.enable"
 
   initMainFrameConf()
 
@@ -40,6 +41,7 @@ object MainFrameConf {
     sysdata.foreach(x => {
       systemProps.set(x.get("name").get, x.get("value").get)
     })
+    systemProps.set(KERBEROS_ENABLE, "true")
   }
 
   /**
