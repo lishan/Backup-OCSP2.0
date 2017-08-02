@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <div class="inner-addon left-addon">
       <i class="glyphicon glyphicon-search"></i>
-      <input type="text" class="form-control" placeholder="通过关键字查询" ng-click="openSearchModal()" ng-model="searchItem">
+      <input type="text" class="form-control" placeholder="{{'ocsp_web_streams_cep_searchfromkeyword' | translate}}" ng-click="openSearchModal()" ng-model="searchItem">
     </div>
   </div>
 </div>
@@ -14,34 +14,34 @@
         <div class="col-xs-6">
           <button type="button" class="btn btn-default btn-block dropdown-toggle" data-toggle="dropdown"
                   aria-haspopup="true" aria-expanded="false">
-            新增 <span class="caret"></span>
+            {{'ocsp_web_streams_cep_addnew' | translate}} <span class="caret"></span>
           </button>
           <ul class="dropdown-menu" style="left: auto">
             <li>
-              <a href="" ng-click="openCreateType()" ng-if="isAdmin()">分级</a>
+              <a href="" ng-click="openCreateType()" ng-if="isAdmin()">{{'ocsp_web_streams_cep_classify' | translate}}</a>
             </li>
             <li>
-              <a href="" ng-click="openCreateEvent()" ng-if="!isAdmin()">事件</a>
+              <a href="" ng-click="openCreateEvent()" ng-if="!isAdmin()">{{'ocsp_web_streams_cep_event' | translate}}</a>
             </li>
           </ul>
         </div>
         <div class="col-xs-6">
           <button type="button" class="btn btn-default btn-block dropdown-toggle" data-toggle="dropdown"
                   aria-haspopup="true" aria-expanded="false">
-            操作 <span class="caret"></span>
+            {{'ocsp_web_streams_cep_operation' | translate}} <span class="caret"></span>
           </button>
           <ul class="dropdown-menu" style="left: auto" ng-if="branch" id="actions">
             <li ng-class="{1: 'disabled'}[branch.status]">
-              <a href="" confirmation action="changeStatus(1)">启用</a>
+              <a href="" confirmation action="changeStatus(1)">{{'ocsp_web_streams_cep_enabled' | translate}}</a>
             </li>
             <li ng-class="{0: 'disabled'}[branch.status]">
-              <a href="" confirmation action="changeStatus(0)">停用</a>
+              <a href="" confirmation action="changeStatus(0)">{{'ocsp_web_streams_cep_disabled' | translate}}</a>
             </li>
           </ul>
         </div>
       </div>
       <div class="panel panel-default">
-        <div class="panel-heading">事件列表</div>
+        <div class="panel-heading">{{'ocsp_web_streams_cep_eventlist' | translate}}</div>
         <div class="panel-body">
           <abn-tree tree-data="treedata" on-select="changeEvent(branch)" icon-leaf="fa fa-gear">
           </abn-tree>
@@ -78,10 +78,10 @@
             </div>
           </div>
           <div class="panel panel-default">
-            <div class="panel-heading">设置</div>
+            <div class="panel-heading">{{'ocsp_web_streams_cep_setting' | translate}}</div>
             <div class="panel-body">
               <div class="form-group">
-                <label>分级</label>
+                <label>{{'ocsp_web_streams_cep_classify' | translate}}</label>
                 <ui-select ng-model="item.parent" ng-required="true" name="eventTypes" append-to-body="true">
                   <ui-select-match>
                     <span ng-bind="$select.selected.vname"></span>
@@ -96,26 +96,26 @@
               </span>
               </div>
               <div class="form-group">
-                <label>事件编码*</label>
+                <label>{{'ocsp_web_streams_cep_eventcode' | translate}}*</label>
                 <input type="text" class="form-control" ng-model="item.cep.code" name="eventsCode" required>
                 <span class="redtip"
                       ng-show="mainForm['eventsCode'].$touched && mainForm['eventsCode'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
               </div>
               <div class="form-group">
-                <label>事件标识</label>
+                <label>{{'ocsp_web_streams_cep_eventidentifier' | translate}}</label>
                 <input type="text" class="form-control" ng-model="item.cep.identifier">
               </div>
               <div class="form-group">
-                <label>事件的业务含义</label>
+                <label>{{'ocsp_web_streams_cep_eventbussinessdescription' | translate}}</label>
                 <input type="text" class="form-control" ng-model="item.description">
               </div>
             </div>
           </div>
           <div class="panel panel-default">
-            <div class="panel-heading">规则</div>
+            <div class="panel-heading">{{'ocsp_web_streams_cep_rule' | translate}}</div>
             <div class="panel-body">
               <div class="form-group">
-                <label>关联的流*</label>
+                <label>{{'ocsp_web_streams_cep_relatedstream' | translate}}*</label>
                 <ui-select ng-model="item.task" ng-required="true" append-to-body="true" on-select="selectStream($item)" disabled="true">
                   <ui-select-match>
                     <span ng-bind="$select.selected.name"></span>
@@ -196,7 +196,7 @@
           </div>
           <div class="panel panel-default">
             <div class="panel-heading">
-              订阅
+              {{'ocsp_web_streams_cep_subscribe' | translate}}
             </div>
             <div class="panel-body">
               <div class="form-group">
@@ -314,18 +314,18 @@
             </div>
           </div>
           <div class="panel panel-default" ng-if="!isAdmin()">
-            <div class="panel-heading">提交</div>
+            <div class="panel-heading">{{'ocsp_web_streams_cep_submit' | translate}}</div>
             <div class="panel-body">
               <div class="form-group">
                 <div text-angular ng-model="item.note" ta-toolbar="[['bold', 'italics', 'underline']]"
                      ta-text-editor-class="form-control editor-height"
                      ta-html-editor-class="form-control editor-height"
-                     placeholder="请输入提交纪要">
+                     placeholder="{{'ocsp_web_streams_cep_inputsubmissionsumary' | translate}}">
                 </div>
               </div>
             </div>
           </div>
-          <button class="btn btn-primary" ng-click="update()" style="margin-top: 10px;margin-bottom: 10px;" ng-disabled="isAdmin()">保存</button>
+          <button class="btn btn-primary" ng-click="update()" style="margin-top: 10px;margin-bottom: 10px;" ng-disabled="isAdmin()">{{'ocsp_web_common_009' | translate}}</button>
         </div>
       </div>
     </div>

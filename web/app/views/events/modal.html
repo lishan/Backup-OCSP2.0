@@ -1,15 +1,15 @@
 <script type="text/ng-template" id="event.html">
   <div class="modal-header">
     <button type="button" class="close" ng-click="closeModal()"><span aria-hidden="true">&times;</span></button>
-    <h3 class="modal-title">新建事件</h3>
+    <h3 class="modal-title">{{'ocsp_web_streams_cep3' | translate}}</h3>
   </div>
   <div class="modal-body">
     <form name="eventForm" id="eventForm">
       <div class="panel panel-default">
-        <div class="panel-heading">设置</div>
+        <div class="panel-heading">{{'ocsp_web_streams_cep_setting' | translate}}</div>
         <div class="panel-body">
           <div class="form-group">
-            <label>分级</label>
+            <label>{{'ocsp_web_streams_cep_classify' | translate}}</label>
             <ui-select ng-model="newEvent.parent" ng-required="true" name="eventTypes">
               <ui-select-match>
                 <span ng-bind="$select.selected.vname"></span>
@@ -24,26 +24,26 @@
             </span>
           </div>
           <div class="form-group">
-            <label>事件编码*</label>
+            <label>{{'ocsp_web_streams_cep_eventcode' | translate}}*</label>
             <input type="text" class="form-control" ng-model="newEvent.cep.code" name="eventsCode" required>
             <span class="redtip"
                   ng-show="eventForm['eventsCode'].$touched && eventForm['eventsCode'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
           </div>
           <div class="form-group">
-            <label>事件标识</label>
+            <label>{{'ocsp_web_streams_cep_eventidentifier' | translate}}</label>
             <input type="text" class="form-control" ng-model="newEvent.cep.identifier">
           </div>
           <div class="form-group">
-            <label>事件的业务含义</label>
+            <label>{{'ocsp_web_streams_cep_eventbussinessdescription' | translate}}</label>
             <input type="text" class="form-control" ng-model="newEvent.description">
           </div>
         </div>
       </div>
       <div class="panel panel-default">
-        <div class="panel-heading">规则</div>
+        <div class="panel-heading">{{'ocsp_web_streams_cep_rule' | translate}}</div>
         <div class="panel-body">
           <div class="form-group">
-            <label>关联的流*</label>
+            <label>{{'ocsp_web_streams_cep_relatedstream' | translate}}*</label>
             <ui-select ng-model="newEvent.task" ng-required="true" name="streams" on-select="selectEventStream($item)">
               <ui-select-match>
                 <span ng-bind="$select.selected.name"></span>
@@ -119,13 +119,13 @@
         </div>
       </div>
       <div class="panel panel-default">
-        <div class="panel-heading">提交</div>
+        <div class="panel-heading">{{'ocsp_web_streams_cep_submit' | translate}}</div>
         <div class="panel-body">
           <div class="form-group">
             <div text-angular ng-model="newEvent.note" ta-toolbar="[['bold', 'italics', 'underline']]"
                  ta-text-editor-class="form-control editor-height"
                  ta-html-editor-class="form-control editor-height"
-                 placeholder="请输入提交纪要">
+                 placeholder="{{'ocsp_web_streams_cep_inputsubmissionsumary' | translate}}">
             </div>
           </div>
         </div>
@@ -139,7 +139,7 @@
 <script type="text/ng-template" id="search.html">
   <div class="modal-header">
     <button type="button" class="close" ng-click="closeModal()"><span aria-hidden="true">&times;</span></button>
-    <h3 class="modal-title">搜索</h3>
+    <h3 class="modal-title">{{'ocsp_web_streams_cep_search' | translate}}</h3>
   </div>
   <div class="modal-body">
     <form name="typeForm" id="searchForm">
@@ -148,11 +148,11 @@
         <input type="text" name="name" class="form-control" ng-model="searchItem.name">
       </div>
       <div class="form-group">
-        <label>事件编码</label>
+        <label>{{'ocsp_web_streams_cep_eventcode' | translate}}</label>
         <input type="text" class="form-control" ng-model="searchItem.code" name="eventsCode">
       </div>
       <div class="form-group">
-        <label>分级</label>
+        <label>{{'ocsp_web_streams_cep_classify' | translate}}</label>
         <ui-select ng-model="searchItem.parent">
           <ui-select-match>
             <span ng-bind="$select.selected.vname"></span>
@@ -164,7 +164,7 @@
         </ui-select>
       </div>
       <div class="form-group">
-        <label>关联的流</label>
+        <label>{{'ocsp_web_streams_cep_relatedstream' | translate}}</label>
         <ui-select ng-model="searchItem.task">
           <ui-select-match>
             <span ng-bind="$select.selected.name"></span>
@@ -176,11 +176,11 @@
         </ui-select>
       </div>
       <div class="form-group">
-        <label>事件的业务含义</label>
+        <label>{{'ocsp_web_streams_cep_eventbussinessdescription' | translate}}</label>
         <input type="text" class="form-control" ng-model="searchItem.description">
       </div>
       <div class="form-group">
-        <button type="button" class="btn btn-primary" ng-click="search()">搜索</button>
+        <button type="button" class="btn btn-primary" ng-click="search()">{{'ocsp_web_streams_cep_search' | translate}}</button>
       </div>
     </form>
   </div>
@@ -188,7 +188,7 @@
 <script type="text/ng-template" id="type.html">
   <div class="modal-header">
     <button type="button" class="close" ng-click="closeModal()"><span aria-hidden="true">&times;</span></button>
-    <h3 class="modal-title">新建分类</h3>
+    <h3 class="modal-title">{{'ocsp_web_streams_cep_createclass' | translate}}</h3>
   </div>
   <div class="modal-body">
     <form name="typeForm" id="typeForm">
@@ -200,7 +200,7 @@
         </span>
       </div>
       <div class="form-group">
-        <label>父分级</label>
+        <label>{{'ocsp_web_streams_cep_fathertype' | translate}}</label>
         <ui-select name="parentType" ng-model="newType.parent">
           <ui-select-match>
             <span ng-bind="$select.selected.type_name"></span>
