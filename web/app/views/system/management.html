@@ -70,6 +70,25 @@
     </form>
   </div>
 </script>
+
+<script type="text/ng-template" id="kerberosConfigureWarning.html">
+  <div class="modal-header">
+    <button type="button" class="close" ng-click="closeModal()"><span aria-hidden="true">&times;</span></button>
+    <h3 class="modal-title">Title Here!</h3>
+  </div>
+  <div class="modal-body">
+    <form name="continueConfigureKerberosForm" id="configureKerberosForm">
+      <div class="form-group">
+        <p>This is waring message!</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" ng-click="continueConfigKerberos()">确定</button>
+        <button class="btn btn-default" ng-click="closeModal()">取消</button>
+      </div>
+    </form>
+  </div>
+</script>
+
 <div class="row">
   <div class="well col-md-2">
     <div class="list-group-item">
@@ -85,21 +104,55 @@
         <uib-accordion>
           <div uib-accordion-group class="panel-default" ng-init="isOpen = true" is-open="isOpen">
             <uib-accordion-heading>
-              <i class="glyphicon" ng-class="{'glyphicon-chevron-down': isOpen, 'glyphicon-chevron-right': !isOpen}"></i>
-              &nbsp; {{'ocsp_web_common_013' | translate}}
+              <i class="glyphicon" ng-class="{'glyphicon-chevron-down': isOpen, 'glyphicon-chevron-right': !isOpen}"></i>              &nbsp; {{'ocsp_web_common_013' | translate}}
             </uib-accordion-heading>
             <div ng-repeat="property in prop" class="form-group">
-              <div class="row">
+              <div class="row" ng-if="notKerberosProperties(property)">
                 <div class="col-md-2">
                   <label>{{property.name}}</label>
                 </div>
                 <div class="col-md-8">
-                  <input ng-model="property.value" class="form-control" popover-trigger="'mouseenter'"
-                         popover-placement="right" popover-append-to-body=true
-                         uib-popover="{{property.description}}" popover-title="{{property.name}}" ng-disabled="!isAdmin()">
+                  <input ng-model="property.value" class="form-control" popover-trigger="'mouseenter'" popover-placement="right" popover-append-to-body=true
+                    uib-popover="{{property.description}}" popover-title="{{property.name}}" ng-disabled="!isAdmin()">
                 </div>
               </div>
             </div>
+
+            <div class="form-group">
+                <div class="row">
+                  <div class="col-md-2">
+                    <label>Kerberos</label>
+                  </div>
+                  <div class="col-md-8">
+                    <toggle-switch on-label="{{'ocsp_web_common_040' | translate}}" off-label="{{'ocsp_web_common_041' | translate}}" ng-disabled="!kerberosConfigureExist" id="isIsKerberosEnabled" ng-model="isKerberosEnabled" style="outline:0" ng-change="switchKerberosEnableStatus(isKerberosEnabled)">
+                    </toggle-switch>
+                  </div>
+                </div>
+              </div>
+
+              <div ng-show="showKerberosConfigure">
+                <div class="form-group">
+                  <div class="row">
+                    <div class="col-md-2">
+                      <label>Kerberos Key Tab</label>
+                    </div>
+                    <div class="col-md-8">
+                      <input class="form-control" ng-model="kerberosConfig.keyTab" popover-placement="right" popover-append-to-body=true/>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="row">
+                    <div class="col-md-2">
+                      <label>Kerberos Principal</label>
+                    </div>
+                    <div class="col-md-8">
+                      <input class="form-control" ng-model="kerberosConfig.principal" popover-placement="right" popover-append-to-body=true/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
           </div>
         </uib-accordion>
         <uib-accordion ng-repeat="data in datasource">

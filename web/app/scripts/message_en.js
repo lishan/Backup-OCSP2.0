@@ -44,6 +44,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_037': 'Event Processing Center',
     'ocsp_web_common_038': 'Confirmation',
     'ocsp_web_common_039': 'Are you sure to continue?',
+    'ocsp_web_common_040': 'Enable',
+    'ocsp_web_common_041': 'Disable',
 
     'ocsp_web_user_manage_000':'User Management',
     'ocsp_web_user_manage_001':'Change password',

@@ -44,6 +44,8 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_common_037': '事件处理中心',
     'ocsp_web_common_038': '确定',
     'ocsp_web_common_039': '确定继续么？',
+    'ocsp_web_common_040': '启用',
+    'ocsp_web_common_041': '禁止',
 
     'ocsp_web_user_manage_000':'用户管理',
     'ocsp_web_user_manage_001':'修改密码',
