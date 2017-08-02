@@ -19,15 +19,15 @@ angular.module('ocspApp')
       $q.all({prop: $http.get('/api/prop'), datasource: $http.get('/api/datasource')}).then(function(arr){
         $scope.prop = arr.prop.data;
         for(var index in $scope.prop){
-          if($scope.prop[index].name == 'ocsp.kerberos.enable'){
-            $scope.isKerberosEnabled = Boolean($scope.prop[index].value=='true');
+          if($scope.prop[index].name === 'ocsp.kerberos.enable'){
+            $scope.isKerberosEnabled = Boolean($scope.prop[index].value==='true');
             $scope.showKerberosConfigure = $scope.isKerberosEnabled;
             $scope.kerberosConfigureExist = true;
           }
-          if($scope.prop[index].name == 'ocsp.kerberos.keyTab'){
+          if($scope.prop[index].name === 'ocsp.kerberos.keyTab'){
             $scope.kerberosConfig.keyTab = $scope.prop[index].value;
           }
-          if($scope.prop[index].name == 'ocsp.kerberos.principal'){
+          if($scope.prop[index].name === 'ocsp.kerberos.principal'){
             $scope.kerberosConfig.principal = $scope.prop[index].value;
           }
         }
@@ -108,28 +108,28 @@ angular.module('ocspApp')
 
 
     $scope.notKerberosProperties = function(property){
-      return property.name!='ocsp.kerberos.enable' && property.name!='ocsp.kerberos.keyTab' && property.name!='ocsp.kerberos.principal';
+      return property.name!=='ocsp.kerberos.enable' && property.name!=='ocsp.kerberos.keyTab' && property.name!=='ocsp.kerberos.principal';
     };
     
     $scope.updateKerberosConfigures = function () {
-      if ($scope.kerberosConfigureExist == true) {
+      if ($scope.kerberosConfigureExist === true) {
         for (var index in $scope.prop) {
-          if ($scope.prop[index].name == 'ocsp.kerberos.enable') {
+          if ($scope.prop[index].name === 'ocsp.kerberos.enable') {
             $scope.prop[index].value = $scope.isKerberosEnabled.toString();
           }
-          if ($scope.prop[index].name == 'ocsp.kerberos.keyTab') {
-            $scope.prop[index].value = $scope.isKerberosEnabled == true ? $scope.kerberosConfig.keyTab : $scope.kerberosConfig.keyTab = "";
+          if ($scope.prop[index].name === 'ocsp.kerberos.keyTab') {
+            $scope.prop[index].value = $scope.isKerberosEnabled === true ? $scope.kerberosConfig.keyTab : $scope.kerberosConfig.keyTab = "";
           }
-          if ($scope.prop[index].name == 'ocsp.kerberos.principal') {
-            $scope.prop[index].value = $scope.isKerberosEnabled == true ? $scope.kerberosConfig.principal : $scope.kerberosConfig.principal = "";
+          if ($scope.prop[index].name === 'ocsp.kerberos.principal') {
+            $scope.prop[index].value = $scope.isKerberosEnabled === true ? $scope.kerberosConfig.principal : $scope.kerberosConfig.principal = "";
           }
         }
-      };
-    }
+      }
+    };
 
 
     $scope.switchKerberosEnableStatus = function(isKerberosEnabled){
-      if (isKerberosEnabled == true) {
+      if (isKerberosEnabled === true) {
         let modal = $uibModal.open({
           animation: true,
           ariaLabelledBy: 'modal-title-bottom',
@@ -141,7 +141,7 @@ angular.module('ocspApp')
           controller: ['$scope', function ($scope) {
             $scope.searchItem = {};
             $scope.closeModal = function () {
-              var scopeOfIsKerberosEnabled = angular.element(isIsKerberosEnabled).scope(); 
+              var scopeOfIsKerberosEnabled = angular.element("#isIsKerberosEnabled").scope(); 
               scopeOfIsKerberosEnabled.isKerberosEnabled = !scopeOfIsKerberosEnabled.isKerberosEnabled;
               modal.close();
             };
@@ -155,7 +155,7 @@ angular.module('ocspApp')
       }else{
         $scope.isKerberosEnabled = false;
         $scope.showKerberosConfigure = false;
-      };
+      }
 
     };
 
