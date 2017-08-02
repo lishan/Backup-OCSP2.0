@@ -6,9 +6,31 @@
 angular.module('ocspApp')
   .controller('SystemManagementCtrl', ['$scope', '$http', 'Notification', '$q', '$rootScope', '$filter', '$uibModal', '$ngConfirm', function ($scope, $http, Notification, $q, $rootScope, $filter, $uibModal, $ngConfirm) {
     $rootScope.init('system');
+
+    $scope.kerberosConfigureExist = false;
+    $scope.showKerberosConfigure = false;
+    $scope.isKerberosEnabled = false;
+    $scope.kerberosConfig = {
+      "keyTab":"",
+      "principal":""
+    };
+
     function init() {
       $q.all({prop: $http.get('/api/prop'), datasource: $http.get('/api/datasource')}).then(function(arr){
         $scope.prop = arr.prop.data;
+        for(var index in $scope.prop){
+          if($scope.prop[index].name == 'ocsp.kerberos.enable'){
+            $scope.isKerberosEnabled = Boolean($scope.prop[index].value=='true');
+            $scope.showKerberosConfigure = $scope.isKerberosEnabled;
+            $scope.kerberosConfigureExist = true;
+          }
+          if($scope.prop[index].name == 'ocsp.kerberos.keyTab'){
+            $scope.kerberosConfig.keyTab = $scope.prop[index].value;
+          }
+          if($scope.prop[index].name == 'ocsp.kerberos.principal'){
+            $scope.kerberosConfig.principal = $scope.prop[index].value;
+          }
+        }
         $scope.datasource = arr.datasource.data;
         if($scope.datasource !== undefined && $scope.datasource.length > 0) {
           for (let i in $scope.datasource) {
@@ -71,6 +93,7 @@ angular.module('ocspApp')
     };
 
     $scope.save = function(){
+      $scope.updateKerberosConfigures();
       for (let i in $scope.datasource) {
         $scope.datasource[i].properties = JSON.stringify($scope.datasource[i].props);
       }
@@ -81,6 +104,59 @@ angular.module('ocspApp')
         .then(function () {
           Notification.success($filter('translate')('ocsp_web_common_026'));
         });
+    };
+
+
+    $scope.notKerberosProperties = function(property){
+      return property.name!='ocsp.kerberos.enable' && property.name!='ocsp.kerberos.keyTab' && property.name!='ocsp.kerberos.principal';
+    };
+    
+    $scope.updateKerberosConfigures = function () {
+      if ($scope.kerberosConfigureExist == true) {
+        for (var index in $scope.prop) {
+          if ($scope.prop[index].name == 'ocsp.kerberos.enable') {
+            $scope.prop[index].value = $scope.isKerberosEnabled.toString();
+          }
+          if ($scope.prop[index].name == 'ocsp.kerberos.keyTab') {
+            $scope.prop[index].value = $scope.isKerberosEnabled == true ? $scope.kerberosConfig.keyTab : $scope.kerberosConfig.keyTab = "";
+          }
+          if ($scope.prop[index].name == 'ocsp.kerberos.principal') {
+            $scope.prop[index].value = $scope.isKerberosEnabled == true ? $scope.kerberosConfig.principal : $scope.kerberosConfig.principal = "";
+          }
+        }
+      };
+    }
+
+
+    $scope.switchKerberosEnableStatus = function(isKerberosEnabled){
+      if (isKerberosEnabled == true) {
+        let modal = $uibModal.open({
+          animation: true,
+          ariaLabelledBy: 'modal-title-bottom',
+          ariaDescribedBy: 'modal-body-bottom',
+          templateUrl: 'kerberosConfigureWarning.html',
+          size: 'lg',
+          backdrop: 'static',
+          scope: $scope,
+          controller: ['$scope', function ($scope) {
+            $scope.searchItem = {};
+            $scope.closeModal = function () {
+              var scopeOfIsKerberosEnabled = angular.element(isIsKerberosEnabled).scope(); 
+              scopeOfIsKerberosEnabled.isKerberosEnabled = !scopeOfIsKerberosEnabled.isKerberosEnabled;
+              modal.close();
+            };
+            $scope.continueConfigKerberos = function () {
+              $scope.$parent.isKerberosEnabled = true;
+              $scope.$parent.showKerberosConfigure = true;
+              modal.close();
+            };
+          }]
+        });
+      }else{
+        $scope.isKerberosEnabled = false;
+        $scope.showKerberosConfigure = false;
+      };
+
     };
 
   }]);
