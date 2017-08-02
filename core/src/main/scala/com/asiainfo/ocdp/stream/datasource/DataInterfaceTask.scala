@@ -20,6 +20,9 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.streaming.{StreamingContext, Time}
 import org.apache.spark.{Accumulator, HashPartitioner, SparkContext}
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.streaming.kafka.HasOffsetRanges
+import org.apache.spark.streaming.kafka010.{HasOffsetRanges => HasOffsetRanges010}
+import org.apache.commons.codec.digest.DigestUtils
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -47,16 +50,9 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
                                      totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): Option[(String, String)] = {
 
     val delim = dataSchema.getDelim
-    val tup = input.asInstanceOf[(String, MessageAndMetadata[String, String])]
-    var topic = ""
-    val source = {
-      if (CommonConstant.MulTopic) {
-        topic = tup._1
-        tup._2.message()
-      } else {
-        input.asInstanceOf[String]
-      }
-    }
+    val raw = input.asInstanceOf[ConsumerRecord[String, String]]
+    val topic = raw.topic()
+    val source = raw.value()
     val inputArr = source.split(delim, -1)
     val schema = dataSchema.getRawSchema.fieldNames
 
@@ -70,40 +66,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     if (valid) {
       reservedRecordsCounter.add(1)
       val message = (for(field <- commonSchema.fieldNames if schema.indexOf(field) >=0) yield inputArr(schema.indexOf(field))).mkString(StringUtils.replace(delim, "\\", ""))
-      Some((tup._2.key(), message))
-    } else {
-      None
-    }
-  }
-
-  private def transform2[T: ClassTag](input: T, dataSchema: DataSchema, commonSchema: StructType,
-                                     totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): Option[(String, String)] = {
-
-    val delim = dataSchema.getDelim
-    val data = input.asInstanceOf[ConsumerRecord[String, String]]
-    var topic = ""
-    val source = {
-      if (CommonConstant.MulTopic) {
-        topic = data.topic()
-        data.value()
-      } else {
-        input.asInstanceOf[String]
-      }
-    }
-    val inputArr = source.split(delim, -1)
-    val schema = dataSchema.getRawSchema.fieldNames
-
-    totalRecordsCounter.add(1)
-
-    val valid = {
-      if (CommonConstant.MulTopic) topic == dataSchema.getTopic && inputArr.size == dataSchema.getRawSchemaSize
-      else inputArr.size == dataSchema.getRawSchemaSize
-    }
-
-    if (valid) {
-      reservedRecordsCounter.add(1)
-      val message = (for(field <- commonSchema.fieldNames if schema.indexOf(field) >=0) yield inputArr(schema.indexOf(field))).mkString(StringUtils.replace(delim, "\\", ""))
-      Some((data.key(), message))
+      Some((raw.key, message))
     } else {
       None
     }
@@ -133,24 +96,29 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     }
 
     if (StringUtils.isEmpty(groupID)) {
-      val def_group_name = DataSourceConstant.GROUP_ID_DEF + taskConf.getId
+      val def_group_name = DataSourceConstant.GROUP_ID_DEF + taskConf.getId + DigestUtils.md5Hex(taskConf.getName).substring(0, 8)
       logWarning("no group_id , use default : " + def_group_name)
       dsconf.set(DataSourceConstant.GROUP_ID_KEY, def_group_name)
     }
   }
 
-  private def toDataFrame[R: ClassTag](rdd: RDD[R], ssc: SparkContext, totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): DataFrame = {
+  private def toDataFrame[R: ClassTag](rdd: RDD[R]
+                      , ssc: SparkContext
+                      , totalRecordsCounter: Accumulator[Long]
+                      , reservedRecordsCounter: Accumulator[Long]): DataFrame = {
 
     var unionRDD : RDD[(String, String)] = null
     val broadDiConf = BroadcastManager.getBroadDiConf()
     val dataSchemas = broadDiConf.value.getDataSchemas
     val partitionsList = ArrayBuffer[Int]()
 
+    val kerberos_enable = MainFrameConf.systemProps.getBoolean(MainFrameConf.KERBEROS_ENABLE, true)
+
     for (dataSchema <- dataSchemas) {
 
       val kvRDD = withUptime("1.kafka RDD 转换成 rowRDD"){
         rdd.map( input => {
-          transform2(input, dataSchema, broadDiConf.value.getCommonSchema, totalRecordsCounter, reservedRecordsCounter)
+            transform(input, dataSchema, broadDiConf.value.getCommonSchema, totalRecordsCounter, reservedRecordsCounter)
         }).collect { case Some(row) => row }
       }
 
@@ -205,17 +173,10 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     // check the config first
     confCheck()
 
-    //val sqlc = new SQLContext(ssc.sparkContext)
+    val kerberos_enable = MainFrameConf.systemProps.getBoolean(MainFrameConf.KERBEROS_ENABLE, false)
 
     //1 根据输入数据接口配置，生成数据流 DStream
-    /*
-    val dataSource = StreamingSourceFactory.createDataSource(ssc, conf)
-    val inputStream = {
-      if (CommonConstant.MulTopic) dataSource.createStreamMulData(taskConf)
-      else dataSource.createStream(taskConf)
-    }
-    */
-    val dataSource = new KafkaReaderAuth(ssc, conf)
+    val dataSource = new KafkaReader(ssc, conf, kerberos_enable)
     val inputStream = dataSource.createStreamMulData(taskConf)
 
     //1.2 根据输入数据接口配置，生成构造 sparkSQL DataFrame 的 structType
@@ -238,27 +199,20 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       //2.1 流数据转换
       val broadDiConf = BroadcastManager.getBroadDiConf()
       val dataSchemas = broadDiConf.value.getDataSchemas
-      val recover_mode = DataSourceConstant.AT_MOST_ONCE
 
       taskServer.updateHeartbeat(taskID)
 
       val currentReservedRecordsCounterValue = reservedRecordsCounter.value
 
+      val offsetList = rdd.asInstanceOf[HasOffsetRanges010].offsetRanges
+      for (o <- offsetList) {
+        logInfo(s"reading offset: ${o.topic} ${o.partition} ${o.fromOffset} ${o.untilOffset} ")
+      }
+
       //2.1 流数据转换
       val mixDF = toDataFrame(rdd, ssc.sparkContext, totalRecordsCounter, reservedRecordsCounter)
 
       if (null != mixDF) {
-        /**
-          * update offset BEFORE output the result for AT MOST ONCE
-          */
-
-        if (taskConf.recovery_mode == DataSourceConstant.FROM_LAST_STOP && recover_mode == DataSourceConstant.AT_MOST_ONCE){
-          logInfo(s"The recovery mode is ${recover_mode}, start to update offsets.")
-          StreamingSourceFactory.updateDataSource(broadDiConf.value, rdd)
-          logInfo(s"Update offsets successfully for ${recover_mode}.")
-        } else if(taskConf.recovery_mode != DataSourceConstant.FROM_LAST_STOP) {
-          logInfo(s"The recovery mode is ${taskConf.recovery_mode}, so no need to update offsets.")
-        }
 
         if (labels.size > 0) {
           val labelRDD = withUptime("4.dataframe 转成rdd打标"){
@@ -315,16 +269,6 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
             (System.currentTimeMillis() - time.milliseconds))
         }
       }
-      /**
-        * update offset AFTER output the result for AT LEAST ONCE
-        */
-      if (taskConf.recovery_mode == DataSourceConstant.FROM_LAST_STOP && recover_mode == DataSourceConstant.AT_LEAST_ONCE) {
-        StreamingSourceFactory.updateDataSource(broadDiConf.value, rdd)
-        logInfo(s"Update offsets successfully for ${recover_mode}.")
-      } else if(taskConf.recovery_mode != DataSourceConstant.FROM_LAST_STOP) {
-        logInfo(s"The recovery mode is ${taskConf.recovery_mode}, so no need to update offsets.")
-      }
-
     })
   }
 

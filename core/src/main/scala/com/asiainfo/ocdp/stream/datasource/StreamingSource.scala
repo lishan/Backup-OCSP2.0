@@ -4,6 +4,7 @@ import com.asiainfo.ocdp.stream.common.Logging
 import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, TaskConf}
 import com.asiainfo.ocdp.stream.constant.DataSourceConstant
 import kafka.message.MessageAndMetadata
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
@@ -17,7 +18,6 @@ abstract class StreamingSource(ssc: StreamingContext, conf: DataInterfaceConf) e
   val mSSC = ssc
 
   def createStream(taskConf: TaskConf) : DStream[String]
-  def createStreamMulData(taskConf: TaskConf): DStream[(String, MessageAndMetadata[String, String])]
 }
 
 class HdfsReader(ssc: StreamingContext, conf: DataInterfaceConf) extends StreamingSource(ssc, conf) {
@@ -25,8 +25,5 @@ class HdfsReader(ssc: StreamingContext, conf: DataInterfaceConf) extends Streami
   final def createStream(taskConf: TaskConf) : DStream[String] = {
     val path = mDsConf.get(DataSourceConstant.HDFS_DEFAULT_FS_KEY) + "/" + conf.get("path")
     mSSC.textFileStream(path)
-  }
-  final def createStreamMulData(taskConf: TaskConf): DStream[(String, MessageAndMetadata[String, String])] = {
-    null
   }
 }

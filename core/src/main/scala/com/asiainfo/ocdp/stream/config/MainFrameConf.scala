@@ -41,7 +41,6 @@ object MainFrameConf {
     sysdata.foreach(x => {
       systemProps.set(x.get("name").get, x.get("value").get)
     })
-    systemProps.set(KERBEROS_ENABLE, "true")
   }
 
   /**

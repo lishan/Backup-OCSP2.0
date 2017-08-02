@@ -40,6 +40,6 @@ class DataInterfaceConf extends BaseConf {
   @BeanProperty var numPartitions: Int = -1
 
   def getTopicSet(): Set[String] = {
-    dataSchemas.map(dataSchema => dataSchema.getTopic).toSet
+    dataSchemas.map(dataSchema => dataSchema.getTopic.trim).filter(!_.isEmpty).toSet
   }
 }
