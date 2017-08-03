@@ -8,8 +8,8 @@ angular.module('ocspApp').directive('confirmation',['$filter','$ngConfirm', func
       action: "&"
     },
     link: function (scope, element, attrs) {
-      if (attrs.disabled === "false") {
-        element.bind('click', function () {
+      element.bind('click', function () {
+        if (attrs.disabled === "false") {
           $ngConfirm({
             title: $filter('translate')('ocsp_web_common_038'),
             content: $filter('translate')('ocsp_web_common_039'),
@@ -25,8 +25,8 @@ angular.module('ocspApp').directive('confirmation',['$filter','$ngConfirm', func
               }
             }
           });
-        });
-      }
+        }
+      });
     }
   };
 }]);
