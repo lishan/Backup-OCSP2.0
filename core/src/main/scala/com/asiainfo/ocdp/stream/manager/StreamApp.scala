@@ -33,6 +33,7 @@ object StreamApp extends Logging {
     val sparkConf = new SparkConf()
     sparkConf.set("spark.scheduler.mode", "FAIR")
 
+    sparkConf.set("spark.streaming.kafka.consumer.cache.enabled", "false")
     sparkConf.setAppName(s"OCSP_${taskConf.getName}")
 
     val sc = new SparkContext(sparkConf)
