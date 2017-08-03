@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('ocspApp')
-  .controller('EventsCenterCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', '$q', '$uibModal', 'moment', '$sce','$translate', ($scope, $rootScope, $http, Notification, $filter, $q, $uibModal, moment, $sce, $translate)=>{
+  .controller('EventsCenterCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', '$q', '$uibModal', 'moment', '$sce', 'NgTableParams', '$translate', ($scope, $rootScope, $http, Notification, $filter, $q, $uibModal, moment, $sce, NgTableParams, $translate)=>{
     $rootScope.init('cep');
     $scope.treedata = [];
 
@@ -26,7 +26,8 @@ angular.module('ocspApp')
               id: event.id,
               type: "event",
               label: _status(event.status) + " " +  event.name,
-              status: event.status
+              status: event.status,
+              event: event
             });
             return;
           } else if (tree[i].children && tree[i].children.length > 0) {
@@ -98,6 +99,8 @@ angular.module('ocspApp')
     $scope.item = null;
     $scope.branch = null;
     $scope.hook = 0;
+    $scope.eventsList = [];
+    $scope.eventsSearch = {};
     _init();
 
     $scope.onSelect = function(item){
@@ -287,10 +290,27 @@ angular.module('ocspApp')
     $scope.changeEvent = (branch) => {
       $scope.history = null;
       $scope.item = null;
+      $scope.eventsList = [];
+      $scope.eventsSearch = {};
       if(branch.type === "event"){
         $scope.branch = branch;
         let id = branch.id;
         _getHistory(id);
+      }else{
+        let array = [];
+        $scope.eventsList = [];
+        if(branch.children) {
+          array = branch.children;
+        }
+        for(let i = 0; i < array.length; i++){
+          if(array[i].type === "event"){
+            $scope.eventsList.push(array[i].event);
+          }else if(array[i].type === "type" && array[i].children){
+            array = array.concat(array[i].children);
+          }
+        }
+        console.log($scope.eventsList);
+        $scope.defaultConfigTableParams = new NgTableParams({}, { dataset: $scope.eventsList});
       }
     };
 

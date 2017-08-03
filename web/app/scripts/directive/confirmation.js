@@ -7,24 +7,26 @@ angular.module('ocspApp').directive('confirmation',['$filter','$ngConfirm', func
     scope: {
       action: "&"
     },
-    link: function (scope, element) {
-      element.bind('click', function(){
-        $ngConfirm({
-          title: $filter('translate')('ocsp_web_common_038'),
-          content: $filter('translate')('ocsp_web_common_039'),
-          buttons:{
-            ok:{
-              text: $filter('translate')("ocsp_web_common_021"),
-              action: function(){
-                scope.action();
+    link: function (scope, element, attrs) {
+      if (attrs.disabled === "false") {
+        element.bind('click', function () {
+          $ngConfirm({
+            title: $filter('translate')('ocsp_web_common_038'),
+            content: $filter('translate')('ocsp_web_common_039'),
+            buttons: {
+              ok: {
+                text: $filter('translate')("ocsp_web_common_021"),
+                action: function () {
+                  scope.action();
+                }
+              },
+              cancel: {
+                text: $filter('translate')("ocsp_web_common_020"),
               }
-            },
-            cancel:{
-              text: $filter('translate')("ocsp_web_common_020"),
             }
-          }
+          });
         });
-      });
+      }
     }
   };
 }]);

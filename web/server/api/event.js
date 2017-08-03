@@ -28,15 +28,11 @@ router.get('/diid/:id', function(req, res){
 
 router.post('/change/:id', function(req, res){
   let status = req.body.status;
-  let username = req.query.username;
   sequelize.transaction(function(t) {
     return EventDef.find({where: {id: req.params.id}, transaction: t}).then(function (event) {
       let result = event.dataValues;
       if(result.status === status){
         return sequelize.Promise.reject();
-      }
-      if(result.owner !== username){
-        return sequelize.Promise.reject();// Only owner can change status
       }
       result.status = status;
       return EventDef.update(result, {where: {id: req.params.id}, transaction: t});
