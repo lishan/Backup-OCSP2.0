@@ -153,7 +153,7 @@ CREATE TABLE `STREAM_SYSTEMPROP` (
 
 LOCK TABLES `STREAM_SYSTEMPROP` WRITE;
 /*!40000 ALTER TABLE `STREAM_SYSTEMPROP` DISABLE KEYS */;
-INSERT INTO `STREAM_SYSTEMPROP` VALUES (1,'cacheManager','JodisCacheManager',0,NULL),(2,'ocsp.monitor.task-monitor.enable','true',0,''),(3,'ocsp.monitor.task-monitor.retain-check-interval-mins','2880',0,''),(4,'ocsp.monitor.task-monitor.retain-mins','10080',0,''),(7,'checkpoint_dir','streaming/checkpoint',0,NULL),(11,'SPARK_HOME','/usr/hdp/2.4.0.0-169/spark',1,'Spark安装路径'),(12,'master','yarn',1,'Spark应用程序的运行模式'),(13,'supervise','false',0,NULL),(17,'delaySeconds','20',0,NULL),(18,'periodSeconds','10',0,NULL),(21,'cacheQryBatchSizeLimit','1000',0,NULL),(27,'cacheQryTaskSizeLimit','1000',0,NULL),(28,'ocsp.event.append-id.enable','false',0,NULL),(29,'ocsp.event.cep.enable','false',0,NULL),(30,'ocsp.kerberos.enable','false',1,NULL),(31,'ocsp.kerberos.keyTab','',1,NULL),(32,'ocsp.kerberos.principal','',1,NULL);
+INSERT INTO `STREAM_SYSTEMPROP` VALUES (1,'cacheManager','JodisCacheManager',0,NULL),(2,'ocsp.monitor.task-monitor.enable','true',0,''),(3,'ocsp.monitor.task-monitor.retain-check-interval-mins','2880',0,''),(4,'ocsp.monitor.task-monitor.retain-mins','10080',0,''),(7,'checkpoint_dir','streaming/checkpoint',0,NULL),(11,'SPARK_HOME','/usr/hdp/2.4.0.0-169/spark',1,'Spark安装路径'),(12,'master','yarn',1,'Spark应用程序的运行模式'),(13,'supervise','false',0,NULL),(17,'delaySeconds','20',0,NULL),(18,'periodSeconds','10',0,NULL),(21,'cacheQryBatchSizeLimit','1000',0,NULL),(27,'cacheQryTaskSizeLimit','1000',0,NULL),(28,'ocsp.event.append-id.enable','false',0,NULL),(29,'ocsp.event.cep.enable','false',0,NULL),(30,'ocsp.kerberos.enable','false',1,NULL);
 /*!40000 ALTER TABLE `STREAM_SYSTEMPROP` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -226,15 +226,33 @@ CREATE TABLE `STREAM_USER` (
   `name` varchar(255) NOT NULL,
   `password` varchar(200) NOT NULL DEFAULT '',
   `description` varchar(500) DEFAULT NULL,
+  `spark_principal` varchar(500) DEFAULT NULL,
+  `spark_keytab` varchar(500) DEFAULT NULL,
+  `kafka_principal` varchar(500) DEFAULT NULL,
+  `kafka_keytab` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 LOCK TABLES `STREAM_USER` WRITE;
 /*!40000 ALTER TABLE `STREAM_USER` DISABLE KEYS */;
-INSERT INTO `STREAM_USER` VALUES (1,'ocspadmin','8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918','Administrator');
+INSERT INTO `STREAM_USER` VALUES (1,'ocspadmin','8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918','Administrator','','','','');
 /*!40000 ALTER TABLE `STREAM_USER` ENABLE KEYS */;
 UNLOCK TABLES;
+
+DROP TABLE IF EXISTS `STREAM_USER_SECURITY`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `STREAM_USER_SECURITY` (
+  `id` int(16) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `spark_principal` varchar(500) DEFAULT NULL,
+  `spark_keytab` varchar(500) DEFAULT NULL,
+  `kafka_principal` varchar(500) DEFAULT NULL,
+  `kafka_keytab` varchar(500) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `STREAM_EXCEPTION`

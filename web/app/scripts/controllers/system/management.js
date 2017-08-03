@@ -8,11 +8,10 @@ angular.module('ocspApp')
     $rootScope.init('system');
 
     $scope.kerberosConfigureExist = false;
-    $scope.showKerberosConfigure = false;
     $scope.isKerberosEnabled = false;
-    $scope.kerberosConfig = {
-      "keyTab":"",
-      "principal":""
+
+    $scope.isAdminUser = function(){
+      return $rootScope.isAdmin() === true;
     };
 
     function init() {
@@ -21,14 +20,7 @@ angular.module('ocspApp')
         for(var index in $scope.prop){
           if($scope.prop[index].name === 'ocsp.kerberos.enable'){
             $scope.isKerberosEnabled = Boolean($scope.prop[index].value==='true');
-            $scope.showKerberosConfigure = $scope.isKerberosEnabled;
             $scope.kerberosConfigureExist = true;
-          }
-          if($scope.prop[index].name === 'ocsp.kerberos.keyTab'){
-            $scope.kerberosConfig.keyTab = $scope.prop[index].value;
-          }
-          if($scope.prop[index].name === 'ocsp.kerberos.principal'){
-            $scope.kerberosConfig.principal = $scope.prop[index].value;
           }
         }
         $scope.datasource = arr.datasource.data;
@@ -117,12 +109,6 @@ angular.module('ocspApp')
           if ($scope.prop[index].name === 'ocsp.kerberos.enable') {
             $scope.prop[index].value = $scope.isKerberosEnabled.toString();
           }
-          if ($scope.prop[index].name === 'ocsp.kerberos.keyTab') {
-            $scope.prop[index].value = $scope.isKerberosEnabled === true ? $scope.kerberosConfig.keyTab : $scope.kerberosConfig.keyTab = "";
-          }
-          if ($scope.prop[index].name === 'ocsp.kerberos.principal') {
-            $scope.prop[index].value = $scope.isKerberosEnabled === true ? $scope.kerberosConfig.principal : $scope.kerberosConfig.principal = "";
-          }
         }
       }
     };
@@ -147,14 +133,12 @@ angular.module('ocspApp')
             };
             $scope.continueConfigKerberos = function () {
               $scope.$parent.isKerberosEnabled = true;
-              $scope.$parent.showKerberosConfigure = true;
               modal.close();
             };
           }]
         });
       }else{
         $scope.isKerberosEnabled = false;
-        $scope.showKerberosConfigure = false;
       }
 
     };

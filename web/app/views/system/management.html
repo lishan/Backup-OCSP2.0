@@ -118,7 +118,8 @@
               </div>
             </div>
 
-            <div class="form-group">
+            <div ng-show="isAdminUser()">
+              <div class="form-group">
                 <div class="row">
                   <div class="col-md-2">
                     <label>Kerberos</label>
@@ -129,29 +130,7 @@
                   </div>
                 </div>
               </div>
-
-              <div ng-show="showKerberosConfigure">
-                <div class="form-group">
-                  <div class="row">
-                    <div class="col-md-2">
-                      <label>Kerberos Key Tab</label>
-                    </div>
-                    <div class="col-md-8">
-                      <input class="form-control" ng-model="kerberosConfig.keyTab" popover-placement="right" popover-append-to-body=true/>
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <div class="row">
-                    <div class="col-md-2">
-                      <label>Kerberos Principal</label>
-                    </div>
-                    <div class="col-md-8">
-                      <input class="form-control" ng-model="kerberosConfig.principal" popover-placement="right" popover-append-to-body=true/>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            </div>
 
           </div>
         </uib-accordion>
