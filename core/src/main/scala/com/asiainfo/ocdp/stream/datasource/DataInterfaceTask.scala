@@ -20,7 +20,6 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.streaming.{StreamingContext, Time}
 import org.apache.spark.{Accumulator, HashPartitioner, SparkContext}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.streaming.kafka.HasOffsetRanges
 import org.apache.spark.streaming.kafka010.{HasOffsetRanges => HasOffsetRanges010}
 import org.apache.commons.codec.digest.DigestUtils
 
