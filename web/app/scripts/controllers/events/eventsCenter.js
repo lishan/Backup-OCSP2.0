@@ -1,14 +1,14 @@
 'use strict';
 
 angular.module('ocspApp')
-  .controller('EventsCenterCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', '$q', '$uibModal', 'moment', '$sce', ($scope, $rootScope, $http, Notification, $filter, $q, $uibModal, moment, $sce)=>{
+  .controller('EventsCenterCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', '$q', '$uibModal', 'moment', '$sce','$translate', ($scope, $rootScope, $http, Notification, $filter, $q, $uibModal, moment, $sce, $translate)=>{
     $rootScope.init('cep');
     $scope.treedata = [];
 
     function _status(status){
       switch(status){
-        case 0: return $sce.trustAsHtml(`<span class="label label-danger">停止</span>`);
-        case 1: return $sce.trustAsHtml(`<span class="label label-success">启动</span>`);
+        case 0: return $sce.trustAsHtml(`<span class="label label-danger">`+$translate.instant('ocsp_web_streams_manage_025')+`</span>`);
+        case 1: return $sce.trustAsHtml(`<span class="label label-success">`+$translate.instant('ocsp_web_streams_manage_024')+`</span>`);
       }
     }
 
