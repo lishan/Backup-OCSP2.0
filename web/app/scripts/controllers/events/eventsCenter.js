@@ -89,6 +89,15 @@ angular.module('ocspApp')
         $scope.inputLabels = arr.labels.data;
         for (let i in events) {
           _findNodeTree(tree, events[i]);
+          if(!events[i].STREAM_EVENT_CEP){
+            tree.push({
+              id: events[i].id,
+              type: "event",
+              label: _status(events[i].status) + " " +  events[i].name,
+              status: events[i].status,
+              event: events[i]
+            });
+          }
         }
         for(let i in $scope.types){
           if(!$scope.types[i].parent_type){
@@ -147,6 +156,8 @@ angular.module('ocspApp')
         if ($scope.item.audit.enableDate){
           $scope.item.audit.startDate = moment($scope.item.audit.startDate).toDate();
           $scope.item.audit.endDate = moment($scope.item.audit.endDate).toDate();
+        }else{
+          $scope.item.audit.enableDate = 'none';
         }
         if ($scope.item.audit.periods && $scope.item.audit.periods.length > 0) {
           for (let i in $scope.item.audit.periods) {
