@@ -144,6 +144,10 @@ angular.module('ocspApp')
         if (!$scope.item.audit) {
           $scope.item.audit = {type: "always", periods: []};
         }
+        if ($scope.item.audit.enableTime){
+          $scope.item.audit.startTime = moment($scope.item.audit.startTime).toDate();
+          $scope.item.audit.endTime = moment($scope.item.audit.endTime).toDate();
+        }
         if ($scope.item.audit.periods && $scope.item.audit.periods.length > 0) {
           for (let i in $scope.item.audit.periods) {
             $scope.item.audit.periods[i].start = moment($scope.item.audit.periods[i].start).toDate();
@@ -353,10 +357,14 @@ angular.module('ocspApp')
 
     $scope.auditTypes = [
       {name: 'always', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_always')},
-      {name: 'none', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_none')},
       {name: 'day', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_day')},
       {name: 'week', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_week')},
       {name: 'month', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_month')}
+    ];
+
+    $scope.auditTimes = [
+      {name: 'none' ,displayName: '无'},
+      {name: 'have', displayName: '有'}
     ];
 
     $scope.remove = function(array, $index){
@@ -372,19 +380,6 @@ angular.module('ocspApp')
         });
       }
     };
-
-    function _changeNameWhenUpdateEvent(tree, item){
-      if(tree && tree.length > 0) {
-        for (let i in tree) {
-          if (tree[i].type === "event" && item.id === tree[i].id) {
-            tree[i].label = item.name;
-            return;
-          } else {
-            _changeNameWhenUpdateEvent(tree[i].children, item);
-          }
-        }
-      }
-    }
 
     $scope.update = function(){
       if($scope.item.id === undefined || $scope.item.id === null){
@@ -405,7 +400,6 @@ angular.module('ocspApp')
           $q.all({event: $http.put("/api/event/" + $scope.item.id, {event: $scope.item}),
             history: $http.post("/api/history/event", {event: {config_data: $scope.item, note: $scope.item.note, version: $scope.item.version}})})
             .then(function(){
-              _changeNameWhenUpdateEvent($scope.treedata, $scope.item);
               _getHistory($scope.item.id);
               Notification.success($filter('translate')('ocsp_web_common_026'));
             });

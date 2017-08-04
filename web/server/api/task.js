@@ -229,33 +229,36 @@ function createEvents(events, i, diid, status) {
     });
   }
   //Add data audit function
-  if(events[i].audit !== undefined && events[i].audit.type !== undefined && events[i].audit.type!== "always" && events[i].audit.periods !== undefined && events[i].audit.periods.length > 0){
+  if(events[i].audit !== undefined){
     let result = {
       period: events[i].audit.type,
       time:[]
     };
-    for(let j = 0 ; j < events[i].audit.periods.length; j++){
-      let sd = "0";
-      let ed = "0";
-      if(events[i].audit.type === 'none') {
-        sd = moment(events[i].audit.periods[j].start).format("YYYY-MM-DD");
-        ed = moment(events[i].audit.periods[j].end).format("YYYY-MM-DD");
-      }else if(events[i].audit.type === 'week' || events[i].audit.type === 'month'){
-        sd = events[i].audit.periods[j].s;
-        ed = events[i].audit.periods[j].d;
-      }
-      let sh = moment(events[i].audit.periods[j].start).format("HH:mm:ss");
-      let eh = moment(events[i].audit.periods[j].end).format("HH:mm:ss");
-      result.time.push({
-        begin:{
-          d: sd,
-          h: sh
-        },
-        end:{
-          d: ed,
-          h: eh
+    if(events[i].audit.enableTime === 'have' && events[i].audit.startTime && events[i].audit.endTime){
+      result.startTime = moment(events[i].audit.startTime).format("YYYY-MM-DD");
+      result.endTime = moment(events[i].audit.endTime).format("YYYY-MM-DD");
+    }
+    if(events[i].audit.type && events[i].audit.type !== "always" && events[i].audit.periods && events[i].audit.periods.length > 0) {
+      for (let j = 0; j < events[i].audit.periods.length; j++) {
+        let sd = "0";
+        let ed = "0";
+        if (events[i].audit.type === 'week' || events[i].audit.type === 'month') {
+          sd = events[i].audit.periods[j].s;
+          ed = events[i].audit.periods[j].d;
         }
-      });
+        let sh = moment(events[i].audit.periods[j].start).format("HH:mm:ss");
+        let eh = moment(events[i].audit.periods[j].end).format("HH:mm:ss");
+        result.time.push({
+          begin: {
+            d: sd,
+            h: sh
+          },
+          end: {
+            d: ed,
+            h: eh
+          }
+        });
+      }
     }
     events[i].PROPERTIES.props.push({
       "pname" : "period",

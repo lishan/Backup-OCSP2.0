@@ -200,6 +200,52 @@
             </div>
             <div class="panel-body">
               <div class="form-group">
+                <label>订阅区间*</label>
+                <ui-select ng-model="item.audit.enableTime" ng-required="true"
+                           name="eventsAuditTime"
+                           append-to-body="true"
+                           on-select="">
+                  <ui-select-match>
+                    <span ng-bind="$select.selected.displayName"></span>
+                  </ui-select-match>
+                  <ui-select-choices
+                    repeat="type.name as type in (auditTimes | filter: $select.search) track by type.name">
+                    <span ng-bind="type.displayName"></span>
+                  </ui-select-choices>
+                </ui-select>
+                <span class="redtip"
+                      ng-show="mainForm['eventsAuditTime'].$touched && mainForm['eventsAuditTime'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
+              </div>
+              <div class="form-group" ng-if="item.audit.enableTime === 'have'">
+                <label>{{'ocsp_web_streams_manage_041' | translate}}</label>
+                <div class="row">
+                  <div class="col-md-6">
+                    <p class="input-group">
+                      <input type="text" class="form-control" datetime-picker="yyyy-MM-dd" close-on-date-selection="false"
+                             datepicker-options="{showWeeks: false}" required
+                             button-bar="false" ng-model="item.audit.startTime" is-open="item.audit.time.t1"
+                             datepicker-append-to-body="true">
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" ng-click="item.audit.time.t1 = true;"><i
+                          class="glyphicon glyphicon-calendar"></i></button>
+                      </span>
+                    </p>
+                  </div>
+                  <div class="col-md-6">
+                    <p class="input-group">
+                      <input type="text" class="form-control" datetime-picker="yyyy-MM-dd" close-on-date-selection="false"
+                             datepicker-options="{showWeeks: false}" required
+                             button-bar="false" ng-model="item.audit.endTime" is-open="item.audit.time.t2"
+                             datepicker-append-to-body="true">
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" ng-click="item.audit.time.t2 = true;"><i
+                          class="glyphicon glyphicon-calendar"></i></button>
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
                 <label>{{'ocsp_web_streams_manage_040' | translate}}*</label>
                 <ui-select ng-model="item.audit.type" ng-required="true"
                            name="eventsAudit"
@@ -216,44 +262,7 @@
                 <span class="redtip"
                       ng-show="mainForm['eventsAudit'].$touched && mainForm['eventsAudit'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
               </div>
-              <div class="form-group" ng-if="item.audit.type !== undefined && item.audit.type === 'none'">
-                <label>{{'ocsp_web_streams_manage_041' | translate}}</label>
-                <div class="row" ng-repeat="period in item.audit.periods">
-                  <div class="col-md-2 center-block">
-                    <button type="button" class="btn btn-success btn-circle" ng-click="add(item.audit.periods)"><i
-                      class="glyphicon glyphicon-plus"></i></button>
-                    <button type="button" class="btn btn-danger btn-circle"
-                            ng-click="remove(item.audit.periods, $index)"><i class="glyphicon glyphicon-remove"></i>
-                    </button>
-                  </div>
-                  <div class="col-md-5">
-                    <p class="input-group">
-                      <input type="text" class="form-control" datetime-picker="yyyy-MM-dd HH:mm" required
-                             timepicker-options="{showMeridian: false}"
-                             button-bar="false" ng-model="period.start" is-open="period.t1"
-                             datepicker-append-to-body="true">
-                      <span class="input-group-btn">
-                        <button type="button" class="btn btn-default" ng-click="period.t1 = true;"><i
-                          class="glyphicon glyphicon-calendar"></i></button>
-                      </span>
-                    </p>
-                  </div>
-                  <div class="col-md-5">
-                    <p class="input-group">
-                      <input type="text" class="form-control" datetime-picker="yyyy-MM-dd HH:mm" required
-                             timepicker-options="{showMeridian: false}"
-                             button-bar="false" ng-model="period.end" is-open="period.t2"
-                             datepicker-append-to-body="true">
-                      <span class="input-group-btn">
-                        <button type="button" class="btn btn-default" ng-click="period.t2 = true;"><i
-                          class="glyphicon glyphicon-calendar"></i></button>
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div class="form-group"
-                   ng-if="item.audit.type !== 'always' && item.audit.type !== undefined && item.audit.type !== 'none'">
+              <div class="form-group" ng-if="item.audit.type && item.audit.type !== 'always'">
                 <label>{{'ocsp_web_streams_manage_041' | translate}}</label>
                 <div class="row" ng-repeat="period in item.audit.periods">
                   <div class="col-md-2">

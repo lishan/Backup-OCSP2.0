@@ -22,10 +22,13 @@ angular.module('ocspApp')
     });
     $scope.auditTypes = [
       {name: 'always', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_always')},
-      {name: 'none', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_none')},
       {name: 'day', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_day')},
       {name: 'week', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_week')},
       {name: 'month', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_month')}
+    ];
+    $scope.auditTimes = [
+      {name: 'none' ,displayName: '无'},
+      {name: 'have', displayName: '有'}
     ];
     //Check spark_home properties
     function _openSparkModal(){
@@ -529,21 +532,21 @@ angular.module('ocspApp')
                       type : $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.period,
                       periods : []
                     };
+                    if($scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.startTime && $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.endTime){
+                      $scope.selectedJob.events[i].audit.enableTime = "have";
+                      $scope.selectedJob.events[i].audit.startTime = moment($scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.startTime).toDate();
+                      $scope.selectedJob.events[i].audit.endTime = moment($scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.endTime).toDate();
+                    }else{
+                      $scope.selectedJob.events[i].audit.enableTime = "none";
+                    }
                     for (let w in $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.time){
                       let val = $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.time[w];
-                      if($scope.selectedJob.events[i].audit.type === "none"){
-                        $scope.selectedJob.events[i].audit.periods.push({
-                          start: moment(val.begin.d + " " + val.begin.h).toDate(),
-                          end: moment(val.end.d + " " + val.end.h).toDate()
-                        });
-                      }else{
-                        $scope.selectedJob.events[i].audit.periods.push({
-                          s: val.begin.d,
-                          d: val.end.d,
-                          start: moment("2010-07-01 " + val.begin.h).toDate(),
-                          end: moment("2010-07-01 " + val.end.h).toDate()
-                        });
-                      }
+                      $scope.selectedJob.events[i].audit.periods.push({
+                        s: val.begin.d,
+                        d: val.end.d,
+                        start: moment("2010-07-01 " + val.begin.h).toDate(),
+                        end: moment("2010-07-01 " + val.end.h).toDate()
+                      });
                     }
                   }
                   if($scope.selectedJob.events[i].PROPERTIES.props.length === 1) {
