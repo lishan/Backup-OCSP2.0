@@ -116,11 +116,30 @@ angular.module('ocspApp')
 
     $scope.switchKerberosEnableStatus = function(isKerberosEnabled){
       if (isKerberosEnabled === true) {
-        $scope.isKerberosEnabled = true;
-      }else{
+        let modal = $uibModal.open({
+          animation: true,
+          ariaLabelledBy: 'modal-title-bottom',
+          ariaDescribedBy: 'modal-body-bottom',
+          templateUrl: 'kerberosConfigureWarning.html',
+          size: 'lg',
+          backdrop: 'static',
+          scope: $scope,
+          controller: ['$scope', function ($scope) {
+            $scope.searchItem = {};
+            $scope.closeModal = function () {
+              var scopeOfIsKerberosEnabled = angular.element("#isIsKerberosEnabled").scope(); 
+              scopeOfIsKerberosEnabled.isKerberosEnabled = !scopeOfIsKerberosEnabled.isKerberosEnabled;
+              modal.close();
+            };
+            $scope.continueConfigKerberos = function () {
+              $scope.$parent.isKerberosEnabled = true;
+              modal.close();
+            };
+          }]
+        });
+      } else {
         $scope.isKerberosEnabled = false;
       }
-
     };
 
   }]);

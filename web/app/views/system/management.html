@@ -71,6 +71,24 @@
   </div>
 </script>
 
+<script type="text/ng-template" id="kerberosConfigureWarning.html">
+  <div class="modal-header">
+    <button type="button" class="close" ng-click="closeModal()"><span aria-hidden="true">&times;</span></button>
+    <h3 class="modal-title">Kerberos</h3>
+  </div>
+  <div class="modal-body">
+    <form name="continueConfigureKerberosForm" id="configureKerberosForm">
+      <div class="form-group">
+        <p>{{'ocsp_web_system_manage_005' | translate}}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" ng-click="continueConfigKerberos()">{{'ocsp_web_common_038' | translate}}</button>
+        <button class="btn btn-default" ng-click="closeModal()">{{'ocsp_web_common_020' | translate}}</button>
+      </div>
+    </form>
+  </div>
+</script>
+
 <div class="row" ng-cloak>
   <div class="well col-md-2">
     <div class="list-group-item">

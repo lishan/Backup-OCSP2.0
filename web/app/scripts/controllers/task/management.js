@@ -179,7 +179,7 @@ angular.module('ocspApp')
         return false;
       }
       return true;
-    }
+    };
 
     $scope.changeStatus = function(item){
       let name = item.name;
