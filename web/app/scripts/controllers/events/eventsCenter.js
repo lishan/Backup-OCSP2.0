@@ -65,6 +65,12 @@ angular.module('ocspApp')
     }
 
     function _init() {
+      $scope.history = null;
+      $scope.item = null;
+      $scope.branch = null;
+      $scope.hook = 0;
+      $scope.eventsList = [];
+      $scope.eventsSearch = {};
       $q.all({
         structure: $http.get('/api/typestructure'),
         types: $http.get('/api/typestructure/all'),
@@ -95,12 +101,6 @@ angular.module('ocspApp')
       });
     }
 
-    $scope.history = null;
-    $scope.item = null;
-    $scope.branch = null;
-    $scope.hook = 0;
-    $scope.eventsList = [];
-    $scope.eventsSearch = {};
     _init();
 
     $scope.onSelect = function(item){
@@ -313,7 +313,19 @@ angular.module('ocspApp')
             array = array.concat(array[i].children);
           }
         }
-        console.log($scope.eventsList);
+        for(let i = 0; i < $scope.eventsList.length; i++){
+          let result = JSON.parse($scope.eventsList[i].PROPERTIES);
+          if(result && result.props){
+            for(let j = 0; j < result.props.length; j++){
+              if(result.props[j].pname === "period"){
+                let tmp = JSON.parse(result.props[j].pvalue);
+                $scope.eventsList[i].startTime = tmp.startTime;
+                $scope.eventsList[i].endTime = tmp.endTime;
+                break;
+              }
+            }
+          }
+        }
         $scope.defaultConfigTableParams = new NgTableParams({}, { dataset: $scope.eventsList});
       }
     };
@@ -400,6 +412,7 @@ angular.module('ocspApp')
           $q.all({event: $http.put("/api/event/" + $scope.item.id, {event: $scope.item}),
             history: $http.post("/api/history/event", {event: {config_data: $scope.item, note: $scope.item.note, version: $scope.item.version}})})
             .then(function(){
+              _init();
               _getHistory($scope.item.id);
               Notification.success($filter('translate')('ocsp_web_common_026'));
             });
