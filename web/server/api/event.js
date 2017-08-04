@@ -71,33 +71,36 @@ function _createEvent(event, status) {
     });
   }
   //Add data audit function
-  if(event.audit !== undefined && event.audit.type !== undefined && event.audit.type!== "always" && event.audit.periods !== undefined && event.audit.periods.length > 0){
+  if(event.audit !== undefined){
     let result = {
       period: event.audit.type,
       time:[]
     };
-    for(let j = 0 ; j < event.audit.periods.length; j++){
-      let sd = "0";
-      let ed = "0";
-      if(event.audit.type === 'none') {
-        sd = moment(event.audit.periods[j].start).format("YYYY-MM-DD");
-        ed = moment(event.audit.periods[j].end).format("YYYY-MM-DD");
-      }else if(event.audit.type === 'week' || event.audit.type === 'month'){
-        sd = event.audit.periods[j].s;
-        ed = event.audit.periods[j].d;
-      }
-      let sh = moment(event.audit.periods[j].start).format("HH:mm:ss");
-      let eh = moment(event.audit.periods[j].end).format("HH:mm:ss");
-      result.time.push({
-        begin:{
-          d: sd,
-          h: sh
-        },
-        end:{
-          d: ed,
-          h: eh
+    if(event.audit.enableTime === 'have' && event.audit.startTime && event.audit.endTime){
+      result.startTime = moment(event.audit.startTime).format("YYYY-MM-DD");
+      result.endTime = moment(event.audit.endTime).format("YYYY-MM-DD");
+    }
+    if(event.audit.type && event.audit.type !== "always" && event.audit.periods && event.audit.periods.length > 0) {
+      for (let j = 0; j < event.audit.periods.length; j++) {
+        let sd = "0";
+        let ed = "0";
+        if (event.audit.type === 'week' || event.audit.type === 'month') {
+          sd = event.audit.periods[j].s;
+          ed = event.audit.periods[j].d;
         }
-      });
+        let sh = moment(event.audit.periods[j].start).format("HH:mm:ss");
+        let eh = moment(event.audit.periods[j].end).format("HH:mm:ss");
+        result.time.push({
+          begin: {
+            d: sd,
+            h: sh
+          },
+          end: {
+            d: ed,
+            h: eh
+          }
+        });
+      }
     }
     event.PROPERTIES.props.push({
       "pname" : "period",

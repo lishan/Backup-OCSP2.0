@@ -66,6 +66,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_system_manage_002':'请输入SPARK_HOME',
     'ocsp_web_system_manage_003':'新建数据源',
     'ocsp_web_system_manage_004':'新建数据源之后将无法删除，确认新建',
+    'ocsp_web_system_manage_005':'请确认$OCSP_HOME/conf/OCSP_kafka.conf配置正确以及keytab文件在$OCSP_HOME/conf已存在',
 
     'ocsp_web_label_manage_000':'标签管理',
     'ocsp_web_label_manage_001':'标签名字',
@@ -123,6 +124,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_047':'可用字段',
     'ocsp_web_streams_manage_048':'生成可用字段',
     'ocsp_web_streams_manage_049':'数据流图',
+    'ocsp_web_streams_manage_050':'Kerberos应首先正确配置！',
     'ocsp_web_streams_case_field_name':'转义字段名',
     'ocsp_web_streams_case_expression':'case when表达式',
     'ocsp_web_streams_subscribe_type_none':'重复：无',

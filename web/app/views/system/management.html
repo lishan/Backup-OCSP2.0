@@ -74,12 +74,12 @@
 <script type="text/ng-template" id="kerberosConfigureWarning.html">
   <div class="modal-header">
     <button type="button" class="close" ng-click="closeModal()"><span aria-hidden="true">&times;</span></button>
-    <h3 class="modal-title">Title Here!</h3>
+    <h3 class="modal-title">Kerberos</h3>
   </div>
   <div class="modal-body">
     <form name="continueConfigureKerberosForm" id="configureKerberosForm">
       <div class="form-group">
-        <p>This is waring message!</p>
+        <p>{{'ocsp_web_system_manage_005' | translate}}</p>
       </div>
       <div class="modal-footer">
         <button class="btn btn-primary" ng-click="continueConfigKerberos()">{{'ocsp_web_common_038' | translate}}</button>
@@ -89,7 +89,7 @@
   </div>
 </script>
 
-<div class="row">
+<div class="row" ng-cloak>
   <div class="well col-md-2">
     <div class="list-group-item">
       <button class="wizard-button btn btn-default btn-block" ng-disabled="!isAdmin()" ng-click="openSparkModal()">{{'ocsp_web_system_manage_003' | translate}}</button>
@@ -118,14 +118,14 @@
               </div>
             </div>
 
-            <div ng-show="isAdminUser()">
+            <div ng-show="kerberosConfigureExist">
               <div class="form-group">
                 <div class="row">
                   <div class="col-md-2">
                     <label>Kerberos</label>
                   </div>
                   <div class="col-md-8">
-                    <toggle-switch on-label="{{'ocsp_web_common_040' | translate}}" off-label="{{'ocsp_web_common_041' | translate}}" ng-disabled="!kerberosConfigureExist" id="isIsKerberosEnabled" ng-model="isKerberosEnabled" style="outline:0" ng-change="switchKerberosEnableStatus(isKerberosEnabled)">
+                    <toggle-switch on-label="{{'ocsp_web_common_040' | translate}}" off-label="{{'ocsp_web_common_041' | translate}}" ng-disabled="!isAdminUser()" id="isIsKerberosEnabled" ng-model="isKerberosEnabled" ng-change="switchKerberosEnableStatus(isKerberosEnabled)">
                     </toggle-switch>
                   </div>
                 </div>

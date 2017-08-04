@@ -65,6 +65,12 @@ angular.module('ocspApp')
     }
 
     function _init() {
+      $scope.history = null;
+      $scope.item = null;
+      $scope.branch = null;
+      $scope.hook = 0;
+      $scope.eventsList = [];
+      $scope.eventsSearch = {};
       $q.all({
         structure: $http.get('/api/typestructure'),
         types: $http.get('/api/typestructure/all'),
@@ -95,12 +101,6 @@ angular.module('ocspApp')
       });
     }
 
-    $scope.history = null;
-    $scope.item = null;
-    $scope.branch = null;
-    $scope.hook = 0;
-    $scope.eventsList = [];
-    $scope.eventsSearch = {};
     _init();
 
     $scope.onSelect = function(item){
@@ -143,6 +143,10 @@ angular.module('ocspApp')
         $scope.item = JSON.parse(record.config_data);
         if (!$scope.item.audit) {
           $scope.item.audit = {type: "always", periods: []};
+        }
+        if ($scope.item.audit.enableTime){
+          $scope.item.audit.startTime = moment($scope.item.audit.startTime).toDate();
+          $scope.item.audit.endTime = moment($scope.item.audit.endTime).toDate();
         }
         if ($scope.item.audit.periods && $scope.item.audit.periods.length > 0) {
           for (let i in $scope.item.audit.periods) {
@@ -309,7 +313,19 @@ angular.module('ocspApp')
             array = array.concat(array[i].children);
           }
         }
-        console.log($scope.eventsList);
+        for(let i = 0; i < $scope.eventsList.length; i++){
+          let result = JSON.parse($scope.eventsList[i].PROPERTIES);
+          if(result && result.props){
+            for(let j = 0; j < result.props.length; j++){
+              if(result.props[j].pname === "period"){
+                let tmp = JSON.parse(result.props[j].pvalue);
+                $scope.eventsList[i].startTime = tmp.startTime;
+                $scope.eventsList[i].endTime = tmp.endTime;
+                break;
+              }
+            }
+          }
+        }
         $scope.defaultConfigTableParams = new NgTableParams({}, { dataset: $scope.eventsList});
       }
     };
@@ -353,10 +369,14 @@ angular.module('ocspApp')
 
     $scope.auditTypes = [
       {name: 'always', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_always')},
-      {name: 'none', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_none')},
       {name: 'day', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_day')},
       {name: 'week', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_week')},
       {name: 'month', displayName: $filter('translate')('ocsp_web_streams_subscribe_type_month')}
+    ];
+
+    $scope.auditTimes = [
+      {name: 'none' ,displayName: '无'},
+      {name: 'have', displayName: '有'}
     ];
 
     $scope.remove = function(array, $index){
@@ -372,19 +392,6 @@ angular.module('ocspApp')
         });
       }
     };
-
-    function _changeNameWhenUpdateEvent(tree, item){
-      if(tree && tree.length > 0) {
-        for (let i in tree) {
-          if (tree[i].type === "event" && item.id === tree[i].id) {
-            tree[i].label = item.name;
-            return;
-          } else {
-            _changeNameWhenUpdateEvent(tree[i].children, item);
-          }
-        }
-      }
-    }
 
     $scope.update = function(){
       if($scope.item.id === undefined || $scope.item.id === null){
@@ -405,7 +412,7 @@ angular.module('ocspApp')
           $q.all({event: $http.put("/api/event/" + $scope.item.id, {event: $scope.item}),
             history: $http.post("/api/history/event", {event: {config_data: $scope.item, note: $scope.item.note, version: $scope.item.version}})})
             .then(function(){
-              _changeNameWhenUpdateEvent($scope.treedata, $scope.item);
+              _init();
               _getHistory($scope.item.id);
               Notification.success($filter('translate')('ocsp_web_common_026'));
             });

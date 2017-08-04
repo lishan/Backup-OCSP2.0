@@ -9,7 +9,7 @@ angular.module('ocspApp')
 
     $scope.kerberosConfigureExist = false;
     $scope.isKerberosEnabled = false;
-
+    
     $scope.isAdminUser = function(){
       return $rootScope.isAdmin() === true;
     };
@@ -137,10 +137,9 @@ angular.module('ocspApp')
             };
           }]
         });
-      }else{
+      } else {
         $scope.isKerberosEnabled = false;
       }
-
     };
 
   }]);
