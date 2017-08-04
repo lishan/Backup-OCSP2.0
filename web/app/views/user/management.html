@@ -83,46 +83,56 @@
       </div>
 
       <div class="panel-body">
-        <div class="form-group">
-          <div class="row">
-            <div class="col-md-2">
-              <label>Spark Keytab</label>
+        <div class="list-group">
+          <div class="list-group-item">
+            <div class="form-group">
+              <div class="row">
+                <div class="col-md-2">
+                  <label>Spark Principal</label>
+                </div>
+                <div class="col-md-8">
+                  <input class="form-control" type="text" ng-model="user.spark_principal" required>
+                </div>
+              </div>
             </div>
-            <div class="col-md-8">
-              <input class="form-control" type="text" ng-model="user.spark_keytab" required>
-            </div>
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="row">
-            <div class="col-md-2">
-              <label>Spark Principal</label>
-            </div>
-            <div class="col-md-8">
-              <input class="form-control" type="text" ng-model="user.spark_principal" required>
-            </div>
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="row">
-            <div class="col-md-2">
-              <label>Kafka Keytab</label>
-            </div>
-            <div class="col-md-8">
-              <input class="form-control" type="text" ng-model="user.kafka_keytab" required>
+            <div class="form-group">
+              <div class="row">
+                <div class="col-md-2">
+                  <label>Spark Keytab</label>
+                </div>
+                <div class="col-md-8">
+                  <input class="form-control" type="text" ng-model="user.spark_keytab" required>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="form-group">
-          <div class="row">
-            <div class="col-md-2">
-              <label>Kafka Principal</label>
+
+        <div class="list-group">
+          <div class="list-group-item">
+            <div class="form-group">
+              <div class="row">
+                <div class="col-md-2">
+                  <label>Kafka Principal</label>
+                </div>
+                <div class="col-md-8">
+                  <input class="form-control" type="text" ng-model="user.kafka_principal" required>
+                </div>
+              </div>
             </div>
-            <div class="col-md-8">
-              <input class="form-control" type="text" ng-model="user.kafka_principal" required>
+            <div class="form-group">
+              <div class="row">
+                <div class="col-md-2">
+                  <label>Kafka Keytab</label>
+                </div>
+                <div class="col-md-8">
+                  <input class="form-control" type="text" ng-model="user.kafka_keytab" required>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        
         <button class="btn btn-primary" ng-click="saveKerberosConfigure()">{{'ocsp_web_common_009' | translate}}</button>
       </div>
     </div>
