@@ -67,13 +67,22 @@ angular.module('ocspApp')
     });
 
     $scope.saveKerberosConfigure = function () {
-      $http.put('/api/user/' + $scope.user.name, { "user": $scope.user }).success(function (data) {
-        if (data.status) {
-          Notification.success($filter('translate')('ocsp_web_common_026'));
-        } else {
-          Notification.error($filter('translate')('ocsp_web_common_030'));
-        }
-      });
+      if ($scope.KerberosConfigForm.$invalid) {
+        angular.forEach($scope.KerberosConfigForm.$error, function (field) {
+          angular.forEach(field, function (errorField) {
+            errorField.$setTouched();
+          });
+        });
+        Notification.error($filter('translate')('ocsp_web_common_032'));
+      } else {
+        $http.put('/api/user/' + $scope.user.name, { "user": $scope.user }).success(function (data) {
+          if (data.status) {
+            Notification.success($filter('translate')('ocsp_web_common_026'));
+          } else {
+            Notification.error($filter('translate')('ocsp_web_common_030'));
+          }
+        });
+      }
     };
     
     $scope.save = function(){
