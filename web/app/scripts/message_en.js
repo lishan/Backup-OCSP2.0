@@ -125,6 +125,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_manage_048':'Generate available fields',
     'ocsp_web_streams_manage_049':'Data flow',
     'ocsp_web_streams_manage_050':'The principal and keytab are not configured for the current user',
+    'ocsp_web_streams_manage_051':'Start failed',
     'ocsp_web_streams_case_field_name':'Escape field name',
     'ocsp_web_streams_case_expression':'Case when expression',
     'ocsp_web_streams_subscribe_type_none':'Repeat: None',
