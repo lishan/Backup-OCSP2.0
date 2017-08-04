@@ -512,7 +512,7 @@
                           </div>
                           <div class="form-group">
                             <label>订阅区间*</label>
-                            <ui-select ng-model="item.audit.enableTime" ng-required="true" ng-disabled="cep"
+                            <ui-select ng-model="item.audit.enableDate" ng-required="true" ng-disabled="cep"
                                        name="eventsAuditTime"
                                        append-to-body="true"
                                        on-select="">
@@ -527,14 +527,14 @@
                             <span class="redtip"
                                   ng-show="mainForm['eventsAuditTime'].$touched && mainForm['eventsAuditTime'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
                           </div>
-                          <div class="form-group" ng-if="item.audit.enableTime === 'have'">
+                          <div class="form-group" ng-if="item.audit.enableDate === 'have'">
                             <label>{{'ocsp_web_streams_manage_041' | translate}}</label>
                             <div class="row">
                               <div class="col-md-6">
                                 <p class="input-group">
                                   <input type="text" class="form-control" datetime-picker="yyyy-MM-dd" close-on-date-selection="false"
                                          datepicker-options="{showWeeks: false}" required ng-disabled="cep"
-                                         button-bar="false" ng-model="item.audit.startTime" is-open="item.audit.time.t1"
+                                         button-bar="false" ng-model="item.audit.startDate" is-open="item.audit.time.t1"
                                          datepicker-append-to-body="true">
                                   <span class="input-group-btn">
                                     <button type="button" class="btn btn-default" ng-disabled="cep" ng-click="item.audit.time.t1 = true;"><i
@@ -546,7 +546,7 @@
                                 <p class="input-group">
                                   <input type="text" class="form-control" datetime-picker="yyyy-MM-dd" close-on-date-selection="false"
                                          datepicker-options="{showWeeks: false}" required ng-disabled="cep"
-                                         button-bar="false" ng-model="item.audit.endTime" is-open="item.audit.time.t2"
+                                         button-bar="false" ng-model="item.audit.endDate" is-open="item.audit.time.t2"
                                          datepicker-append-to-body="true">
                                   <span class="input-group-btn">
                                     <button type="button" class="btn btn-default" ng-disabled="cep" ng-click="item.audit.time.t2 = true;"><i

@@ -144,9 +144,9 @@ angular.module('ocspApp')
         if (!$scope.item.audit) {
           $scope.item.audit = {type: "always", periods: []};
         }
-        if ($scope.item.audit.enableTime){
-          $scope.item.audit.startTime = moment($scope.item.audit.startTime).toDate();
-          $scope.item.audit.endTime = moment($scope.item.audit.endTime).toDate();
+        if ($scope.item.audit.enableDate){
+          $scope.item.audit.startDate = moment($scope.item.audit.startDate).toDate();
+          $scope.item.audit.endDate = moment($scope.item.audit.endDate).toDate();
         }
         if ($scope.item.audit.periods && $scope.item.audit.periods.length > 0) {
           for (let i in $scope.item.audit.periods) {
@@ -319,8 +319,8 @@ angular.module('ocspApp')
             for(let j = 0; j < result.props.length; j++){
               if(result.props[j].pname === "period"){
                 let tmp = JSON.parse(result.props[j].pvalue);
-                $scope.eventsList[i].startTime = tmp.startTime;
-                $scope.eventsList[i].endTime = tmp.endTime;
+                $scope.eventsList[i].startDate = tmp.startDate;
+                $scope.eventsList[i].endDate = tmp.endDate;
                 break;
               }
             }
