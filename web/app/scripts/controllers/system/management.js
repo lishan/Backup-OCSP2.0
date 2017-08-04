@@ -9,7 +9,7 @@ angular.module('ocspApp')
 
     $scope.kerberosConfigureExist = false;
     $scope.isKerberosEnabled = false;
-
+    
     $scope.isAdminUser = function(){
       return $rootScope.isAdmin() === true;
     };

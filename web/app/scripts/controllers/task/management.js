@@ -217,8 +217,16 @@ angular.module('ocspApp')
           status = 4;
         }
         if(status === 1){
-          $http.get('/api/user/' + $rootScope.username).success(function(userInfo){
-            if(!isKerberosConfigureCorrect(userInfo)){
+          $q.all({prop: $http.get('/api/prop'), userInfo: $http.get('/api/user/' + $rootScope.username)}).then(function(arr){
+            var props = arr.prop.data;
+            var userInfo = arr.userInfo.data;
+            var kerberosConfigureEnabled = false;
+            for (var index in props) {
+              if (props[index].name === 'ocsp.kerberos.enable') {
+                kerberosConfigureEnabled = Boolean(props[index].value === 'true');
+              }
+            }
+            if (kerberosConfigureEnabled && !isKerberosConfigureCorrect(userInfo)) {
               let modal = $uibModal.open({
                 animation: true,
                 ariaLabelledBy: 'modal-title-bottom',
@@ -233,7 +241,7 @@ angular.module('ocspApp')
                     modal.close();
                   };
                 }]
-              }); 
+              });
             } else {
               _changeStatus(status);
             }
