@@ -34,7 +34,8 @@ angular
     'chart.js',
     'angularBootstrapNavTree',
     'textAngular',
-    'cp.ngConfirm'
+    'cp.ngConfirm',
+    'ngTable'
   ])
   .config(function ($routeProvider) {
     $routeProvider

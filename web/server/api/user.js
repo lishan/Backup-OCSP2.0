@@ -4,6 +4,7 @@ let express = require('express');
 let sequelize = require('../sequelize');
 let Sequelize = require('sequelize');
 let User = require('../model/STREAM_USER')(sequelize, Sequelize);
+let User_SECURITY = require('../model/STREAM_USER_SECURITY')(sequelize, Sequelize);
 let exec = require('child_process').exec;
 let router = express.Router();
 const prefix = "./server/lib/";
@@ -54,6 +55,75 @@ router.get('/', function(req, res){
     console.error("Authenticate Failed, non admin user cannot use this router");
     res.status(500).send(trans.authError);
   }
+});
+
+router.get('/:userName', function(req, res){
+  let userAttrs = ['id','name','spark_principal', 'spark_keytab', 'kafka_principal', 'kafka_keytab'];
+  User.findOne({
+    where:{name:req.params.userName},
+    attributes: userAttrs}
+  ).then(function(user){
+    if(user!==null){
+      user.dataValues.isDBUser = true;
+      res.send(user);
+    }else{
+      User_SECURITY.findOne({
+        where:{name:req.params.userName},
+        attributes: userAttrs
+      }).then(function(user){
+        if(user!==null){
+          user.dataValues.isDBUser = false;
+        }else{
+          user={
+            name:req.params.userName,
+            isDBUser:false
+          };
+        }
+        res.send(user);
+      }).catch(function(err){
+        console.error(err);
+        res.status(500).send(trans.databaseError);
+      });
+    }
+  }).catch(function(err){
+    console.error(err);
+    res.status(500).send(trans.databaseError);
+  });
+});
+
+router.put('/:userName', function(req, res){
+  let user = req.body.user;
+  let updateUserInfo = function (UserModel) {
+    UserModel.update(user, { where: { name: req.params.userName } })
+      .then(function () {
+        res.send({ status: true });
+      }, function () {
+        res.send({ status: false });
+      });
+  };
+  if (user.isDBUser) {
+    updateUserInfo(User);
+  } else {
+    User_SECURITY.findOne({
+      where:{name:user.name},
+    }).then(function(queriedUser){
+      if(queriedUser!==null){
+        updateUserInfo(User_SECURITY);
+      }else{
+        User_SECURITY.create(user).then(function(){
+          res.send({ status: true });
+        }).catch(function(err){
+          console.error(err);
+        res.status(500).send(trans.databaseError);
+        });
+      }
+    }).catch(function(err){
+      console.error(err);
+      res.status(500).send(trans.databaseError);
+    });
+    
+  }
+  
 });
 
 router.put('/', function(req, res){

@@ -19,6 +19,28 @@ angular.module('ocspApp')
     $scope.user = {
       name: $rootScope.username
     };
+    $scope.shouldShowKerberosConfigure = false;
+
+    var updateUserInfo = function(){
+      $scope.user = {
+        name: $rootScope.username
+      };
+      $http.get('/api/user/'+$rootScope.username).success(function(data){
+        if(data!==null){
+          $scope.user = data;
+        }
+      });
+      $http.get('/api/prop').success(function(props){
+        for(var index in props){
+          if(props[index].name === 'ocsp.kerberos.enable'){
+            $scope.shouldShowKerberosConfigure = Boolean(props[index].value==='true');
+          }
+        }
+      });
+    };
+
+    updateUserInfo();
+
     $scope.message = null;
     $scope.styles = null;
     $scope.checkPassword = function(){
@@ -43,6 +65,17 @@ angular.module('ocspApp')
         }
       }
     });
+
+    $scope.saveKerberosConfigure = function () {
+      $http.put('/api/user/' + $scope.user.name, { "user": $scope.user }).success(function (data) {
+        if (data.status) {
+          Notification.success($filter('translate')('ocsp_web_common_026'));
+        } else {
+          Notification.error($filter('translate')('ocsp_web_common_030'));
+        }
+      });
+    };
+    
     $scope.save = function(){
       if($scope.mainForm.$invalid){
         angular.forEach($scope.mainForm.$error, function (field) {

@@ -1,76 +1,124 @@
 <div class="row" ng-form name="mainForm">
   <div class="col-md-12 main">
-    <div class="panel panel-oc">
+    <div class="panel panel-default">
       <div class="panel-heading">
         {{'ocsp_web_user_manage_000' | translate}}
       </div>
       <div class="panel-body" ng-if="isAdmin()">
-        <table class="table table-striped">
+        <table class="table table-bordered">
           <thead>
-          <tr>
-            <th class="col-md-2">{{'ocsp_web_user_name' | translate}}</th>
-            <th class="col-md-4">{{'ocsp_web_user_desc' | translate}}</th>
-            <th class="col-md-2">{{'ocsp_web_user_new_password' | translate}}</th>
-            <th class="col-md-2"><a ng-click="add(users)"><i class="glyphicon glyphicon-plus"></i></a></th>
-          </tr>
+            <tr>
+              <th class="col-md-2">{{'ocsp_web_user_name' | translate}}</th>
+              <th class="col-md-5">{{'ocsp_web_user_desc' | translate}}</th>
+              <th class="col-md-4">{{'ocsp_web_user_new_password' | translate}}</th>
+              <th class="col-md-1">
+                <a class="btn btn-success btn-circle center-block" ng-click="add(users)">
+                <i class="glyphicon glyphicon-plus"></i>
+              </a>
+              </th>
+            </tr>
           </thead>
           <tbody>
-          <tr ng-repeat="u in users">
-            <td ><input name="username_{{$index}}" type="text" class="form-control" ng-model="u.name" required="true"></td>
-            <td><input type="text" class="form-control" ng-model="u.description"></td>
-            <td><input name="password_{{$index}}" type="password" class="form-control" ng-model="u.password"></td>
-            <td><a ng-click="remove(users, $index)"><i class="glyphicon glyphicon-remove"></i></a></td>
-          </tr>
+            <tr ng-repeat="u in users">
+              <td><input name="username_{{$index}}" type="text" class="form-control" ng-model="u.name" required="true"></td>
+              <td><input type="text" class="form-control" ng-model="u.description"></td>
+              <td><input name="password_{{$index}}" type="password" class="form-control" ng-model="u.password" ng-required="u.status===1"></td>
+              <td>
+                <a class="btn btn-danger btn-circle center-block" ng-click="remove(users, $index)">
+                <i class="glyphicon glyphicon-remove"></i>
+              </a>
+              </td>
+            </tr>
           </tbody>
         </table>
         <button type="button" class="btn btn-primary" ng-click="saveUsers()">{{'ocsp_web_common_009' | translate}}</button>
       </div>
       <div class="panel-body" ng-if="!isAdmin()">
-        <uib-accordion>
-          <div uib-accordion-group class="panel-default" ng-init="isOpen = true" is-open="isOpen">
-            <uib-accordion-heading>
-              <i class="glyphicon" ng-class="{'glyphicon-chevron-down': isOpen, 'glyphicon-chevron-right': !isOpen}"></i>
-              &nbsp;
-              {{'ocsp_web_user_manage_001' | translate}}
-            </uib-accordion-heading>
-            <div class="form-group">
-              <div class="row">
-                <div class="col-md-2">
-                  <label>{{'ocsp_web_user_manage_002' | translate}}</label>
-                </div>
-                <div class="col-md-8">
-                  <input class="form-control" type="password" ng-model="user.oldPassword" required>
-                </div>
-              </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-md-2">
+              <label>{{'ocsp_web_user_manage_002' | translate}}</label>
             </div>
-            <div class="form-group">
-              <div class="row">
-                <div class="col-md-2">
-                  <label>{{'ocsp_web_user_manage_003' | translate}}</label>
-                </div>
-                <div class="col-md-8">
-                  <input class="form-control" type="password" ng-model="user.password" required>
-                </div>
-              </div>
-            </div>
-            <div class="form-group">
-              <div class="row">
-                <div class="col-md-2">
-                  <label>{{'ocsp_web_user_manage_004' | translate}}</label>
-                </div>
-                <div class="col-md-8">
-                  <input class="form-control" ng-class="styles" type="password" ng-model="user.password2" required ng-blur="checkPassword()">
-                </div>
-              </div>
-              <div class="row" style="color:red">
-                <div class="col-md-8 col-md-offset-2">
-                  {{message}}
-                </div>
-              </div>
+            <div class="col-md-8">
+              <input class="form-control" type="password" ng-model="user.oldPassword" required ng-disabled="user.isDBUser!==true">
             </div>
           </div>
-        </uib-accordion>
-        <button class="btn btn-primary" ng-click="save()">{{'ocsp_web_common_009' | translate}}</button>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-md-2">
+              <label>{{'ocsp_web_user_manage_003' | translate}}</label>
+            </div>
+            <div class="col-md-8">
+              <input class="form-control" type="password" ng-model="user.password" required ng-disabled="user.isDBUser!==true">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-md-2">
+              <label>{{'ocsp_web_user_manage_004' | translate}}</label>
+            </div>
+            <div class="col-md-8">
+              <input class="form-control" ng-class="styles" type="password" ng-model="user.password2" required ng-blur="checkPassword()" ng-disabled="user.isDBUser!==true">
+            </div>
+          </div>
+          <div class="row" style="color:red">
+            <div class="col-md-8 col-md-offset-2">
+              {{message}}
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" ng-click="save()" ng-disabled="user.isDBUser!==true">{{'ocsp_web_common_009' | translate}}</button>
+      </div>
+    </div>
+    <div class="panel panel-default" ng-if="!isAdmin() && shouldShowKerberosConfigure">
+      <div class="panel-heading">
+        Kerberos Configure
+      </div>
+
+      <div class="panel-body">
+        <div class="form-group">
+          <div class="row">
+            <div class="col-md-2">
+              <label>Spark Keytab</label>
+            </div>
+            <div class="col-md-8">
+              <input class="form-control" type="text" ng-model="user.spark_keytab">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-md-2">
+              <label>Spark Principal</label>
+            </div>
+            <div class="col-md-8">
+              <input class="form-control" type="text" ng-model="user.spark_principal">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-md-2">
+              <label>Kafka Keytab</label>
+            </div>
+            <div class="col-md-8">
+              <input class="form-control" type="text" ng-model="user.kafka_keytab">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-md-2">
+              <label>Kafka Principal</label>
+            </div>
+            <div class="col-md-8">
+              <input class="form-control" type="text" ng-model="user.kafka_principal">
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" ng-click="saveKerberosConfigure()">{{'ocsp_web_common_009' | translate}}</button>
       </div>
     </div>
   </div>

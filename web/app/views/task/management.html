@@ -50,7 +50,7 @@
     <div class="tab-content">
       <div role="tabpanel" class="tab-pane" id="summary" ng-class="{'summary' : 'active'}[tab]">
         <div class="container-fluid">
-          <div class="panel panel-oc">
+          <div class="panel panel-default">
             <div class="panel-heading">{{'ocsp_web_streams_manage_002' | translate}}</div>
             <div class="panel-body">
               <div class="alert alert-danger alert-dismissible" role="alert" ng-show="selectedJob.id === undefined">
@@ -71,7 +71,7 @@
               </ul>
             </div>
           </div>
-          <div class="panel panel-oc" ng-show="selectedJob.id !== undefined">
+          <div class="panel panel-default" ng-show="selectedJob.id !== undefined">
             <div class="panel-heading">{{'ocsp_web_streams_chart' | translate}}</div>
             <div class="panel-body">
               <ul class="list-group" ng-show="selectedJob.id !== undefined">
@@ -108,7 +108,7 @@
       </div>
       <div role="tabpanel" class="tab-pane" id="config" ng-class="{'config' : 'active'}[tab]">
         <div class="container-fluid">
-          <div class="panel panel-oc">
+          <div class="panel panel-default">
             <div class="panel-heading">{{'ocsp_web_streams_manage_003' | translate}}</div>
             <div class="panel-body" id="mainFrame" ng-form name="mainForm">
               <div class="alert alert-danger alert-dismissible" role="alert" ng-show="selectedJob.id === undefined">

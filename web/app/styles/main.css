@@ -34,15 +34,6 @@ html, body {
   margin-top: 10px;
 }
 
-.panel-oc {
-  border-color: #FFFFFF;
-}
-
-.panel-oc > .panel-heading {
-  color: #fff;
-  background-image: linear-gradient(to bottom, #f68b3e, #F68b3e);
-}
-
 .navbar-oc {
   background-image: linear-gradient(to bottom, #555555, #333333);
   height: 40px;
@@ -71,71 +62,6 @@ html, body {
   color: #ffffff;
   font-size: 16px;
   text-shadow: 0 1px 0 #555555;
-}
-
-/* 3rd party css*/
-/**
- * For the correct positioning of the placeholder element, the dnd-list and
- * it's children must have position: relative
- */
-ul[dnd-list],
-ul[dnd-list] > li {
-  position: relative;
-}
-
-/**
- * The dnd-list should always have a min-height,
- * otherwise you can't drop to it once it's empty
- */
-ul[dnd-list] {
-  min-height: 42px;
-  padding-left: 0px;
-}
-
-/**
- * The dndDraggingSource class will be applied to
- * the source element of a drag operation. It makes
- * sense to hide it to give the user the feeling
- * that he's actually moving it.
- */
-ul[dnd-list] .dndDraggingSource {
-  display: none;
-}
-
-/**
- * An element with .dndPlaceholder class will be
- * added to the dnd-list while the user is dragging
- * over it.
- */
-ul[dnd-list] .dndPlaceholder {
-  display: block;
-  background-color: #ddd;
-  min-height: 42px;
-}
-
-/**
- * The dnd-lists's child elements currently MUST have
- * position: relative. Otherwise we can not determine
- * whether the mouse pointer is in the upper or lower
- * half of the element we are dragging over. In other
- * browsers we can use event.offsetY for this.
- */
-ul[dnd-list] li {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-top-right-radius: 4px;
-  border-top-left-radius: 4px;
-  display: block;
-  padding: 10px 15px;
-  margin-bottom: -1px;
-}
-
-/**
- * Show selected elements in green
- */
-ul[dnd-list] li.selected {
-  background-color: #dff0d8;
-  color: #3c763d;
 }
 
 .wizard-card-container {
@@ -223,6 +149,7 @@ div.ng-invalid.ng-touched.ui-select-container i.caret.pull-right {
   font-size: 12px;
   line-height: 1.428571429;
   border-radius: 15px;
+  outline: 0 !important;
 }
 
 ul.ui-autocomplete {
@@ -320,100 +247,6 @@ table a {
 
 .icon-2x {
   font-size: 2em;
-}
-
-.version-slider {
-  width: 100%;
-  height: 69px;
-  margin: 5px 0;
-}
-
-.version-slider .icon-chevron-box.disabled {
-  cursor: not-allowed;
-}
-
-.version-slider .icon-chevron-box {
-  margin-top: 15px;
-  width: 4%;
-  cursor: pointer;
-  margin-right: .3em;
-}
-
-.version-slider .flow-element .version-box {
-  position: relative;
-  height: 90%;
-}
-
-.version-slider .flow-element {
-  height: 69px;
-  width: 21.2%;
-  max-width: 163px;
-}
-
-.version-slider .icon-chevron-box, .version-slider .icon-chevron-box {
-  color: #d2d9dd;
-}
-
-.version-slider .flow-element .version-box .box {
-  cursor: pointer;
-  width: 92%;
-  height: 100%;
-  background-color: #ffffff;
-  border-radius: 4px;
-  border: 1px solid #d2d9dd;
-  font-size: 11px;
-  outline: none;
-}
-
-.version-slider .flow-element .version-box .box:hover, .version-slider .flow-element .version-box .box.active {
-  background-color: #e6f1f6;
-}
-
-.version-slider .flow-element .version-box .box .top-label {
-  min-width: 20px;
-  padding: 2px 2px;
-}
-
-.version-slider .flow-element .version-box .box.displayed .content {
-  color: #444444;
-}
-
-.version-slider .flow-element .version-box .box .content {
-  max-width: 97% !important;
-}
-
-.version-slider .flow-element .version-box .box .author, .version-slider .flow-element .version-box .box .content {
-  padding: 0 2px;
-  text-align: center;
-  color: #555555;
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.version-slider .flow-element .version-box .box .stack-label {
-  margin-right: 6px;
-  text-align: right;
-  line-height: 11px;
-}
-
-.version-slider .flow-element .version-box .box .current-label {
-  text-align: center;
-  padding: 2px 5px;
-  margin-top: -4px;
-}
-
-.version-slider .icon-chevron-box .glyphicon-chevron-left:hover, .version-slider .icon-chevron-box .glyphicon-chevron-right:hover {
-  color: #808080;
-}
-
-.version-slider .icon-chevron-box.disabled {
-  cursor: not-allowed;
-}
-
-.version-slider .icon-chevron-box {
-  outline: none;
 }
 
 .abn-tree i {

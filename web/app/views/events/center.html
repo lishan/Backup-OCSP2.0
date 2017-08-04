@@ -32,10 +32,10 @@
           </button>
           <ul class="dropdown-menu" style="left: auto" ng-if="branch" id="actions">
             <li ng-class="{1: 'disabled'}[branch.status]">
-              <a href="" confirmation action="changeStatus(1)">{{'ocsp_web_streams_cep_enabled' | translate}}</a>
+              <a href="" confirmation disabled="{{1 === branch.status}}" action="changeStatus(1)">{{'ocsp_web_streams_cep_enabled' | translate}}</a>
             </li>
             <li ng-class="{0: 'disabled'}[branch.status]">
-              <a href="" confirmation action="changeStatus(0)">{{'ocsp_web_streams_cep_disabled' | translate}}</a>
+              <a href="" confirmation disabled="{{0 === branch.status}}" action="changeStatus(0)">{{'ocsp_web_streams_cep_disabled' | translate}}</a>
             </li>
           </ul>
         </div>
@@ -219,7 +219,7 @@
               <div class="form-group" ng-if="item.audit.type !== undefined && item.audit.type === 'none'">
                 <label>{{'ocsp_web_streams_manage_041' | translate}}</label>
                 <div class="row" ng-repeat="period in item.audit.periods">
-                  <div class="col-md-2">
+                  <div class="col-md-2 center-block">
                     <button type="button" class="btn btn-success btn-circle" ng-click="add(item.audit.periods)"><i
                       class="glyphicon glyphicon-plus"></i></button>
                     <button type="button" class="btn btn-danger btn-circle"
@@ -326,6 +326,73 @@
             </div>
           </div>
           <button class="btn btn-primary" ng-click="update()" style="margin-top: 10px;margin-bottom: 10px;" ng-disabled="isAdmin()">{{'ocsp_web_common_009' | translate}}</button>
+        </div>
+      </div>
+      <div class="col-md-8" ng-if="eventsList.length > 0">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-3">
+              <div class="form-group">
+                <label>名称:</label>
+                <input class="form-control" ng-model="eventsSearch.name">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label>起始时间:</label>
+                <p class="input-group">
+                  <input type="text" class="form-control" datetime-picker="yyyy-MM-dd" close-on-date-selection="false"
+                         datepicker-options="{showWeeks: false}" ng-model="eventsSearch.period.start" button-bar = "false"
+                         is-open="eventsSearch.period.t1" datepicker-append-to-body="true">
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" ng-click="eventsSearch.period.t1 = true;">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </button>
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label>结束时间:</label>
+                <p class="input-group">
+                  <input type="text" class="form-control" datetime-picker="yyyy-MM-dd" close-on-date-selection="false"
+                         datepicker-options="{showWeeks: false}" ng-model="eventsSearch.period.end" button-bar = "false"
+                         is-open="eventsSearch.period.t2" datepicker-append-to-body="true">
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" ng-click="eventsSearch.period.t2 = true;">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </button>
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label>状态:</label>
+                <select class="form-control" ng-options="item for item in ['空','停止','启动']" ng-model="selected"></select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-3">
+              <button class="btn btn-info">查询</button>
+            </div>
+          </div>
+          <div class="row" style="margin-top: 10px;">
+            <div class="col-md-12">
+              <table ng-table="defaultConfigTableParams" class="table table-condensed table-bordered table-striped">
+                <tr ng-repeat="row in $data">
+                  <td data-title="'Name'">{{row.name}}</td>
+                  <td data-title="'Type'">{{row.age}}</td>
+                  <td data-title="'StartTime'">{{row.age}}</td>
+                  <td data-title="'EndTime'">{{row.age}}</td>
+                  <td data-title="'Status'">{{row.status}}</td>
+                  <td data-title="'Owner'">{{row.owner}}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
