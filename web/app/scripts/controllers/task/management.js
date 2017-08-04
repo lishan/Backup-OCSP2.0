@@ -171,6 +171,16 @@ angular.module('ocspApp')
       }
     }
 
+    var isKerberosConfigureCorrect = function(userInfo){
+      if(!userInfo.spark_keytab || !userInfo.spark_principal || !userInfo.kafka_keytab || !userInfo.kafka_principal){
+        return false;
+      }
+      if(userInfo.spark_keytab === "" || userInfo.spark_principal === "" || userInfo.kafka_keytab === "" ||userInfo.kafka_principal === ""){
+        return false;
+      }
+      return true;
+    }
+
     $scope.changeStatus = function(item){
       let name = item.name;
       if(!item.enable){
@@ -203,7 +213,31 @@ angular.module('ocspApp')
         } else if (name === $filter('translate')('ocsp_web_streams_manage_026')) {
           status = 4;
         }
-        _changeStatus(status);
+        if(status === 1){
+          $http.get('/api/user/' + $rootScope.username).success(function(userInfo){
+            if(!isKerberosConfigureCorrect(userInfo)){
+              let modal = $uibModal.open({
+                animation: true,
+                ariaLabelledBy: 'modal-title-bottom',
+                ariaDescribedBy: 'modal-body-bottom',
+                templateUrl: 'kerberosConfigureMissingWarning.html',
+                size: 'lg',
+                backdrop: 'static',
+                scope: $scope,
+                controller: ['$scope', function ($scope) {
+                  $scope.searchItem = {};
+                  $scope.closeModal = function () {
+                    modal.close();
+                  };
+                }]
+              }); 
+            } else {
+              _changeStatus(status);
+            }
+          });
+        } else {
+          _changeStatus(status);
+        }
       }
     };
 

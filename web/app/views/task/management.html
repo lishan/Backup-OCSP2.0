@@ -13,6 +13,24 @@
     </div>
   </div>
 </script>
+
+<script type="text/ng-template" id="kerberosConfigureMissingWarning.html">
+  <div class="modal-header">
+    <button type="button" class="close" ng-click="closeModal()"><span aria-hidden="true">&times;</span></button>
+    <h3 class="modal-title">Warning Message</h3>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="form-group">
+        <p>Kerberos should be configured first!</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" ng-click="closeModal()">{{'ocsp_web_common_038' | translate}}</button>
+      </div>
+    </form>
+  </div>
+</script>
+
 <div class="row">
   <div class="well col-md-2">
     <ng-include src="'views/task/sidebar.html'"></ng-include>
