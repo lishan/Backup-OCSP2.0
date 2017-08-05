@@ -42,6 +42,11 @@ cp thirdparty/JPam-1.1/libjpam.so build/OCSP/lib/native
 cp core/target/ocsp-core_${spark_version}-${version}.jar build/OCSP/lib
 cp core/target/ocsp-core_${spark_version}-${version}-dist/lib/*.jar build/OCSP/lib
 
+if [ -z ${1} ]||[ "1.6" == "${1}" ]; then
+    cp lib/*.jar build/OCSP/lib
+fi
+
+
 tar -xzf web/target/web-${version}-bundle.tar.gz -C build/OCSP/web
 
 mkdir build/OCSP/web/uploads
