@@ -1,0 +1,10 @@
+KafkaClient {
+  com.sun.security.auth.module.Krb5LoginModule required
+  useTicketCache=false
+  useKeyTab=true
+  principal="ocsp@ASIAINFO.COM"
+  keyTab="./ocsp.keytab"
+  renewTicket=true
+  storeKey=true
+  serviceName="ocsp";
+};

@@ -21,6 +21,8 @@ object TableInfoConstant {
 
   val TaskTableName = "STREAM_TASK"
 
+  val UserSecurityTableName = "STREAM_USER_SECURITY"
+
   val ExceptionTableName = "STREAM_EXCEPTION"
 
   val TaskMonitorName = "STREAM_TASK_MONITOR"
