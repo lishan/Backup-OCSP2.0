@@ -320,6 +320,7 @@ CREATE TABLE `STREAM_EVENT_CEP` (
   `source` varchar(256) DEFAULT NULL,
   `monitor_fields` varchar(512) DEFAULT NULL,
   `badge_number` varchar(512) DEFAULT NULL,
+  `create_time` varchar(512) DEFAULT NULL,
   `reserve_1` varchar(512) DEFAULT NULL,
   `reserve_2` varchar(512) DEFAULT NULL,
   `reserve_3` varchar(512) DEFAULT NULL,
