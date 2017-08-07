@@ -296,7 +296,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       val period = event.conf.get("period", "")
 
       if (period.isEmpty) true
-      else new EventCycleLife(period).contains(now)
+      else new EventCycleLife(period, event.conf.id).contains(now)
     })
 
     validEvents.map(event => eventService.submit(new BuildEvent(event, df, uniqKeys))).foreach(_=>eventService.take.get())

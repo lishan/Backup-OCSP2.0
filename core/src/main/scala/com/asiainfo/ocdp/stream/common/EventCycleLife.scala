@@ -5,42 +5,75 @@ import java.text.SimpleDateFormat
 import scala.util.parsing.json.JSON
 import java.util.{Calendar, Date}
 
+import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang.time.DateFormatUtils
+
+
 /**
   * Created by yangjie9 on 2017/2/6.
   */
-class EventCycleLife(jsonStr: String) {
+//TODO need event id
+class EventCycleLife(jsonStr: String, eventId: String) extends Logging{
+  val cycleLife = JSON.parseFull(jsonStr)
+  val cycleLifeMap = cycleLife.get.asInstanceOf[Map[String,Any]]
 
-  val period = {
-    val value = JSON.parseFull(jsonStr)
-    val map = value.get.asInstanceOf[Map[String,Any]]
-    map.get("period").get.asInstanceOf[String]
 
-  }
+  val period = cycleLifeMap.getOrElse("period", "").asInstanceOf[String]
+
 
   val times: List[Period] = {
-
-    val value = JSON.parseFull(jsonStr)
-
     var _times: List[Period] = List()
-
-    val map = value.get.asInstanceOf[Map[String,Any]]
-
-    val time = map.get("time").get.asInstanceOf[List[Map[String,Any]]]
+    val time = cycleLifeMap.get("time").get.asInstanceOf[List[Map[String,Any]]]
 
     time.map(p => _times=(new Period(p)) :: _times)
     _times
   }
 
-  val dm = new SimpleDateFormat("yyyy-MM-dd")
+  val dateFormat = "yyyy-MM-dd"
+  val dm = new SimpleDateFormat(dateFormat)
   val hm = new SimpleDateFormat("HH:mm:ss")
 
   def contains(now: Date): Boolean = {
+    val startDate = cycleLifeMap.getOrElse("startDate", "").asInstanceOf[String]
+    val endDate = cycleLifeMap.getOrElse("endDate", "").asInstanceOf[String]
 
-    val nowTime = getTime(now)
+    if (StringUtils.isNotEmpty(startDate) && StringUtils.isNotEmpty(endDate)){
+      val _startDate = dm.parse(startDate)
+      val _endDate = dm.parse(endDate)
 
-    times.foreach(p => if(p.contains(nowTime)) return true)
+      val currentDate = DateFormatUtils.format(Calendar.getInstance(), dateFormat)
+      val _currentDate = dm.parse(currentDate)
 
-    false
+      logInfo(s"The current period of event ${eventId} is ${period}")
+      if (_startDate.compareTo(_currentDate) <= 0 && _endDate.compareTo(_currentDate) >= 0){
+        if (StringUtils.isNotEmpty(period) && !StringUtils.equalsIgnoreCase(period, "always")){
+          val nowTime = getTime(now)
+          times.foreach(p => if(p.contains(nowTime)) return true)
+
+          false
+        }else{
+          logInfo(s"Event ${eventId} is available since startDate is ${startDate} and endDate is ${endDate}")
+          true
+        }
+      }
+      else{
+        logInfo(s"Event ${eventId} is not available since startDate is ${startDate} and endDate is ${endDate}")
+        false
+      }
+    }
+    else{
+      logInfo(s"Either startDate='${startDate}' or endDate='${endDate}' is not available for event ${eventId}.")
+      if (StringUtils.isNotEmpty(period) && !StringUtils.equalsIgnoreCase(period, "always")){
+        val nowTime = getTime(now)
+        times.foreach(p => if(p.contains(nowTime)) return true)
+
+        false
+      }else{
+        logInfo(s"Event ${eventId} is available")
+        true
+      }
+    }
+
   }
 
   def getTime(date: Date):Time = {
