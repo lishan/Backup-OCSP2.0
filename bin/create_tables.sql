@@ -225,7 +225,7 @@ CREATE TABLE `STREAM_USER` (
   `id` int(16) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `password` varchar(200) NOT NULL DEFAULT '',
-  `description` varchar(500) DEFAULT NULL
+  `description` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -319,6 +319,7 @@ CREATE TABLE `STREAM_EVENT_CEP` (
   `identifier` varchar(256) DEFAULT NULL,
   `source` varchar(256) DEFAULT NULL,
   `monitor_fields` varchar(512) DEFAULT NULL,
+  `badge_number` varchar(512) DEFAULT NULL,
   `reserve_1` varchar(512) DEFAULT NULL,
   `reserve_2` varchar(512) DEFAULT NULL,
   `reserve_3` varchar(512) DEFAULT NULL,
