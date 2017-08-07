@@ -20,7 +20,7 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.streaming.{StreamingContext, Time}
 import org.apache.spark.{Accumulator, HashPartitioner, SparkContext}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.streaming.kafka010.{HasOffsetRanges => HasOffsetRanges010}
+import org.apache.spark.streaming.kafka010.{CanCommitOffsets, HasOffsetRanges => HasOffsetRanges010}
 import org.apache.commons.codec.digest.DigestUtils
 
 import scala.collection.mutable.ArrayBuffer
@@ -173,9 +173,10 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
     confCheck()
 
     val kerberos_enable = MainFrameConf.systemProps.getBoolean(MainFrameConf.KERBEROS_ENABLE, false)
+    val latest = taskConf.getRecovery_mode() == "from_latest";
 
     //1 根据输入数据接口配置，生成数据流 DStream
-    val dataSource = new KafkaReader(ssc, conf, kerberos_enable)
+    val dataSource = new KafkaReader(ssc, conf, kerberos_enable, latest)
     val inputStream = dataSource.createStreamMulData(taskConf)
 
     //1.2 根据输入数据接口配置，生成构造 sparkSQL DataFrame 的 structType
@@ -204,6 +205,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       val currentReservedRecordsCounterValue = reservedRecordsCounter.value
 
       val offsetList = rdd.asInstanceOf[HasOffsetRanges010].offsetRanges
+
       for (o <- offsetList) {
         logInfo(s"reading offset: ${o.topic} ${o.partition} ${o.fromOffset} ${o.untilOffset} ")
       }
@@ -267,6 +269,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
             memRemaining,
             (System.currentTimeMillis() - time.milliseconds))
         }
+        inputStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetList)
       }
     })
   }
