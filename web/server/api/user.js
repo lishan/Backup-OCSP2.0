@@ -108,28 +108,23 @@ router.put('/:userName', function(req, res){
         res.send({ status: false });
       });
   };
-  if (user.isDBUser) {
-    updateUserInfo(User);
-  } else {
-    User_SECURITY.findOne({
-      where:{name:user.name},
-    }).then(function(queriedUser){
-      if(queriedUser!==null){
-        updateUserInfo(User_SECURITY);
-      }else{
-        User_SECURITY.create(user).then(function(){
-          res.send({ status: true });
-        }).catch(function(err){
-          console.error(err);
+  User_SECURITY.findOne({
+    where: { name: user.name },
+  }).then(function (queriedUser) {
+    if (queriedUser !== null) {
+      updateUserInfo(User_SECURITY);
+    } else {
+      User_SECURITY.create(user).then(function () {
+        res.send({ status: true });
+      }).catch(function (err) {
+        console.error(err);
         res.status(500).send(trans.databaseError);
-        });
-      }
-    }).catch(function(err){
-      console.error(err);
-      res.status(500).send(trans.databaseError);
-    });
-    
-  }
+      });
+    }
+  }).catch(function (err) {
+    console.error(err);
+    res.status(500).send(trans.databaseError);
+  });
   
 });
 

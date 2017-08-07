@@ -28,6 +28,7 @@ angular.module('ocspApp')
       $http.get('/api/user/'+$rootScope.username).success(function(data){
         if(data!==null){
           $scope.user = data;
+          $scope.user.name = $rootScope.username;
         }
       });
       $http.get('/api/prop').success(function(props){
