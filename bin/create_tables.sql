@@ -225,18 +225,14 @@ CREATE TABLE `STREAM_USER` (
   `id` int(16) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `password` varchar(200) NOT NULL DEFAULT '',
-  `description` varchar(500) DEFAULT NULL,
-  `spark_principal` varchar(500) DEFAULT NULL,
-  `spark_keytab` varchar(500) DEFAULT NULL,
-  `kafka_principal` varchar(500) DEFAULT NULL,
-  `kafka_keytab` varchar(500) DEFAULT NULL,
+  `description` varchar(500) DEFAULT NULL
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 LOCK TABLES `STREAM_USER` WRITE;
 /*!40000 ALTER TABLE `STREAM_USER` DISABLE KEYS */;
-INSERT INTO `STREAM_USER` VALUES (1,'ocspadmin','8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918','Administrator','','','','');
+INSERT INTO `STREAM_USER` VALUES (1,'ocspadmin','8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918','Administrator');
 /*!40000 ALTER TABLE `STREAM_USER` ENABLE KEYS */;
 UNLOCK TABLES;
 

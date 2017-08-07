@@ -56,6 +56,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_user_manage_006':'两次输入的密码不一致',
     'ocsp_web_user_manage_007':'用户登录过期',
     'ocsp_web_user_manage_008':'没有操作权限',
+    'ocsp_web_user_manage_009':'Spark Keytab与Kafak Keytab不能相同！',
     'ocsp_web_user_name':'用户名',
     'ocsp_web_user_desc':'用户描述',
     'ocsp_web_user_old_password':'旧密码',
