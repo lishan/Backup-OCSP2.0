@@ -8,6 +8,7 @@ import com.asiainfo.ocdp.stream.common.Logging
 import com.asiainfo.ocdp.stream.config.{MainFrameConf, TaskConf}
 import com.asiainfo.ocdp.stream.constant.{CommonConstant, ExceptionConstant, TaskConstant}
 import com.asiainfo.ocdp.stream.service.TaskServer
+import com.asiainfo.ocdp.stream.service.UserSecurityServer
 import com.asiainfo.ocdp.stream.tools.{DateFormatUtils, ListFileWalker, MonitorUtils}
 import org.apache.commons.io.filefilter.{FileFilterUtils, HiddenFileFilter}
 import org.apache.commons.lang.StringUtils
@@ -16,8 +17,8 @@ import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
 /**
- * Created by tsingfu on 15/8/26.
- */
+  * Created by tsingfu on 15/8/26.
+  */
 object MainFrameManager extends Logging {
   System.setProperty("OCSP_LOG_PATH", CommonConstant.ocspLogPath)
   logBegin
@@ -26,12 +27,14 @@ object MainFrameManager extends Logging {
   val periodSeconds = MainFrameConf.systemProps.getInt("periodSeconds", 30)
   val startTimeOutSeconds = MainFrameConf.systemProps.getInt("startTimeOutSeconds", 120)
   val stopTimeOutSeconds = MainFrameConf.systemProps.getInt("stopTimeOutSeconds", 300)
+  val keytab_name = MainFrameConf.systemProps.get("keytab","ocsp.keytab")
+  val principal_name = MainFrameConf.systemProps.get("principal", "ocsp@ASIAINFO.COM")
 
   var lastCheckTime = System.currentTimeMillis()
 
   // 对表STREAM_TASK的务服句柄
   val taskServer = new TaskServer()
-
+  val userSecurityServer = new UserSecurityServer()
   // getStatus:0 停止 1 启动中 2运行中 3停止中
   // 装载taskConf.getStatus=１的taskID和系统时间
   val pre_start_tasks = mutable.Map[String, Long]()
@@ -42,7 +45,7 @@ object MainFrameManager extends Logging {
 
   val RETRY_RESET_TIMEDOUT = 60 * 60 * 24 * 1000
   val RETRY_MIN_INTERVAL = 30 * 1000
-  
+
   taskServer.getAllTaskInfos().foreach(taskConf => {
     if (taskConf.getStatus == TaskConstant.PRE_START)
       pre_start_tasks.put(taskConf.getId, current_time)
@@ -178,21 +181,23 @@ object MainFrameManager extends Logging {
     val owner = conf.owner
     MainFrameConf.flushSystemProps
     val spark_home = MainFrameConf.systemProps.get("SPARK_HOME")
-    var cmd = spark_home + "/bin/spark-submit "
+    var cmd = Seq[String]()
+
     if (StringUtils.isNotEmpty(owner)){
-      cmd = s"sudo -u ${owner} ${spark_home}/bin/spark-submit "
+      cmd = cmd :+ "sudo":+ "-u" :+ s"${owner}" :+s"${spark_home}/bin/spark-submit"
     }
-
-    val files = s"--files ${CommonConstant.ocspConfPath}/executor-log4j.properties,${CommonConstant.ocspConfPath}/key.conf,${CommonConstant.ocspConfPath}/v.keytab"
-    val executor_extraJavaOptions = " --conf spark.executor.extraJavaOptions=-Dlog4j.configuration=executor-log4j.properties spark.executor.extraJavaOptions=-Djava.security.auth.login.config=key.conf"
-    val driver_java_options = s" --driver-java-options -Dlog4j.configuration=file:${CommonConstant.ocspConfPath}/driver-log4j.properties -Djava.security.auth.login.config=key.conf"
-
-    val deploy_mode = " --deploy-mode client"
-    val master = " --master " + MainFrameConf.systemProps.get("master")
+    else{
+      cmd = cmd :+ s"${spark_home}/bin/spark-submit"
+    }
+    val files = s"${CommonConstant.ocspConfPath}/executor-log4j.properties"
+    val executor_extraJavaOptions = "spark.executor.extraJavaOptions=-Dlog4j.configuration=executor-log4j.properties"
+    val driver_java_options = s"-Dlog4j.configuration=file:${CommonConstant.ocspConfPath}/driver-log4j.properties"
+    val deploy_mode = "client"
+    val master =  MainFrameConf.systemProps.get("master")
 
     var appJars = ""
 
-    var jars = new StringBuilder(" --jars ")
+    var jars = new StringBuilder()
     ListFileWalker(HiddenFileFilter.VISIBLE, FileFilterUtils.suffixFileFilter(".jar")).list(new File(CommonConstant.baseDir)).foreach(file =>{
       if (file.getName.startsWith("ocsp-core")){
         appJars = file.getAbsolutePath
@@ -209,36 +214,50 @@ object MainFrameManager extends Logging {
     if (StringUtils.isBlank(appJars)){
       logError("Can not find core jar")
     }
-    
-    val streamClass = " --class com.asiainfo.ocdp.stream.manager.StreamApp"
-    val executor_memory = " --executor-memory " + conf.getExecutor_memory
+
+    val streamClass = "com.asiainfo.ocdp.stream.manager.StreamApp"
+    val executor_memory =  conf.getExecutor_memory
 
     val driver_memory_value = if(StringUtils.isEmpty(conf.getDriver_memory)) "1g" else conf.getDriver_memory
-    val driver_memory = " --driver-memory " + driver_memory_value
+    val driver_memory =  driver_memory_value
 
     val tid = conf.getId
 
     val executor_cores_value = if(StringUtils.isEmpty(conf.getExecutor_cores)) "2" else conf.getExecutor_cores
-    val executor_cores = " --executor-cores " + executor_cores_value
+    val executor_cores =  executor_cores_value
 
     if (master.contains("spark")) {
-      val total_executor_cores = " --total-executor-cores " + executor_cores_value
+      val total_executor_cores = executor_cores_value
       var supervise = ""
       if (MainFrameConf.systemProps.get("supervise", "false").eq("true"))
-        supervise = " --supervise "
+        supervise = "--supervise"
 
-			cmd += streamClass + master + deploy_mode + supervise + executor_memory + driver_memory + total_executor_cores + jars + " " + appJars + " " + tid
+      cmd = cmd :+ "--class":+ streamClass :+ "--master":+master :+ "--deploy-mode":+ deploy_mode :+ supervise :+ "--executor-memory" :+ executor_memory :+ "--driver-memory":+ driver_memory :+ "--total-executor-cores" :+ total_executor_cores :+ "--jars" :+ jars.toString() :+ appJars :+ tid
     } else if (master.contains("yarn")) {
-      val num_executors = " --num-executors " + conf.getNum_executors
-      var queue = " --queue "
+      val num_executors = conf.getNum_executors
+      var queue = "--queue"
       if (StringUtils.isNotEmpty(conf.getQueue)) {
-        queue += conf.getQueue
+        queue = conf.getQueue
       } else {
         //如果获取不到queue的配置那么就不添加--queue参数，yarn会自动分配任务到默认队列中
         logInfo("The value of queue is invalid, remove --queue parameter")
         queue = ""
       }
-			cmd += files + executor_extraJavaOptions + driver_java_options + streamClass + master + deploy_mode + executor_memory + executor_cores + driver_memory + num_executors + queue + jars + " " + appJars + " " + tid
+      if (MainFrameConf.systemProps.getBoolean(MainFrameConf.KERBEROS_ENABLE, false)) {
+        val spark_keytab = CommonConstant.ocspConfPath + "/" + userSecurityServer.getSparkKeytab(owner)
+        val spark_principal = userSecurityServer.getSparkPrincipal(owner)
+        val kafka_keytab = userSecurityServer.getKafkaKeytab(owner)
+        val kafka_principal = userSecurityServer.getKafkaPrincipal(owner)
+        val files = s"${CommonConstant.ocspConfPath}/executor-log4j.properties,${CommonConstant.ocspConfPath}/OCSP_Kafka_jaas.conf,${CommonConstant.ocspConfPath}/${kafka_keytab}"
+        val executor_extraJavaOptions = "spark.executor.extraJavaOptions=-Dlog4j.configuration=executor-log4j.properties -Djava.security.auth.login.config=./OCSP_Kafka_jaas.conf"
+        val driver_java_options = s"-DOCSP_LOG_PATH=${CommonConstant.ocspLogPath} -DOCSP_TASK_ID=${tid} -Djava.security.auth.login.config=${CommonConstant.ocspConfPath}/OCSP_Kafka_jaas.conf -Dlog4j.configuration=file:${CommonConstant.ocspConfPath}/driver-log4j.properties"
+        cmd = cmd  :+ "--files" :+ files :+ "--conf":+executor_extraJavaOptions :+ "--driver-java-options":+driver_java_options :+ "--keytab" :+spark_keytab :+ "--principal" :+ spark_principal :+  "--class":+streamClass :+ "--master":+master :+  "--deploy-mode":+ deploy_mode :+ "--executor-memory":+executor_memory :+ "--executor-cores":+ executor_cores :+ "--driver-memory":+ driver_memory :+  "--num-executors":+ num_executors :+"--queue":+ queue :+ "--jars":+jars.toString() :+ appJars :+ tid
+      }else{
+        //cmd += files + executor_extraJavaOptions + driver_java_options + streamClass + master + deploy_mode + executor_memory + executor_cores + driver_memory + num_executors + queue + jars + " " + appJars + " " + tid
+        cmd = cmd  :+ "--files" :+ files :+ "--conf":+executor_extraJavaOptions :+ "--driver-java-options":+driver_java_options :+  "--class":+streamClass :+ "--master":+master :+  "--deploy-mode":+ deploy_mode :+ "--executor-memory":+executor_memory :+ "--executor-cores":+ executor_cores :+ "--driver-memory":+ driver_memory :+  "--num-executors":+ num_executors :+"--queue":+ queue :+ "--jars":+jars.toString() :+ appJars :+ tid
+
+      }
+
     }
     logInfo("Executor submit shell : " + cmd)
     TaskCommand(tid, cmd)
@@ -276,4 +295,4 @@ object MainFrameManager extends Logging {
   }
 }
 
-case class TaskCommand(taskId: String, cmd: String)
+case class TaskCommand(taskId: String, cmd: Seq[String])

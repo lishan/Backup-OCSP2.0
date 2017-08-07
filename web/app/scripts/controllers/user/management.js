@@ -28,6 +28,7 @@ angular.module('ocspApp')
       $http.get('/api/user/'+$rootScope.username).success(function(data){
         if(data!==null){
           $scope.user = data;
+          $scope.user.name = $rootScope.username;
         }
       });
       $http.get('/api/prop').success(function(props){
@@ -66,7 +67,20 @@ angular.module('ocspApp')
       }
     });
 
+    $scope.isKerberosConfigCorrect = function(){
+      if($scope.user.kafka_keytab === $scope.user.spark_keytab){
+        $scope.message_kafak_spark_samekeytab = $filter('translate')('ocsp_web_user_manage_009');
+        return false;
+      }else{
+        $scope.message_kafak_spark_samekeytab = null;
+        return true;
+      }
+    };
+
     $scope.saveKerberosConfigure = function () {
+      if(!$scope.isKerberosConfigCorrect()){
+        return;
+      }
       if ($scope.KerberosConfigForm.$invalid) {
         angular.forEach($scope.KerberosConfigForm.$error, function (field) {
           angular.forEach(field, function (errorField) {

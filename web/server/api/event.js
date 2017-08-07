@@ -76,9 +76,9 @@ function _createEvent(event, status) {
       period: event.audit.type,
       time:[]
     };
-    if(event.audit.enableTime === 'have' && event.audit.startTime && event.audit.endTime){
-      result.startTime = moment(event.audit.startTime).format("YYYY-MM-DD");
-      result.endTime = moment(event.audit.endTime).format("YYYY-MM-DD");
+    if(event.audit.enableDate === 'have' && event.audit.startDate && event.audit.endDate){
+      result.startDate = moment(event.audit.startDate).format("YYYY-MM-DD");
+      result.endDate = moment(event.audit.endDate).format("YYYY-MM-DD");
     }
     if(event.audit.type && event.audit.type !== "always" && event.audit.periods && event.audit.periods.length > 0) {
       for (let j = 0; j < event.audit.periods.length; j++) {

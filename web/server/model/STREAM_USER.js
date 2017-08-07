@@ -20,22 +20,6 @@ module.exports = function(sequelize, DataTypes) {
     description: {
       type: DataTypes.STRING,
       allowNull: true
-    },
-    spark_principal: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    spark_keytab: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    kafka_principal: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    kafka_keytab: {
-      type: DataTypes.STRING,
-      allowNull: true
     }
   }, {
     createdAt: false,

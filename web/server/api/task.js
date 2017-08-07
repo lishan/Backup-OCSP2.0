@@ -234,9 +234,9 @@ function createEvents(events, i, diid, status) {
       period: events[i].audit.type,
       time:[]
     };
-    if(events[i].audit.enableTime === 'have' && events[i].audit.startTime && events[i].audit.endTime){
-      result.startTime = moment(events[i].audit.startTime).format("YYYY-MM-DD");
-      result.endTime = moment(events[i].audit.endTime).format("YYYY-MM-DD");
+    if(events[i].audit.enableDate === 'have' && events[i].audit.startDate && events[i].audit.endDate){
+      result.startDate = moment(events[i].audit.startDate).format("YYYY-MM-DD");
+      result.endDate = moment(events[i].audit.endDate).format("YYYY-MM-DD");
     }
     if(events[i].audit.type && events[i].audit.type !== "always" && events[i].audit.periods && events[i].audit.periods.length > 0) {
       for (let j = 0; j < events[i].audit.periods.length; j++) {

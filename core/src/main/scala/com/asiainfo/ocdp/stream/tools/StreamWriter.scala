@@ -48,7 +48,7 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
     val topic = diConf.get("topic")
 
     val broadDiconf = BroadcastManager.getBroadDiConf()
-
+    val broadSysconf = BroadcastManager.getBroadSysProps
     var numPartitions = -1
 
     val numPartitionsCustom = conf.get("numPartitions", "null")
@@ -86,7 +86,7 @@ class StreamKafkaWriter(diConf: DataInterfaceConf) extends StreamWriter with Log
           key
         })
       val msgList = messages.toList
-      if (msgList.size > 0) KafkaSendTool.sendMessage(diConf.dsConf, msgList)
+      if (msgList.size > 0) KafkaSendTool.sendMessage(diConf.dsConf, msgList,broadSysconf)
       it.iterator
     })
   }

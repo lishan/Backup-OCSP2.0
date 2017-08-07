@@ -2,10 +2,12 @@ package com.asiainfo.ocdp.stream.tools
 
 import java.util.Properties
 
-import com.asiainfo.ocdp.stream.config.{ DataSourceConf, MainFrameConf }
+import com.asiainfo.ocdp.stream.common.BroadcastManager
+import com.asiainfo.ocdp.stream.config.{DataSourceConf, MainFrameConf, SystemProps}
 //import kafka.producer.{ KeyedMessage, ProducerConfig, Producer }
 import org.apache.kafka.clients.producer.{KafkaProducer, Producer, ProducerConfig, ProducerRecord}
 import scala.collection.mutable
+import org.apache.spark.broadcast.Broadcast
 
 /**
  * Created by tsingfu on 15/8/18.
@@ -29,10 +31,10 @@ object KafkaSendTool {
   //      override def run() = getProducer(dsConf).send(list: _*)
   //    }))
 
-  def sendMessage(dsConf: DataSourceConf, message: List[ProducerRecord[String, String]]) = {
+  def sendMessage(dsConf: DataSourceConf, message: List[ProducerRecord[String, String]],broadSysConf: Broadcast[SystemProps]) = {
     val msgList: Iterator[List[ProducerRecord[String, String]]] = message.sliding(200, 200)
     if (msgList.size > 0){
-    	val producer: KafkaProducer[String, String] = getProducer(dsConf)
+    	val producer: KafkaProducer[String, String] = getProducer(dsConf, broadSysConf)
     	message.sliding(200, 200).foreach((list: List[ProducerRecord[String, String]]) => {
         list.foreach((record: ProducerRecord[String, String]) => {
           producer.send(record)
@@ -42,13 +44,16 @@ object KafkaSendTool {
   }
 
   // 对应的producer若不存在，则创建新的producer，并存入dsid2ProducerMap
-  private def getProducer(dsConf: DataSourceConf): KafkaProducer[String, String] =
+  private def getProducer(dsConf: DataSourceConf, broadSysConf: Broadcast[SystemProps]): KafkaProducer[String, String] =
     dsid2ProducerMap.getOrElseUpdate(dsConf.dsid, {
+      val kerberos_enable = broadSysConf.value.getBoolean("ocsp.kerberos.enable",false)
       val props = new Properties()
       props.put("bootstrap.servers", dsConf.get("metadata.broker.list", ""))
       props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
       props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-      props.put("security.protocol","SASL_PLAINTEXT")
+      if (kerberos_enable) {
+        props.put("security.protocol","SASL_PLAINTEXT")
+      }
       //props.put("serializer.class", dsConf.get("serializer.class", DEFAULT_SERIALIZER_CLASS))
       new KafkaProducer[String, String](props)
     })

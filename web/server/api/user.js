@@ -59,32 +59,39 @@ router.get('/', function(req, res){
 
 router.get('/:userName', function(req, res){
   let userAttrs = ['id','name','spark_principal', 'spark_keytab', 'kafka_principal', 'kafka_keytab'];
+  let userInfo = {
+    isDBUser:false,
+    spark_principal:'',
+    spark_keytab:'',
+    kafka_principal:'',
+    kafka_keytab:''
+  };
   User.findOne({
-    where:{name:req.params.userName},
-    attributes: userAttrs}
+    where:{name: req.params.userName},
+    attributes: ['id','name']}
   ).then(function(user){
     if(user!==null){
-      user.dataValues.isDBUser = true;
-      res.send(user);
+      userInfo.isDBUser = true;
     }else{
-      User_SECURITY.findOne({
-        where:{name:req.params.userName},
-        attributes: userAttrs
-      }).then(function(user){
-        if(user!==null){
-          user.dataValues.isDBUser = false;
-        }else{
-          user={
-            name:req.params.userName,
-            isDBUser:false
-          };
-        }
-        res.send(user);
-      }).catch(function(err){
-        console.error(err);
-        res.status(500).send(trans.databaseError);
-      });
+      userInfo.isDBUser = false;
     }
+    User_SECURITY.findOne({
+      where: { name: req.params.userName },
+      attributes: userAttrs
+    }).then(function (user) {
+      if (user !== null) {
+        user.dataValues.isDBUser = false;
+        userInfo.spark_principal = user.spark_principal;
+        userInfo.spark_keytab = user.spark_keytab;
+        userInfo.kafka_principal = user.kafka_principal;
+        userInfo.kafka_keytab = user.kafka_keytab;
+
+      }
+      res.send(userInfo);
+    }).catch(function (err) {
+      console.error(err);
+      res.status(500).send(trans.databaseError);
+    });
   }).catch(function(err){
     console.error(err);
     res.status(500).send(trans.databaseError);
@@ -101,28 +108,23 @@ router.put('/:userName', function(req, res){
         res.send({ status: false });
       });
   };
-  if (user.isDBUser) {
-    updateUserInfo(User);
-  } else {
-    User_SECURITY.findOne({
-      where:{name:user.name},
-    }).then(function(queriedUser){
-      if(queriedUser!==null){
-        updateUserInfo(User_SECURITY);
-      }else{
-        User_SECURITY.create(user).then(function(){
-          res.send({ status: true });
-        }).catch(function(err){
-          console.error(err);
+  User_SECURITY.findOne({
+    where: { name: user.name },
+  }).then(function (queriedUser) {
+    if (queriedUser !== null) {
+      updateUserInfo(User_SECURITY);
+    } else {
+      User_SECURITY.create(user).then(function () {
+        res.send({ status: true });
+      }).catch(function (err) {
+        console.error(err);
         res.status(500).send(trans.databaseError);
-        });
-      }
-    }).catch(function(err){
-      console.error(err);
-      res.status(500).send(trans.databaseError);
-    });
-    
-  }
+      });
+    }
+  }).catch(function (err) {
+    console.error(err);
+    res.status(500).send(trans.databaseError);
+  });
   
 });
 

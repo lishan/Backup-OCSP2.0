@@ -540,12 +540,12 @@ angular.module('ocspApp')
                       type : $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.period,
                       periods : []
                     };
-                    if($scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.startTime && $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.endTime){
-                      $scope.selectedJob.events[i].audit.enableTime = "have";
-                      $scope.selectedJob.events[i].audit.startTime = moment($scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.startTime).toDate();
-                      $scope.selectedJob.events[i].audit.endTime = moment($scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.endTime).toDate();
+                    if($scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.startDate && $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.endDate){
+                      $scope.selectedJob.events[i].audit.enableDate = "have";
+                      $scope.selectedJob.events[i].audit.startDate = moment($scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.startDate).toDate();
+                      $scope.selectedJob.events[i].audit.endDate = moment($scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.endDate).toDate();
                     }else{
-                      $scope.selectedJob.events[i].audit.enableTime = "none";
+                      $scope.selectedJob.events[i].audit.enableDate = "none";
                     }
                     for (let w in $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.time){
                       let val = $scope.selectedJob.events[i].PROPERTIES.props[j].pvalue.time[w];
