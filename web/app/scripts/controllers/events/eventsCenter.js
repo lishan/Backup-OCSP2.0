@@ -405,9 +405,6 @@ angular.module('ocspApp')
     };
 
     $scope.update = function(){
-      console.log('in update()');
-      console.log($scope.item);
-
       if($scope.item.id === undefined || $scope.item.id === null){
         Notification.error("Cannot update null event");
       }else{
