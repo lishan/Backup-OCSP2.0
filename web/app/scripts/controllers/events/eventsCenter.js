@@ -405,6 +405,9 @@ angular.module('ocspApp')
     };
 
     $scope.update = function(){
+      console.log('in update()');
+      console.log($scope.item);
+
       if($scope.item.id === undefined || $scope.item.id === null){
         Notification.error("Cannot update null event");
       }else{
@@ -420,11 +423,12 @@ angular.module('ocspApp')
             $scope.item.note = $scope.item.note.replace(/[<p>|</p>]/g, "");
             $scope.item.note = `<p>${$scope.item.note}</p>`;
           }
+          let itemId = $scope.item.id;
           $q.all({event: $http.put("/api/event/" + $scope.item.id, {event: $scope.item}),
             history: $http.post("/api/history/event", {event: {config_data: $scope.item, note: $scope.item.note, version: $scope.item.version}})})
             .then(function(){
               _init();
-              _getHistory($scope.item.id);
+              _getHistory(itemId);
               Notification.success($filter('translate')('ocsp_web_common_026'));
             });
         }
