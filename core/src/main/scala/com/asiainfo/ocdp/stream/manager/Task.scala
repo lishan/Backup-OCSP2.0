@@ -19,7 +19,7 @@ class Task extends Actor with Logging {
         logInfo("Start task id : " + taskCmd.taskId)
         System.setProperty("user.dir",s"${CommonConstant.ocspConfPath}")
         logInfo("work dir: " + System.getProperty("user.dir"))
-        taskCmd.cmd #>> new File(CommonConstant.appLogFile + "_" + taskCmd.taskId + ".out") !
+        taskCmd.cmd #>> new File(CommonConstant.appLogFile + "_" + taskCmd.taskId + "_driver" + ".out") !
       } finally {
         context.stop(self)
       }
