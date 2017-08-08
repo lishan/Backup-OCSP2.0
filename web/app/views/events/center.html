@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <div class="inner-addon left-addon">
       <i class="glyphicon glyphicon-search"></i>
-      <input type="text" class="form-control" placeholder="{{'ocsp_web_streams_cep_searchfromkeyword' | translate}}" ng-click="openSearchModal()" ng-model="searchItem">
+      <input type="text" class="form-control" onfocus=this.blur() placeholder="{{'ocsp_web_streams_cep_searchfromkeyword' | translate}}" ng-click="openSearchModal()" ng-model="searchItem">
     </div>
   </div>
 </div>
