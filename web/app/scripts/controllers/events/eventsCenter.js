@@ -4,6 +4,7 @@ angular.module('ocspApp')
   .controller('EventsCenterCtrl',['$scope', '$rootScope', '$http', 'Notification', '$filter', '$q', '$uibModal', 'moment', '$sce', 'NgTableParams', '$translate', ($scope, $rootScope, $http, Notification, $filter, $q, $uibModal, moment, $sce, NgTableParams, $translate)=>{
     $rootScope.init('cep');
     $scope.treedata = [];
+    $scope.isMainFormDataChanged = false;
 
     function _status(status){
       switch(status){
@@ -67,6 +68,7 @@ angular.module('ocspApp')
     function _init() {
       $scope.history = null;
       $scope.item = null;
+      $scope.oldItem = null;
       $scope.branch = null;
       $scope.hook = 0;
       $scope.eventsList = [];
@@ -174,6 +176,11 @@ angular.module('ocspApp')
         let history = JSON.parse($scope.history[0].config_data);
         $scope.item.version = (parseInt(history.version) ? parseInt(history.version) : 0) + 1;
       }
+      if($scope.item.note === null){
+        $scope.item.note ="\
+                ";
+      }
+      $scope.oldItem = JSON.parse(JSON.stringify($scope.item));
     }
 
     $scope.openCreateType = ()=>{
@@ -404,7 +411,26 @@ angular.module('ocspApp')
       }
     };
 
+    let _trim = function(stringdata)
+    {
+      return stringdata.replace(/(^\s*)|(\s*$)/g,'');
+    }
+
+    $scope.updateFormDirtyStatus = function(){
+      
+      let orgItem = JSON.parse(JSON.stringify($scope.oldItem));
+      let newItem = JSON.parse(JSON.stringify($scope.item));
+      if(_trim(orgItem.note)===_trim(newItem.note)){
+        delete orgItem.note;
+        delete newItem.note;
+        $scope.isMainFormDataChanged = !(JSON.stringify(orgItem)===JSON.stringify(newItem));
+      } else {
+        $scope.isMainFormDataChanged = true;
+      }
+    }
+
     $scope.update = function(){
+      $scope.isMainFormDataChanged = false;
       if($scope.item.id === undefined || $scope.item.id === null){
         Notification.error("Cannot update null event");
       }else{
