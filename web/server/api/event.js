@@ -29,10 +29,14 @@ router.get('/diid/:id', function(req, res){
 router.get('/cep/:code', function(req, res){
   CEP.find({
     where:{
-      code : req.params.id
+      code : req.params.code
     }
   }).then(function (events){
-    res.send(events);
+    if(events===null){
+      res.send({});
+    }else{
+      res.send(events);
+    }
   }).catch(function(err){
     console.error(err);
     res.status(500).send(trans.databaseError);

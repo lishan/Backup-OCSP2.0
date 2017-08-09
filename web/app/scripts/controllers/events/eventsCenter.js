@@ -261,6 +261,20 @@ angular.module('ocspApp')
           $scope.closeModal = function(){
             modal.close();
           };
+
+          $scope.eventcodealreadyexists = false;
+
+          $scope.focusEventCode = function () {
+            $scope.eventcodealreadyexists = false;
+          };
+          $scope.unfocusEventCode = function (eventCode) {
+            $http.get("/api/event/cep/" + eventCode).success(function (data) {
+              if (!!data.code) {
+                $scope.eventcodealreadyexists = true;
+              }
+            });
+          };
+
           $scope.selectEventStream = function($item){
             _parseFields($item.diid, $scope.newEvent);
           };
@@ -276,14 +290,24 @@ angular.module('ocspApp')
                 $scope.newEvent.note = `<p>${$scope.newEvent.note}</p>`;
               }
               $scope.newEvent.version = "1";
-              $http.post("/api/event/", {event: $scope.newEvent}).success(function(data){
-                $scope.newEvent.id = data.id;
-                $http.post("/api/history/event", {event: {config_data: $scope.newEvent,
-                  note: $scope.newEvent.note, version: $scope.newEvent.version}}).success(function(){
-                  _init();
-                  modal.close();
-                  Notification.success($filter('translate')('ocsp_web_common_026'));
-                });
+              $http.get("/api/event/cep/" + $scope.newEvent.cep.code).success(function(data){
+                if(!!data.code){
+                  Notification.error($filter('translate')('ocsp_web_streams_cep_eventcodeexists'));
+                } else {
+                  $http.post("/api/event/", { event: $scope.newEvent }).success(function (data) {
+                    $scope.newEvent.id = data.id;
+                    $http.post("/api/history/event", {
+                      event: {
+                        config_data: $scope.newEvent,
+                        note: $scope.newEvent.note, version: $scope.newEvent.version
+                      }
+                    }).success(function () {
+                      _init();
+                      modal.close();
+                      Notification.success($filter('translate')('ocsp_web_common_026'));
+                    });
+                  });
+                }
               });
             }
           };

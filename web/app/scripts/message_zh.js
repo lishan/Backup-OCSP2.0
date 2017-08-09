@@ -166,6 +166,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_cep_search':'搜索',
     'ocsp_web_streams_cep_createclass':'新建分类',
     'ocsp_web_streams_cep_fathertype':'父分级',
+    'ocsp_web_streams_cep_eventcodeexists': '事件编码已经存在！',
 
     'ocsp_web_common_property_zookeeper_connect': 'zookeeper的连接地址',
     'ocsp_web_common_property_zk': 'zookeeper的连接地址',
