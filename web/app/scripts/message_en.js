@@ -57,6 +57,7 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_user_manage_007':'Session expired',
     'ocsp_web_user_manage_008':'No permission',
     'ocsp_web_user_manage_009':'Spark Keytab and Kafak Keytab should not same!',
+    'ocsp_web_user_manage_010':"file doesn't exit!",
     'ocsp_web_user_name':'User name',
     'ocsp_web_user_desc':'User description',
     'ocsp_web_user_old_password':'Old password',

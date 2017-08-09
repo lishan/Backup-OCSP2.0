@@ -7,6 +7,9 @@ let User = require('../model/STREAM_USER')(sequelize, Sequelize);
 let User_SECURITY = require('../model/STREAM_USER_SECURITY')(sequelize, Sequelize);
 let exec = require('child_process').exec;
 let router = express.Router();
+let path = require('path');
+let fs = require('fs');
+
 const prefix = "./server/lib/";
 
 router.post('/login', function (req, res) {
@@ -219,6 +222,27 @@ router.post('/change', function(req, res){
     console.error("Authenticate Failed, non admin user cannot use this router");
     res.status(500).send(trans.authError);
   }
+});
+
+router.post('/checkfiles', function(req, res){
+  let filesNeedCheck = req.body.filesNeedCheck;
+  let kafkaConfigFile = path.join(__dirname,"../../../conf/",filesNeedCheck.files.kafkaconfigfile);
+  let sparkConfigFile = path.join(__dirname,"../../../conf/",filesNeedCheck.files.sparkconfigfile);
+  let checkResult = {
+    kafkaconfigfileexist:false,
+    sparkconfigfileexist:false
+  };
+  fs.access(kafkaConfigFile, fs.constants.R_OK, (err) => {
+    if(!err) {
+      checkResult.kafkaconfigfileexist = true;
+    }
+    fs.access(sparkConfigFile, fs.constants.R_OK, (err) => {
+      if (!err) {
+        checkResult.sparkconfigfileexist = true;
+      }
+      res.send(checkResult);
+    });
+  });
 });
 
 module.exports = router;

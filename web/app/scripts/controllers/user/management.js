@@ -69,7 +69,6 @@ angular.module('ocspApp')
 
     $scope.checkKeytabInput = function(e){
       let keyDownEvent=window.event||e;
-      console.log(keyDownEvent.keyCode);
       if(keyDownEvent.keyCode===191||keyDownEvent.keyCode===220){
         keyDownEvent.preventDefault();
       }
@@ -97,13 +96,35 @@ angular.module('ocspApp')
         });
         Notification.error($filter('translate')('ocsp_web_common_032'));
       } else {
-        $http.put('/api/user/' + $scope.user.name, { "user": $scope.user }).success(function (data) {
-          if (data.status) {
-            Notification.success($filter('translate')('ocsp_web_common_026'));
+        // Fisrt check if kerberos configure file exists
+        // check configure file, and file name: user.kafka_keytab user.spark_keytab
+        let filesNeedCheck = {
+          files:{
+            kafkaconfigfile:$scope.user.kafka_keytab,
+            sparkconfigfile:$scope.user.spark_keytab
+          }
+        };
+
+        $http.post('/api/user/checkfiles',{"filesNeedCheck":filesNeedCheck}).success(function(data){
+          if(data.kafkaconfigfileexist && data.sparkconfigfileexist){
+            $http.put('/api/user/' + $scope.user.name, { "user": $scope.user }).success(function (data) {
+              if (data.status) {
+                Notification.success($filter('translate')('ocsp_web_common_026'));
+              } else {
+                Notification.error($filter('translate')('ocsp_web_common_030'));
+              }
+            });
           } else {
-            Notification.error($filter('translate')('ocsp_web_common_030'));
+            if(!data.kafkaconfigfileexist){
+              Notification.error("Kafka keytab " + $filter('translate')('ocsp_web_user_manage_010'));
+            }
+            if(!data.sparkconfigfileexist){
+              Notification.error("Spark keytab " + $filter('translate')('ocsp_web_user_manage_010'));
+            }
           }
         });
+
+        
       }
     };
     
