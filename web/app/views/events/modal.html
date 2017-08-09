@@ -9,7 +9,7 @@
         <div class="panel-heading">{{'ocsp_web_streams_cep_setting' | translate}}</div>
         <div class="panel-body">
           <div class="form-group">
-            <label>{{'ocsp_web_streams_cep_classify' | translate}}</label>
+            <label>{{'ocsp_web_streams_cep_eventtype' | translate}}</label>
             <ui-select ng-model="newEvent.parent" ng-required="true" name="eventTypes">
               <ui-select-match>
                 <span ng-bind="$select.selected.vname"></span>
@@ -75,7 +75,7 @@
             <span class="redtip" ng-show="eventForm['delim'].$touched && eventForm['delim'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
           </div>
           <div class="form-group">
-            <label>{{'ocsp_web_streams_manage_013' | translate}}</label>
+            <label>{{'ocsp_web_streams_cep_eventtriggercondition' | translate}}</label>
             <input type="text" class="form-control" ng-model="newEvent.filter_expr">
           </div>
           <div class="form-group">
@@ -87,7 +87,7 @@
                   ng-show="eventForm['eventsInterval'].$touched && eventForm['eventsInterval'].$error.pattern">{{'ocsp_web_common_034' | translate}}</span>
           </div>
           <div class="form-group">
-            <label>{{'ocsp_web_streams_manage_014' | translate}}*</label>
+            <label>{{'ocsp_web_streams_cep_filedaskey' | translate}}*</label>
             <input type="text" class="form-control" ng-model="newEvent.output.uniqueKey" required name="uniqueKey">
             <span class="redtip" ng-show="eventForm['uniqueKey'].$touched && eventForm['uniqueKey'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
           </div>
@@ -119,7 +119,7 @@
         </div>
       </div>
       <div class="panel panel-default">
-        <div class="panel-heading">{{'ocsp_web_streams_cep_submit' | translate}}</div>
+        <div class="panel-heading">{{'ocsp_web_streams_cep_noteoofupdate' | translate}}</div>
         <div class="panel-body">
           <div class="form-group">
             <div text-angular ng-model="newEvent.note" ta-toolbar="[['bold', 'italics', 'underline']]"

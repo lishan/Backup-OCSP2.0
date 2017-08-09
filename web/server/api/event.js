@@ -26,6 +26,19 @@ router.get('/diid/:id', function(req, res){
   });
 });
 
+router.get('/cep/:code', function(req, res){
+  CEP.find({
+    where:{
+      code : req.params.id
+    }
+  }).then(function (events){
+    res.send(events);
+  }).catch(function(err){
+    console.error(err);
+    res.status(500).send(trans.databaseError);
+  });
+});
+
 router.post('/change/:id', function(req, res){
   let status = req.body.status;
   sequelize.transaction(function(t) {
@@ -268,7 +281,7 @@ router.post('/', function(req, res){
       res.status(500).send(trans.databaseError);
     });
   }else{
-    console.error("Non admin user cannot change events");
+    console.error("Admin user cannot change events");
     res.status(500).send(trans.authError);
   }
 });
