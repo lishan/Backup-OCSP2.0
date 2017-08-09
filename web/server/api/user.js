@@ -228,9 +228,11 @@ router.post('/checkfiles', function(req, res){
   let filesNeedCheck = req.body.filesNeedCheck;
   let kafkaConfigFile = path.join(__dirname,"../../../conf/",filesNeedCheck.files.kafkaconfigfile);
   let sparkConfigFile = path.join(__dirname,"../../../conf/",filesNeedCheck.files.sparkconfigfile);
+  let ocsp_kafka_jaasFile = path.join(__dirname,"../../../conf/",filesNeedCheck.files.ocsp_kafka_jaas);
   let checkResult = {
     kafkaconfigfileexist:false,
-    sparkconfigfileexist:false
+    sparkconfigfileexist:false,
+    ocsp_kafka_jaasexist:false
   };
   fs.access(kafkaConfigFile, fs.constants.R_OK, (err) => {
     if(!err) {
@@ -240,7 +242,12 @@ router.post('/checkfiles', function(req, res){
       if (!err) {
         checkResult.sparkconfigfileexist = true;
       }
-      res.send(checkResult);
+      fs.access(ocsp_kafka_jaasFile, fs.constants.R_OK, (err) => {
+        if (!err) {
+          checkResult.ocsp_kafka_jaasexist = true;
+        }
+        res.send(checkResult);
+      });
     });
   });
 });

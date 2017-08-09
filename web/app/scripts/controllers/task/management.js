@@ -226,22 +226,55 @@ angular.module('ocspApp')
                 kerberosConfigureEnabled = Boolean(props[index].value === 'true');
               }
             }
-            if (kerberosConfigureEnabled && !isKerberosConfigureCorrect(userInfo)) {
-              let modal = $uibModal.open({
-                animation: true,
-                ariaLabelledBy: 'modal-title-bottom',
-                ariaDescribedBy: 'modal-body-bottom',
-                templateUrl: 'kerberosConfigureMissingWarning.html',
-                size: 'lg',
-                backdrop: 'static',
-                scope: $scope,
-                controller: ['$scope', function ($scope) {
-                  $scope.searchItem = {};
-                  $scope.closeModal = function () {
-                    modal.close();
+            if (kerberosConfigureEnabled) {
+              if(!isKerberosConfigureCorrect(userInfo)){
+                let modal = $uibModal.open({
+                  animation: true,
+                  ariaLabelledBy: 'modal-title-bottom',
+                  ariaDescribedBy: 'modal-body-bottom',
+                  templateUrl: 'kerberosConfigureMissingWarning.html',
+                  size: 'lg',
+                  backdrop: 'static',
+                  scope: $scope,
+                  controller: ['$scope', function ($scope) {
+                    $scope.searchItem = {};
+                    $scope.closeModal = function () {
+                      modal.close();
+                    };
+                  }]
+                });
+              } else {
+                // Kerberos is configured correct, but need check whether keytab file exists
+                let filesNeedCheck = {
+                  files: {
+                    kafkaconfigfile: userInfo.kafka_keytab,
+                    sparkconfigfile: userInfo.spark_keytab,
+                    ocsp_kafka_jaas: "OCSP_Kafka_jaas.conf"
+                  }
+                };
+                $http.post('/api/user/checkfiles',{"filesNeedCheck":filesNeedCheck}).success(function(data){
+                  let checkResult = {
+                    kafkaconfigfileexist: false,
+                    sparkconfigfileexist: false,
+                    ocsp_kafka_jaasexist: false
                   };
-                }]
-              });
+                  if(data.kafkaconfigfileexist && data.sparkconfigfileexist && data.ocsp_kafka_jaasexist){
+                    _changeStatus(status);
+                  } else {
+                    if (!data.kafkaconfigfileexist) {
+                      Notification.error("Kafka keytab " + $filter('translate')('ocsp_web_user_manage_010'));
+                    }
+                    if (!data.sparkconfigfileexist) {
+                      Notification.error("Spark keytab " + $filter('translate')('ocsp_web_user_manage_010'));
+                    }
+                    if(!data.ocsp_kafka_jaasexist) {
+                      Notification.error("OCSP_Kafka_jaas.conf " + $filter('translate')('ocsp_web_user_manage_010'));
+                    }
+                  }
+                });
+
+              }
+              
             } else {
               _changeStatus(status);
             }
