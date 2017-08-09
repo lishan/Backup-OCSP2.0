@@ -254,8 +254,10 @@ router.post('/checkfiles', function(req, res){
           }
           res.send(checkResult);
         });
+      }else{
+        res.send(checkResult);
       }
-      res.send(checkResult);
+      
     });
   });
 });
