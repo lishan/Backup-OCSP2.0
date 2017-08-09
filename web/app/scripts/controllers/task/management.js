@@ -253,11 +253,6 @@ angular.module('ocspApp')
                   }
                 };
                 $http.post('/api/user/checkfiles',{"filesNeedCheck":filesNeedCheck}).success(function(data){
-                  let checkResult = {
-                    kafkaconfigfileexist: false,
-                    sparkconfigfileexist: false,
-                    ocsp_kafka_jaasexist: false
-                  };
                   if(data.kafkaconfigfileexist && data.sparkconfigfileexist && data.ocsp_kafka_jaasexist){
                     _changeStatus(status);
                   } else {
