@@ -31,11 +31,11 @@
             {{'ocsp_web_streams_cep_operation' | translate}} <span class="caret"></span>
           </button>
           <ul class="dropdown-menu" style="left: auto" ng-if="branch" id="actions">
-            <li ng-class="{1: 'disabled'}[branch.status]">
-              <a href="" confirmation disabled="{{1 === branch.status}}" action="changeStatus(1)">{{'ocsp_web_streams_cep_enabled' | translate}}</a>
+            <li ng-class="{1: 'disabled'}[(branch.type === 'type' || branch.type==='event' && branch.status===1)?1:0]">
+              <a href="" confirmation disabled="{{1 === branch.status || branch.type === 'type'}}" action="changeStatus(1)">{{'ocsp_web_streams_cep_enabled' | translate}}</a>
             </li>
-            <li ng-class="{0: 'disabled'}[branch.status]">
-              <a href="" confirmation disabled="{{0 === branch.status}}" action="changeStatus(0)">{{'ocsp_web_streams_cep_disabled' | translate}}</a>
+            <li ng-class="{1: 'disabled'}[(branch.type === 'type' || branch.type==='event' && branch.status===0)?1:0]">
+              <a href="" confirmation disabled="{{0 === branch.status || branch.type === 'type'}}" action="changeStatus(0)">{{'ocsp_web_streams_cep_disabled' | translate}}</a>
             </li>
           </ul>
         </div>

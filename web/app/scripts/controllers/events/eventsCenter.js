@@ -337,8 +337,8 @@ angular.module('ocspApp')
       $scope.item = null;
       $scope.eventsList = [];
       $scope.eventsSearch = {};
+      $scope.branch = branch;
       if(branch.type === "event"){
-        $scope.branch = branch;
         let id = branch.id;
         _getHistory(id);
       }else{
