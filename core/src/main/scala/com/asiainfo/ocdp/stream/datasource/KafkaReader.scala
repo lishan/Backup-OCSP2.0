@@ -102,7 +102,6 @@ class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf, kerberos_enabl
     val topicPartitionList = new collection.mutable.ListBuffer[TopicPartition]()
     mTopicsSet.map( topic => {
       val partitionInfos = consumer.partitionsFor(topic).asScala.map(partitionInfo => {
-        //topicPartitionList.add(new TopicPartition(topic, partitionInfo.partition()))
         topicPartitionList.append(new TopicPartition(topic, partitionInfo.partition()))
       } )
     })

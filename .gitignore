@@ -6,3 +6,7 @@ core/target
 /build
 *.DS_Store
 *.iml
+bak/KafkaReaderAuth.scala
+bak/lib/spark-kafka-0-10-connector_2.10-1.0.1.jar
+bak_schema_line/DataInterfaceTask.scala
+bak_schema_line/SqlUtils.java

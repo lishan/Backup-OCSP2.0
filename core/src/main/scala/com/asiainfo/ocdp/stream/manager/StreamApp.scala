@@ -21,6 +21,8 @@ object StreamApp extends Logging {
       System.exit(1)
     }
 
+    logInfo("Stream work dir: " + System.getProperty("user.dir"))
+
     val taskId = args(0)
 
     System.setProperty("OCSP_LOG_PATH", CommonConstant.ocspLogPath)
