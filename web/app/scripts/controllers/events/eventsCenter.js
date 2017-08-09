@@ -342,7 +342,7 @@ angular.module('ocspApp')
           } else {
             Notification.error($filter('translate')('ocsp_web_streams_cep_deletetypefailed'));
           }
-        })
+        });
       }else{
         Notification.error($filter('translate')('ocsp_web_streams_cep_cantdeletetypewithchild'));
       }

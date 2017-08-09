@@ -110,7 +110,7 @@ router.post('/', function(req, res){
 router.delete('/:typeid', function(req, res){
   let usertype = req.query.usertype;
   if(usertype === "admin") {
-    Structure.destroy({where: {id: req.params.typeid}}).then(function(data){
+    Structure.destroy({where: {id: req.params.typeid}}).then(function(){
       res.send({success:true});
     }).catch(function(err){
       console.error(err);
