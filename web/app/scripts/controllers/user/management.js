@@ -67,6 +67,14 @@ angular.module('ocspApp')
       }
     });
 
+    $scope.checkKeytabInput = function(e){
+      let keyDownEvent=window.event||e;
+      console.log(keyDownEvent.keyCode);
+      if(keyDownEvent.keyCode===191||keyDownEvent.keyCode===220){
+        keyDownEvent.preventDefault();
+      }
+    };
+
     $scope.isKerberosConfigCorrect = function(){
       if($scope.user.kafka_keytab === $scope.user.spark_keytab){
         $scope.message_kafak_spark_samekeytab = $filter('translate')('ocsp_web_user_manage_009');
