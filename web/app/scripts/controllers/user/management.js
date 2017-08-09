@@ -68,9 +68,8 @@ angular.module('ocspApp')
     });
 
     $scope.checkKeytabInput = function(e){
-      let keyDownEvent=window.event||e;
-      if(keyDownEvent.keyCode===191||keyDownEvent.keyCode===220){
-        keyDownEvent.preventDefault();
+      if(e.charCode===47||e.charCode===92){
+        e.preventDefault();
       }
     };
 
