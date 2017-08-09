@@ -28,6 +28,8 @@ object StreamApp extends Logging {
     System.setProperty("OCSP_LOG_PATH", CommonConstant.ocspLogPath)
     System.setProperty("OCSP_TASK_ID", taskId)
 
+    logInfo("work dir for driver: " + System.getProperty("user.dir"))
+
     val taskConf = taskServer.getTaskInfoById(taskId)
 
     //1 初始化 streamingContext

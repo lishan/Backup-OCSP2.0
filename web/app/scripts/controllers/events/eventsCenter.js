@@ -177,8 +177,7 @@ angular.module('ocspApp')
         $scope.item.version = (parseInt(history.version) ? parseInt(history.version) : 0) + 1;
       }
       if($scope.item.note === null){
-        $scope.item.note ="\
-                ";
+        $scope.item.note ="";
       }
       $scope.oldItem = JSON.parse(JSON.stringify($scope.item));
     }
@@ -414,7 +413,7 @@ angular.module('ocspApp')
     let _trim = function(stringdata)
     {
       return stringdata.replace(/(^\s*)|(\s*$)/g,'');
-    }
+    };
 
     $scope.updateFormDirtyStatus = function(){
       
@@ -423,11 +422,11 @@ angular.module('ocspApp')
       if(_trim(orgItem.note)===_trim(newItem.note)){
         delete orgItem.note;
         delete newItem.note;
-        $scope.isMainFormDataChanged = !(JSON.stringify(orgItem)===JSON.stringify(newItem));
+        $scope.isMainFormDataChanged = JSON.stringify(orgItem)!==JSON.stringify(newItem);
       } else {
         $scope.isMainFormDataChanged = true;
       }
-    }
+    };
 
     $scope.update = function(){
       $scope.isMainFormDataChanged = false;

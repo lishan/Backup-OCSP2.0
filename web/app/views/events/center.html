@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <div class="inner-addon left-addon">
       <i class="glyphicon glyphicon-search"></i>
-      <input type="text" class="form-control" placeholder="{{'ocsp_web_streams_cep_searchfromkeyword' | translate}}" ng-click="openSearchModal()" ng-model="searchItem">
+      <input type="text" class="form-control" onfocus=this.blur() placeholder="{{'ocsp_web_streams_cep_searchfromkeyword' | translate}}" ng-click="openSearchModal()" ng-model="searchItem">
     </div>
   </div>
 </div>
@@ -43,7 +43,7 @@
       <div class="panel panel-default">
         <div class="panel-heading">{{'ocsp_web_streams_cep_eventlist' | translate}}</div>
         <div class="panel-body">
-          <abn-tree tree-data="treedata" on-select="changeEvent(branch)" icon-leaf="fa fa-gear">
+          <abn-tree tree-data="treedata" on-select="changeEvent(branch)" expand-level="2" icon-leaf="fa fa-gear">
           </abn-tree>
         </div>
       </div>
@@ -81,7 +81,7 @@
             <div class="panel-heading">{{'ocsp_web_streams_cep_setting' | translate}}</div>
             <div class="panel-body">
               <div class="form-group">
-                <label>{{'ocsp_web_streams_cep_classify' | translate}}</label>
+                <label>{{'ocsp_web_streams_cep_eventtype' | translate}}</label>
                 <ui-select ng-model="item.parent" name="classification" ng-change="updateFormDirtyStatus()" ng-required="true" name="eventTypes" append-to-body="true">
                   <ui-select-match>
                     <span ng-bind="$select.selected.vname"></span>
@@ -148,7 +148,7 @@
                       ng-show="mainForm['eventsDelim'].$touched && mainForm['eventsDelim'].$error.required">{{'ocsp_web_common_027' | translate}}</span>
               </div>
               <div class="form-group">
-                <label>{{'ocsp_web_streams_manage_013' | translate}}</label>
+                <label>{{'ocsp_web_streams_cep_eventtriggercondition' | translate}}</label>
                 <input type="text" class="form-control" ng-model="item.filter_expr">
               </div>
               <div class="form-group">
@@ -161,7 +161,7 @@
                       ng-show="mainForm['eventsInterval'].$touched && mainForm['eventsInterval'].$error.pattern">{{'ocsp_web_common_034' | translate}}</span>
               </div>
               <div class="form-group">
-                <label>{{'ocsp_web_streams_manage_014' | translate}}*</label>
+                <label>{{'ocsp_web_streams_cep_filedaskey' | translate}}*</label>
                 <input type="text" class="form-control" ng-model="item.output.uniqueKey"
                        name="eventsUniqueKey" required ng-change="updateFormDirtyStatus()">
                 <span class="redtip"
@@ -332,7 +332,7 @@
             </div>
           </div>
           <div class="panel panel-default" ng-if="!isAdmin()">
-            <div class="panel-heading">{{'ocsp_web_streams_cep_submit' | translate}}</div>
+            <div class="panel-heading">{{'ocsp_web_streams_cep_noteoofupdate' | translate}}</div>
             <div class="panel-body">
               <div class="form-group">
                 <div text-angular ng-model="item.note" ta-toolbar="[['bold', 'italics', 'underline']]"
