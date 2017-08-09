@@ -106,4 +106,22 @@ router.post('/', function(req, res){
 
 });
 
+
+router.delete('/:typeid', function(req, res){
+  let usertype = req.query.usertype;
+  if(usertype === "admin") {
+    Structure.destroy({where: {id: req.params.typeid}}).then(function(data){
+      res.send({success:true});
+    }).catch(function(err){
+      console.error(err);
+      res.status(500).send(trans.databaseError);
+    });
+  }else{
+    console.error("Authenticate Failed, non admin user cannot use this router");
+    res.status(500).send(trans.authError);
+  }
+
+});
+
+
 module.exports = router;

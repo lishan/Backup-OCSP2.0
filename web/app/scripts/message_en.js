@@ -167,6 +167,10 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_cep_createclass': 'Create New Class',
     'ocsp_web_streams_cep_fathertype': 'Father Type',
     'ocsp_web_streams_cep_eventcodeexists': 'Event Code already exists!',
+    'ocsp_web_streams_cep_deletetype': 'Delete Type',
+    'ocsp_web_streams_cep_deletetypesuccess': 'Delete Type Success!',
+    'ocsp_web_streams_cep_deletetypefailed': 'Delete Type Failed!',
+    'ocsp_web_streams_cep_cantdeletetypewithchild': "Can't delete type with sub type",
 
     'ocsp_web_common_property_zookeeper_connect': 'Zookeeper address',
     'ocsp_web_common_property_zk': 'Zookeeper address',

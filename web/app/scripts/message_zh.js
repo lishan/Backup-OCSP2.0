@@ -167,6 +167,10 @@ angular.module('ocspApp').config(['$translateProvider', function($translateProvi
     'ocsp_web_streams_cep_createclass':'新建分类',
     'ocsp_web_streams_cep_fathertype':'父分级',
     'ocsp_web_streams_cep_eventcodeexists': '事件编码已经存在！',
+    'ocsp_web_streams_cep_deletetype': '删除分级',
+    'ocsp_web_streams_cep_deletetypesuccess': '删除分级成功！',
+    'ocsp_web_streams_cep_deletetypefailed': '删除分级失败！',
+    'ocsp_web_streams_cep_cantdeletetypewithchild': '不能删除含有子分级的分级！',
 
     'ocsp_web_common_property_zookeeper_connect': 'zookeeper的连接地址',
     'ocsp_web_common_property_zk': 'zookeeper的连接地址',

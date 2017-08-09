@@ -37,6 +37,9 @@
             <li ng-class="{1: 'disabled'}[(branch.type === 'type' || branch.type==='event' && branch.status===0)?1:0]">
               <a href="" confirmation disabled="{{0 === branch.status || branch.type === 'type'}}" action="changeStatus(0)">{{'ocsp_web_streams_cep_disabled' | translate}}</a>
             </li>
+            <li ng-show="isAdmin()" ng-class="{0: 'disabled'}[branch.type === 'type' ? 1:0 ]">
+              <a href="" confirmation disabled="false" action="deleteBranch(branch)">{{'ocsp_web_streams_cep_deletetype' | translate}}</a>
+            </li>
           </ul>
         </div>
       </div>

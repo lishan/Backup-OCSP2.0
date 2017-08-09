@@ -331,6 +331,22 @@ angular.module('ocspApp')
         }
       });
     }
+    
+    $scope.deleteBranch = (branch) => {
+      let childrenNumberOfBranch = JSON.parse(branch.children_types);
+      if(childrenNumberOfBranch.length === 0){
+        $http.delete('/api/typestructure/' + branch.id).success(function(data){
+          if(data.success){
+            Notification.success($filter('translate')('ocsp_web_streams_cep_deletetypesuccess'));
+            _init();
+          } else {
+            Notification.error($filter('translate')('ocsp_web_streams_cep_deletetypefailed'));
+          }
+        })
+      }else{
+        Notification.error($filter('translate')('ocsp_web_streams_cep_cantdeletetypewithchild'));
+      }
+    };
 
     $scope.changeEvent = (branch) => {
       $scope.history = null;
