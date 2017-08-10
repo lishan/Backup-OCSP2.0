@@ -108,9 +108,19 @@ angular.module('ocspApp')
           }
         }
         _noLeaf(tree);
+        collapseTree(tree);
         $scope.treedata = tree;
       });
     }
+
+    let collapseTree = function(tree){
+      for(let i in tree){
+        tree[i].expanded = false;
+        if(!!tree[i].children && tree[i].children.length!==0){
+          collapseTree(tree[i].children);
+        }
+      }
+    };
 
     _init();
 
