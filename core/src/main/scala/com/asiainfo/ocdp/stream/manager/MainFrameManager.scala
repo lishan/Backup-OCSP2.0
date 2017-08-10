@@ -189,9 +189,11 @@ object MainFrameManager extends Logging {
     else{
       cmd = cmd :+ s"${spark_home}/bin/spark-submit"
     }
+
+    val tid = conf.getId
     val files = s"${CommonConstant.ocspConfPath}/executor-log4j.properties"
     val executor_extraJavaOptions = "spark.executor.extraJavaOptions=-Dlog4j.configuration=executor-log4j.properties"
-    val driver_java_options = s"-Dlog4j.configuration=file:${CommonConstant.ocspConfPath}/driver-log4j.properties"
+    val driver_java_options = s"-DOCSP_LOG_PATH=${CommonConstant.ocspLogPath} -DOCSP_TASK_ID=${tid} -Dlog4j.configuration=file:${CommonConstant.ocspConfPath}/driver-log4j.properties"
     val deploy_mode = "client"
     val master =  MainFrameConf.systemProps.get("master")
 
@@ -220,8 +222,6 @@ object MainFrameManager extends Logging {
 
     val driver_memory_value = if(StringUtils.isEmpty(conf.getDriver_memory)) "1g" else conf.getDriver_memory
     val driver_memory =  driver_memory_value
-
-    val tid = conf.getId
 
     val executor_cores_value = if(StringUtils.isEmpty(conf.getExecutor_cores)) "2" else conf.getExecutor_cores
     val executor_cores =  executor_cores_value

@@ -120,11 +120,6 @@ class KafkaReader(ssc: StreamingContext, conf: DataInterfaceConf, kerberos_enabl
 
   def checkOffset() : collection.mutable.Map[TopicPartition, Long] = {
 
-    /*
-        val consumer = new KafkaConsumer[K, V](kafkaParams)
-    consumer.subscribe(topics)
-      */
-
     val consumer = new KafkaConsumer[String, String](new util.HashMap[String, Object](mKafkaParams.asJava))
 
     val topicPartitionList = new collection.mutable.ListBuffer[TopicPartition]()
