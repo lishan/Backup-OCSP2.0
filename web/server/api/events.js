@@ -9,9 +9,15 @@ let Interface = require('../model/STREAM_DATAINTERFACE')(sequelize, Sequelize);
 let Task = require('../model/STREAM_TASK')(sequelize, Sequelize);
 let Event_Model = require('../model/STREAM_EVENT')(sequelize, Sequelize);
 let randomstring = require("randomstring");
-
+let CEP = require('../model/STREAM_EVENT_CEP')(sequelize, Sequelize);
+Event_Model.hasOne(CEP, {foreignKey:'event_id', targetKey:'id'});
+let moment = require('moment');
 let trans = config[config.trans || 'zh'];
 let router = express.Router();
+let DataInterface = require('../model/STREAM_DATAINTERFACE')(sequelize, Sequelize);
+let Datasource = require('../model/STREAM_DATASOURCE')(sequelize, Sequelize);
+let History = require('../model/STREAM_HISTORY_CONFIG')(sequelize, Sequelize);
+
 function QueryAllEventInfo(i, AllEventData, AllEventResult, res) {
   let EventData = {eventid: "", streamid: "", name: "", select_expr: "", filter_expr: "", p_event_id: ""};
   let tmp_event = AllEventData[i].dataValues;
@@ -77,6 +83,7 @@ function QueryAllEventInfo(i, AllEventData, AllEventResult, res) {
     EventData.output = output;
     EventData.status = tmp_event.status;
     EventData.description = tmp_event.description;
+    EventData.STREAM_EVENT_CEP = tmp_event.STREAM_EVENT_CEP;
     AllEventResult.events.push(EventData);
 
     if (parseInt(i) === (AllEventData.length - 1)) {
@@ -87,6 +94,118 @@ function QueryAllEventInfo(i, AllEventData, AllEventResult, res) {
   });
 }
 
+function _parseProperties(datainterface, prop, type = "output"){
+  if(datainterface.delim === "\\|"){
+    datainterface.delim = "|";
+  }
+  datainterface.inputs = [];
+  if(prop !== undefined && prop !== null) {
+    prop = JSON.parse(prop);
+    if(prop.fields !== undefined && prop.fields.length > 0) {
+      datainterface.fields = "";
+      if (prop.fields.length > 0){
+        datainterface.fields = prop.fields[0].pname;
+      }
+      for (let i = 1; i < prop.fields.length; i++) {
+        if(prop.fields[i].pname !== undefined && prop.fields[i].pname.trim() !== "") {
+          datainterface.fields += "," + prop.fields[i].pname;
+        }
+      }
+    }
+    if(prop.props !== undefined && prop.props.length > 0) {
+      for (let i in prop.props) {
+        if(prop.props[i].pname === "topic"){
+          datainterface.topic = prop.props[i].pvalue;
+        }
+        if(prop.props[i].pname === "codisKeyPrefix"){
+          datainterface.codisKeyPrefix = prop.props[i].pvalue;
+        }
+        else if(prop.props[i].pname === "uniqKeys"){
+          datainterface.uniqueKey = prop.props[i].pvalue;
+        }
+      }
+    }
+    if(prop.sources !== undefined && prop.sources.length > 0 && type === "input") {
+      for(let i = 0 ; i < prop.sources.length; i++){
+        let result = {
+          topic: prop.sources[i].topic,
+          name: prop.sources[i].pname,
+          delim: prop.sources[i].delim === "\\|"?"|":prop.sources[i].delim,
+          fields: "",
+          userFields: []
+        };
+        if(prop.sources[i].fields !== undefined && prop.sources[i].fields.length > 0) {
+          if (prop.sources[i].fields.length > 0){
+            result.fields = prop.sources[i].fields[0].pname;
+          }
+          for (let j = 1; j < prop.sources[i].fields.length; j++) {
+            if(prop.sources[i].fields[j].pname !== undefined && prop.sources[i].fields[j].pname.trim() !== "") {
+              result.fields += "," + prop.sources[i].fields[j].pname;
+            }
+          }
+        }
+        if(prop.sources[i].userFields !== undefined && prop.sources[i].userFields.length > 0) {
+          for (let j = 0; j < prop.sources[i].userFields.length; j++) {
+            result.userFields.push({
+              name: prop.sources[i].userFields[j].pname,
+              value: prop.sources[i].userFields[j].pvalue
+            });
+          }
+        }
+        datainterface.inputs.push(result);
+      }
+    }
+  }
+}
+
+function _parseEvent(event){
+  if(event.PROPERTIES !== undefined && event.PROPERTIES !== null) {
+    event.PROPERTIES = JSON.parse(event.PROPERTIES);
+    if(event.PROPERTIES.props !== undefined && event.PROPERTIES.props.length > 0) {
+      for (let j in event.PROPERTIES.props) {
+        if (event.PROPERTIES.props[j].pname === "userKeyIdx") {
+          event.userKeyIdx = event.PROPERTIES.props[j].pvalue;
+        }
+        if (event.PROPERTIES.props[j].pname === "period") {
+          event.PROPERTIES.props[j].pvalue = JSON.parse(event.PROPERTIES.props[j].pvalue);
+          event.audit = {
+            type : event.PROPERTIES.props[j].pvalue.period,
+            periods : []
+          };
+          if(event.PROPERTIES.props[j].pvalue.startDate && event.PROPERTIES.props[j].pvalue.endDate){
+            event.audit.enableDate = "have";
+            event.audit.startDate = moment(event.PROPERTIES.props[j].pvalue.startDate).toDate();
+            event.audit.endDate = moment(event.PROPERTIES.props[j].pvalue.endDate).toDate();
+          }else{
+            event.audit.enableDate = "none";
+          }
+          for (let w in event.PROPERTIES.props[j].pvalue.time){
+            let val = event.PROPERTIES.props[j].pvalue.time[w];
+            event.audit.periods.push({
+              s: val.begin.d,
+              d: val.end.d,
+              start: moment("2010-07-01 " + val.begin.h).toDate(),
+              end: moment("2010-07-01 " + val.end.h).toDate()
+            });
+          }
+        }
+        if(event.PROPERTIES.props.length === 1) {
+          event.audit={ type : "always", periods : [], enableDate: "none"};
+        }
+      }
+
+      if(event.PROPERTIES.output_dis !== undefined && event.PROPERTIES.output_dis[0] !== undefined) {
+        event.interval = event.PROPERTIES.output_dis[0].interval;
+        event.delim = event.PROPERTIES.output_dis[0].delim;
+        if(event.delim === "\\|"){
+          event.delim = "|";
+        }
+      }
+    }
+  }
+}
+
+//Deprecated
 router.delete('/:id', function (req, res) {
   Event_Model.destroy({
     where: {
@@ -106,6 +225,7 @@ router.post('/', function (req, res) {
   let filter_expr = req.body.filter_expr;
   let p_event_id = req.body.p_event_id;
   let status = req.body.status;
+  let cep = req.body.STREAM_EVENT_CEP;
   let diid;
   let output = req.body.output;
   let subscribe = output.subscribe;
@@ -152,10 +272,18 @@ router.post('/', function (req, res) {
           "p_event_id": p_event_id,
           "diid": diid,
           "status": status,
-          "PROPERTIES": JSON.stringify(PROPERTIES)
+          "PROPERTIES": JSON.stringify(PROPERTIES),
+          "STREAM_EVENT_CEP": cep
         };
         //插入一个新的event
-        return Event_Model.create(new_event, {transaction: t});
+        return Event_Model.create(new_event, {transaction: t}).then((data) => {
+          if (data.dataValues && data.dataValues.id) {
+            new_event.STREAM_EVENT_CEP.event_id = data.dataValues.id;
+            return CEP.create(new_event.STREAM_EVENT_CEP, {transaction: t});
+          } else {
+            return sequelize.Promise.reject();
+          }
+        });
       });
     });
   }).then((data) => {
@@ -166,6 +294,50 @@ router.post('/', function (req, res) {
     res.status(500).send(trans.databaseError);
   });
 });
+
+let _addHistory = function (req, res) {
+  Event_Model.find({
+    where: {
+      id: req.params.id
+    },
+    include: {
+      model: CEP
+    }
+  }).then(function (data) {
+    let event = data.dataValues;
+    event.cep = event.STREAM_EVENT_CEP.dataValues;
+    delete event.STREAM_EVENT_CEP;
+    _parseEvent(event);
+    sequelize.Promise.all([
+      DataInterface.find({where: {id: event.PROPERTIES.output_dis[0].diid}}),
+      DataInterface.find({where: {id: event.diid}}),
+    ]).then((data) => {
+      event.output = data[0].dataValues;
+      event.input = data[1].dataValues.id;
+      _parseProperties(event.output, event.output.properties);
+      sequelize.Promise.all([
+          Datasource.find({where: {id: event.output.dsid}}),
+          Task.find({where: {diid: event.input}})
+        ]).then((data) => {
+        event.output.datasource = data[0].dataValues;
+        event.task = data[1].dataValues;
+        event.parent = {
+          id: event.cep.type
+        };
+        delete event.PROPERTIES;
+        delete event.input;
+        let history = {};
+        history.component_name = "event";
+        history.user_name = event.owner;
+        history.id = event.id;
+        history.config_data = JSON.stringify(event);
+        History.create(history).then(function () {
+          res.status(202).send({success: true});
+        });
+      });
+    });
+  });
+};
 
 router.put('/:id', function (req, res) {
   let new_event = {};
@@ -187,6 +359,9 @@ router.put('/:id', function (req, res) {
   if (req.body.description !== null && req.body.description !== undefined) {
     new_event.description = req.body.description;
   }
+  if (req.body.STREAM_EVENT_CEP !== null && req.body.STREAM_EVENT_CEP !== undefined) {
+    new_event.STREAM_EVENT_CEP = req.body.STREAM_EVENT_CEP;
+  }
   let output;
   if (req.body.output !== null && req.body.output !== undefined) {
     output = req.body.output;
@@ -200,17 +375,23 @@ router.put('/:id', function (req, res) {
   if (req.body.streamid !== null && req.body.streamid !== undefined) {
     Task.find({attributes: ['diid'], where: {id: req.body.streamid}}).then((data) => {
       new_event.diid = data.dataValues.diid;
-      Event_Model.update(new_event, {where: {id: req.params.id}}).then(function () {
-        res.status(202).send({success: true});
-      }, function () {
-        res.status(500).send(trans.databaseError);
+      sequelize.Promise.all([
+        Event_Model.update(new_event, {where: {id: req.params.id}}),
+        CEP.update(new_event.STREAM_EVENT_CEP, {where: {event_id: req.params.id}})
+      ]).then(function () {
+        _addHistory(req, res);
       });
+    }).catch(function () {
+      res.status(500).send(trans.databaseError);
     });
   }
   else {
-    Event_Model.update(new_event, {where: {id: req.params.id}}).then(function () {
-      res.status(202).send({success: true});
-    }, function () {
+    sequelize.Promise.all([
+      Event_Model.update(new_event, {where: {id: req.params.id}}),
+      CEP.update(new_event.STREAM_EVENT_CEP, {where: {event_id: req.params.id}})
+    ]).then(function () {
+      _addHistory(req, res);
+    }).catch(function () {
       res.status(500).send(trans.databaseError);
     });
   }
@@ -225,7 +406,10 @@ router.get('/', function (req, res) {
   Event_Model.findAll({
     attributes: [['id', 'eventid'], 'diid', 'name', 'select_expr', 'filter_expr', 'p_event_id', 'PROPERTIES', 'status', 'description'],
     limit: limit,
-    offset: offset
+    offset: offset,
+    include: {
+      model: CEP
+    }
   }).then((AllEventData) => {
     let AllEventResult = {"pageSize": "", "totalPageNumber": "", "currentPage": "", "events": []};
     AllEventResult.pageSize = page_size;
@@ -252,6 +436,9 @@ router.get('/:id', function (req, res) {
     attributes: [['id', 'eventid'], 'diid', 'name', 'select_expr', 'filter_expr', 'p_event_id', 'PROPERTIES', 'status', 'description'],
     where: {
       id: req.params.id
+    },
+    include: {
+      model: CEP
     }
   }).then((Event) => {
       let tmp_event = Event.dataValues;
@@ -262,6 +449,7 @@ router.get('/:id', function (req, res) {
       let p_event_id = tmp_event.p_event_id;
       let status = tmp_event.status;
       let description = tmp_event.description;
+      let STREAM_EVENT_CEP = tmp_event.STREAM_EVENT_CEP;
       let PROPERTIES = JSON.parse(tmp_event.PROPERTIES);
       let output_dis = PROPERTIES.output_dis[0];
       let props = PROPERTIES.props;
@@ -317,7 +505,8 @@ router.get('/:id', function (req, res) {
           p_event_id,
           output,
           status,
-          description
+          description,
+          STREAM_EVENT_CEP
         });
       });
     }, () => {

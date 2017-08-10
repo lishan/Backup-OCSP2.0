@@ -31,7 +31,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     user_name: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     note: {
       type: DataTypes.TEXT,

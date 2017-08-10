@@ -269,7 +269,7 @@ angular.module('ocspApp')
                 });
 
               }
-              
+
             } else {
               _changeStatus(status);
             }
@@ -586,27 +586,27 @@ angular.module('ocspApp')
                     }
                   }
                   if($scope.selectedJob.events[i].PROPERTIES.props.length === 1) {
-                  	$scope.selectedJob.events[i].audit={ type : "always", periods : []};
+                  	$scope.selectedJob.events[i].audit={ type : "always", periods : [], enableDate: "none"};
                   }
-          		}
+          		  }
 
-	          if($scope.selectedJob.events[i].PROPERTIES.output_dis !== undefined && $scope.selectedJob.events[i].PROPERTIES.output_dis[0] !== undefined) {
-	            $scope.selectedJob.events[i].interval = $scope.selectedJob.events[i].PROPERTIES.output_dis[0].interval;
-	            $scope.selectedJob.events[i].delim = $scope.selectedJob.events[i].PROPERTIES.output_dis[0].delim;
-	            if($scope.selectedJob.events[i].delim === "\\|"){
-	              $scope.selectedJob.events[i].delim = "|";
-	            }
-	            for(let j in $scope.selectedJob.output){
-	              if($scope.selectedJob.output[j].id === parseInt($scope.selectedJob.events[i].PROPERTIES.output_dis[0].diid)){
-	                $scope.selectedJob.events[i].output = $scope.selectedJob.output[j];
-	                _parseProperties($scope.selectedJob.events[i].output, $scope.selectedJob.events[i].output.properties);
-	                _parseDatasource($scope.selectedJob.events[i].output);
-	                break;
-	              }
-	            }
-	          }
+              if($scope.selectedJob.events[i].PROPERTIES.output_dis !== undefined && $scope.selectedJob.events[i].PROPERTIES.output_dis[0] !== undefined) {
+                $scope.selectedJob.events[i].interval = $scope.selectedJob.events[i].PROPERTIES.output_dis[0].interval;
+                $scope.selectedJob.events[i].delim = $scope.selectedJob.events[i].PROPERTIES.output_dis[0].delim;
+                if($scope.selectedJob.events[i].delim === "\\|"){
+                  $scope.selectedJob.events[i].delim = "|";
+                }
+                for(let j in $scope.selectedJob.output){
+                  if($scope.selectedJob.output[j].id === parseInt($scope.selectedJob.events[i].PROPERTIES.output_dis[0].diid)){
+                    $scope.selectedJob.events[i].output = $scope.selectedJob.output[j];
+                    _parseProperties($scope.selectedJob.events[i].output, $scope.selectedJob.events[i].output.properties);
+                    _parseDatasource($scope.selectedJob.events[i].output);
+                    break;
+                  }
+                }
+              }
         	  }
-          	}
+          }
   		  }
           _dealWith($scope.selectedJob.status);
           _drawGraph($scope.selectedJob, labels);

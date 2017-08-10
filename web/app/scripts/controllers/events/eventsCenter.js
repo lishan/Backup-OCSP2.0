@@ -180,15 +180,17 @@ angular.module('ocspApp')
         if($scope.item.task) {
           _parseFields($scope.item.task.diid, $scope.item);
         }
-      }
-      $scope.item.note = null;
-      if($scope.history[0] && $scope.history[0].config_data) {
-        let history = JSON.parse($scope.history[0].config_data);
         $scope.item.version = (parseInt(history.version) ? parseInt(history.version) : 0) + 1;
+        if($scope.item.parent && !$scope.item.parent.vname){
+          for(let i = 0; i < $scope.types.length; i++){
+            if($scope.item.parent.id === $scope.types[i].id){
+              $scope.item.parent = $scope.types[i];
+              break;
+            }
+          }
+        }
       }
-      if($scope.item.note === null){
-        $scope.item.note ="";
-      }
+      $scope.item.note = "";
       $scope.oldItem = JSON.parse(JSON.stringify($scope.item));
     }
 
@@ -341,7 +343,7 @@ angular.module('ocspApp')
         }
       });
     }
-    
+
     $scope.deleteBranch = (branch) => {
       let childrenNumberOfBranch = JSON.parse(branch.children_types);
       if(childrenNumberOfBranch.length === 0){
@@ -466,7 +468,7 @@ angular.module('ocspApp')
     };
 
     $scope.updateFormDirtyStatus = function(){
-      
+
       let orgItem = JSON.parse(JSON.stringify($scope.oldItem));
       let newItem = JSON.parse(JSON.stringify($scope.item));
       if(_trim(orgItem.note)===_trim(newItem.note)){

@@ -27,6 +27,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
+    badge_number: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    create_time: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     reserve_1: {
       type: DataTypes.STRING,
       allowNull: true
