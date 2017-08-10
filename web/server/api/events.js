@@ -218,12 +218,68 @@ router.delete('/:id', function (req, res) {
   });
 });
 
+let _addHistory = function (req, res, id) {
+  let eid;
+  if(id){
+    eid = id;
+  }else{
+    eid = req.params.id;
+  }
+  Event_Model.find({
+    where: {
+      id: eid
+    },
+    include: {
+      model: CEP
+    }
+  }).then(function (data) {
+    let event = data.dataValues;
+    event.cep = {
+      type: null
+    };
+    if(event.STREAM_EVENT_CEP) {
+      event.cep = event.STREAM_EVENT_CEP.dataValues;
+    }
+    delete event.STREAM_EVENT_CEP;
+    _parseEvent(event);
+    sequelize.Promise.all([
+      DataInterface.find({where: {id: event.PROPERTIES.output_dis[0].diid}}),
+      DataInterface.find({where: {id: event.diid}}),
+    ]).then((data) => {
+      event.output = data[0].dataValues;
+      event.input = data[1].dataValues.id;
+      _parseProperties(event.output, event.output.properties);
+      sequelize.Promise.all([
+        Datasource.find({where: {id: event.output.dsid}}),
+        Task.find({where: {diid: event.input}})
+      ]).then((data) => {
+        event.output.datasource = data[0].dataValues;
+        event.task = data[1].dataValues;
+        event.parent = {
+          id: event.cep.type
+        };
+        delete event.PROPERTIES;
+        delete event.input;
+        let history = {};
+        history.component_name = "event";
+        history.user_name = event.owner;
+        history.id = event.id;
+        history.config_data = JSON.stringify(event);
+        History.create(history).then(function () {
+          res.status(202).send({success: true, event: event});
+        });
+      });
+    });
+  });
+};
+
 router.post('/', function (req, res) {
   let streamid = req.body.streamid;
   let name = req.body.name;
   let select_expr = req.body.select_expr;
   let filter_expr = req.body.filter_expr;
   let p_event_id = req.body.p_event_id;
+  let owner = req.body.owner;
   let status = req.body.status;
   let cep = req.body.STREAM_EVENT_CEP;
   let diid;
@@ -273,71 +329,26 @@ router.post('/', function (req, res) {
           "diid": diid,
           "status": status,
           "PROPERTIES": JSON.stringify(PROPERTIES),
-          "STREAM_EVENT_CEP": cep
+          "STREAM_EVENT_CEP": cep,
+          "owner": owner
         };
         //插入一个新的event
         return Event_Model.create(new_event, {transaction: t}).then((data) => {
           if (data.dataValues && data.dataValues.id) {
             new_event.STREAM_EVENT_CEP.event_id = data.dataValues.id;
-            return CEP.create(new_event.STREAM_EVENT_CEP, {transaction: t});
+            return CEP.create(new_event.STREAM_EVENT_CEP, {transaction: t}).then(function(){
+              _addHistory(req, res, data.dataValues.id);
+            });
           } else {
             return sequelize.Promise.reject();
           }
         });
       });
     });
-  }).then((data) => {
-    res.status(201).send({success: true, "event_id": data.dataValues.id});
-  }, function () {
-    res.status(500).send(trans.databaseError);
   }).catch(function () {
     res.status(500).send(trans.databaseError);
   });
 });
-
-let _addHistory = function (req, res) {
-  Event_Model.find({
-    where: {
-      id: req.params.id
-    },
-    include: {
-      model: CEP
-    }
-  }).then(function (data) {
-    let event = data.dataValues;
-    event.cep = event.STREAM_EVENT_CEP.dataValues;
-    delete event.STREAM_EVENT_CEP;
-    _parseEvent(event);
-    sequelize.Promise.all([
-      DataInterface.find({where: {id: event.PROPERTIES.output_dis[0].diid}}),
-      DataInterface.find({where: {id: event.diid}}),
-    ]).then((data) => {
-      event.output = data[0].dataValues;
-      event.input = data[1].dataValues.id;
-      _parseProperties(event.output, event.output.properties);
-      sequelize.Promise.all([
-          Datasource.find({where: {id: event.output.dsid}}),
-          Task.find({where: {diid: event.input}})
-        ]).then((data) => {
-        event.output.datasource = data[0].dataValues;
-        event.task = data[1].dataValues;
-        event.parent = {
-          id: event.cep.type
-        };
-        delete event.PROPERTIES;
-        delete event.input;
-        let history = {};
-        history.component_name = "event";
-        history.user_name = event.owner;
-        history.id = event.id;
-        history.config_data = JSON.stringify(event);
-        History.create(history).then(function () {
-          res.status(202).send({success: true});
-        });
-      });
-    });
-  });
-};
 
 router.put('/:id', function (req, res) {
   let new_event = {};
@@ -359,8 +370,14 @@ router.put('/:id', function (req, res) {
   if (req.body.description !== null && req.body.description !== undefined) {
     new_event.description = req.body.description;
   }
+  new_event.STREAM_EVENT_CEP = {
+    event_id: req.params.id
+  };
   if (req.body.STREAM_EVENT_CEP !== null && req.body.STREAM_EVENT_CEP !== undefined) {
     new_event.STREAM_EVENT_CEP = req.body.STREAM_EVENT_CEP;
+  }
+  if (req.body.owner !== null && req.body.owner !== undefined) {
+    new_event.owner = req.body.owner;
   }
   let output;
   if (req.body.output !== null && req.body.output !== undefined) {
