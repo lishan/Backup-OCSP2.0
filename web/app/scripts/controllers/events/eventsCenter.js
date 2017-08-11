@@ -498,7 +498,6 @@ angular.module('ocspApp')
             $scope.item.note = `<p>${$scope.item.note}</p>`;
           }
           let itemId = $scope.item.id;
-          console.log($scope.item);
           $q.all({event: $http.put("/api/event/" + $scope.item.id, {event: $scope.item}),
             history: $http.post("/api/history/event", {event: {config_data: $scope.item, note: $scope.item.note, version: $scope.item.version}})})
             .then(function(){
