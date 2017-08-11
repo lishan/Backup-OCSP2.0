@@ -65,6 +65,15 @@ angular.module('ocspApp')
       }
     }
 
+    let collapseTree = function(tree){
+      for(let i in tree){
+        tree[i].expanded = false;
+        if(!!tree[i].children && tree[i].children.length!==0){
+          collapseTree(tree[i].children);
+        }
+      }
+    };
+
     function _init() {
       $scope.history = null;
       $scope.item = null;
@@ -112,15 +121,6 @@ angular.module('ocspApp')
         $scope.treedata = tree;
       });
     }
-
-    let collapseTree = function(tree){
-      for(let i in tree){
-        tree[i].expanded = false;
-        if(!!tree[i].children && tree[i].children.length!==0){
-          collapseTree(tree[i].children);
-        }
-      }
-    };
 
     _init();
 
@@ -498,6 +498,7 @@ angular.module('ocspApp')
             $scope.item.note = `<p>${$scope.item.note}</p>`;
           }
           let itemId = $scope.item.id;
+          console.log($scope.item);
           $q.all({event: $http.put("/api/event/" + $scope.item.id, {event: $scope.item}),
             history: $http.post("/api/history/event", {event: {config_data: $scope.item, note: $scope.item.note, version: $scope.item.version}})})
             .then(function(){
