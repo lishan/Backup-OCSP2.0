@@ -4,7 +4,7 @@ import java.util.NoSuchElementException
 import java.util.concurrent._
 
 import com.asiainfo.ocdp.stream.common.{BroadcastManager, EventCycleLife}
-import com.asiainfo.ocdp.stream.config.{DataSchema, MainFrameConf, TaskConf}
+import com.asiainfo.ocdp.stream.config.{DataInterfaceConf, DataSchema, MainFrameConf, TaskConf}
 import com.asiainfo.ocdp.stream.constant.{CommonConstant, DataSourceConstant}
 import com.asiainfo.ocdp.stream.event.Event
 import com.asiainfo.ocdp.stream.label.LabelManager
@@ -12,14 +12,12 @@ import com.asiainfo.ocdp.stream.manager.StreamTask
 import com.asiainfo.ocdp.stream.service.{DataInterfaceServer, TaskServer}
 import com.asiainfo.ocdp.stream.tools._
 import com.asiainfo.ocdp.stream.common.ComFunc
-import kafka.message.MessageAndMetadata
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang.{StringEscapeUtils, StringUtils}
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.streaming.{StreamingContext, Time}
 import org.apache.spark.{Accumulator, HashPartitioner, SparkContext}
-import org.apache.spark.sql.types.StructType
 import org.apache.spark.streaming.kafka010.{CanCommitOffsets, HasOffsetRanges => HasOffsetRanges010}
 import org.apache.commons.codec.digest.DigestUtils
 
@@ -45,15 +43,16 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
   conf.setInterval(interval)
 
-  private def transform[T: ClassTag](input: T, dataSchema: DataSchema, commonSchema: StructType,
-                                     totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): Option[(String, String)] = {
+  private def transform[T: ClassTag](input: T, dataSchema: DataSchema, broadDiConf:DataInterfaceConf,
+                                     totalRecordsCounter: Accumulator[Long], reservedRecordsCounter: Accumulator[Long]): Option[(String, Array[String])] = {
 
     val delim = dataSchema.getDelim
     val raw = input.asInstanceOf[ConsumerRecord[String, String]]
     val topic = raw.topic()
     val source = raw.value()
-    val inputArr = source.split(delim, -1)
+    val inputArr = StringUtils.splitByWholeSeparatorPreserveAllTokens(source,StringEscapeUtils.unescapeJava(delim))
     val schema = dataSchema.getRawSchema.fieldNames
+    val commonSchema = broadDiConf.getCommonSchema
 
     totalRecordsCounter.add(1)
 
@@ -64,7 +63,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
     if (valid) {
       reservedRecordsCounter.add(1)
-      val message = (for(field <- commonSchema.fieldNames if schema.indexOf(field) >=0) yield inputArr(schema.indexOf(field))).mkString(StringUtils.replace(delim, "\\", ""))
+      val message = for(field <- commonSchema.fieldNames if schema.indexOf(field) >=0)
+        yield inputArr(schema.indexOf(field))
       Some((raw.key, message))
     } else {
       None
@@ -106,7 +106,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
                       , totalRecordsCounter: Accumulator[Long]
                       , reservedRecordsCounter: Accumulator[Long]): DataFrame = {
 
-    var unionRDD : RDD[(String, String)] = null
+    var unionRDD : RDD[(String, Array[String])] = null
     val broadDiConf = BroadcastManager.getBroadDiConf()
     val dataSchemas = broadDiConf.value.getDataSchemas
     val partitionsList = ArrayBuffer[Int]()
@@ -117,7 +117,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
 
       val kvRDD = withUptime("1.kafka RDD 转换成 rowRDD"){
         rdd.map( input => {
-            transform(input, dataSchema, broadDiConf.value.getCommonSchema, totalRecordsCounter, reservedRecordsCounter)
+            transform(input, dataSchema, broadDiConf.value, totalRecordsCounter, reservedRecordsCounter)
         }).collect { case Some(row) => row }
       }
 
@@ -134,7 +134,7 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
         println("当前时间片内正确输入格式的流数据为空, 不做任何处理.")
     }
 
-    var repartition_unionRDD: RDD[(String, String)] = null
+    var repartition_unionRDD: RDD[(String, Array[String])] = null
     if (dataSchemas.length>1){
       var numPartitions = broadDiConf.value.getNumPartitions
       if (numPartitions <= 0){
@@ -149,10 +149,8 @@ class DataInterfaceTask(taskConf: TaskConf) extends StreamTask {
       repartition_unionRDD = unionRDD
     }
 
-    val rowRDD = repartition_unionRDD.map( input => {
-      val inputArr = input._2.split(conf.getSeparator, -1)
-      Row.fromSeq(inputArr)
-    })
+    val rowRDD = repartition_unionRDD.map(input => Row.fromSeq(input._2))
+
     val df = ComFunc.Func.createDataFrame(ssc, rowRDD, conf.getCommonSchema)
     val filter_expr = conf.get("filter_expr")
 
