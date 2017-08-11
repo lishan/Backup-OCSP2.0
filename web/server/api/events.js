@@ -18,6 +18,38 @@ let DataInterface = require('../model/STREAM_DATAINTERFACE')(sequelize, Sequeliz
 let Datasource = require('../model/STREAM_DATASOURCE')(sequelize, Sequelize);
 let History = require('../model/STREAM_HISTORY_CONFIG')(sequelize, Sequelize);
 
+let _addPromise = function (promises, datainterface_id, AllEventData, i, datasource_id, topic, prefix, streamid, interval, delim, subscribe, eventData, result) {
+  promises.push(sequelize.Promise.all([
+    Interface.find({attributes: [['dsid', 'datasource_id'], 'properties'], where: {id: datainterface_id}}),
+    Task.find({attributes: [['id', 'streamid']], where: {diid: AllEventData[i].diid}})
+  ]).then((data) => {
+    let tmp_interface = data[0].dataValues;
+    datasource_id = tmp_interface.datasource_id;
+    let properties = JSON.parse(tmp_interface.properties);
+    //判断datasource类型,若为kafka则将名字赋给topic,若为codis则赋给prefix
+    if (datasource_id === 1) {
+      topic = properties.props[0].pvalue;
+    }
+    if (datasource_id === 2) {
+      prefix = properties.props[0].pvalue;
+    }
+    streamid = data[1].dataValues.streamid;
+    let output = {
+      "datainterface_id": datainterface_id,
+      "datasource_id": datasource_id,
+      "topic": topic,
+      "prefix": prefix,
+      "interval": interval,
+      "delim": delim,
+      "subscribe": subscribe
+    };
+    eventData.streamid = streamid;
+    eventData.output = output;
+    delete eventData.PROPERTIES;
+    result.push(eventData);
+  }));
+};
+
 function QueryAllEventInfo(AllEventData, AllEventResult, res, startDate, endDate) {
   let result = [];
   let promises = [];
@@ -51,38 +83,9 @@ function QueryAllEventInfo(AllEventData, AllEventResult, res, startDate, endDate
         }
       }
     }
-    if(flag){
-      break;
+    if(!flag){
+      _addPromise(promises, datainterface_id, AllEventData, i, datasource_id, topic, prefix, streamid, interval, delim, subscribe, eventData, result);
     }
-    promises.push(sequelize.Promise.all([
-      Interface.find({attributes: [['dsid', 'datasource_id'], 'properties'], where: {id: datainterface_id}}),
-      Task.find({attributes: [['id', 'streamid']], where: {diid: AllEventData[i].diid}})
-    ]).then((data) => {
-      let tmp_interface = data[0].dataValues;
-      datasource_id = tmp_interface.datasource_id;
-      let properties = JSON.parse(tmp_interface.properties);
-      //判断datasource类型,若为kafka则将名字赋给topic,若为codis则赋给prefix
-      if (datasource_id === 1) {
-        topic = properties.props[0].pvalue;
-      }
-      if (datasource_id === 2) {
-        prefix = properties.props[0].pvalue;
-      }
-      streamid = data[1].dataValues.streamid;
-      let output = {
-        "datainterface_id": datainterface_id,
-        "datasource_id": datasource_id,
-        "topic": topic,
-        "prefix": prefix,
-        "interval": interval,
-        "delim": delim,
-        "subscribe": subscribe
-      };
-      eventData.streamid = streamid;
-      eventData.output = output;
-      delete eventData.PROPERTIES;
-      result.push(eventData);
-    }));
   }
   sequelize.Promise.all(promises).then(()=>{
     AllEventResult.events = result;
