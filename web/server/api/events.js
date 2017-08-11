@@ -18,78 +18,76 @@ let DataInterface = require('../model/STREAM_DATAINTERFACE')(sequelize, Sequeliz
 let Datasource = require('../model/STREAM_DATASOURCE')(sequelize, Sequelize);
 let History = require('../model/STREAM_HISTORY_CONFIG')(sequelize, Sequelize);
 
-function QueryAllEventInfo(i, AllEventData, AllEventResult, res) {
-  let EventData = {eventid: "", streamid: "", name: "", select_expr: "", filter_expr: "", p_event_id: ""};
-  let tmp_event = AllEventData[i].dataValues;
-  EventData.eventid = tmp_event.eventid;
-  EventData.name = tmp_event.name;
-  EventData.select_expr = tmp_event.select_expr;
-  EventData.filter_expr = tmp_event.filter_expr;
-  EventData.p_event_id = tmp_event.p_event_id;
-
-  //PROPERTIES要经过计算变成output，不加入EventData
-  let PROPERTIES = JSON.parse(tmp_event.PROPERTIES);
-  let output_dis = PROPERTIES.output_dis[0];
-  let props = PROPERTIES.props;
-  //promise
+function QueryAllEventInfo(AllEventData, AllEventResult, res, startDate, endDate) {
+  let result = [];
   let promises = [];
-
-  let interval = output_dis.interval;
-  let datainterface_id = output_dis.diid;
-  let delim = output_dis.delim;
-
-  let datasource_id = '';
-  let topic = '';
-  let prefix = '';
-  let streamid = '';
-
-  let subscribe = '';
-  for (let i in props) {
-    if (props[i].pname === 'period') {
-      subscribe = props[i].pvalue;
+  for(let i = 0; i < AllEventData.length; i++){
+    let eventData = AllEventData[i].dataValues;
+    if(eventData.STREAM_EVENT_CEP){
+      eventData.STREAM_EVENT_CEP = eventData.STREAM_EVENT_CEP.dataValues;
     }
+    let PROPERTIES = JSON.parse(eventData.PROPERTIES);
+    let output_dis = PROPERTIES.output_dis[0];
+    let props = PROPERTIES.props;
+    let interval = output_dis.interval;
+    let datainterface_id = output_dis.diid;
+    let delim = output_dis.delim;
+    let subscribe;
+    let datasource_id = '';
+    let topic = '';
+    let prefix = '';
+    let streamid = '';
+    let flag = false;
+    for (let i in props) {
+      if (props[i].pname === 'period') {
+        subscribe = props[i].pvalue;
+        if(startDate && endDate){
+          let parse = JSON.parse(subscribe);
+          if(!(startDate.isBefore(parse.startDate, 'day') &&
+            (endDate.isAfter(parse.endDate, 'day') || endDate.isSame(parse.endDate, 'day')))){
+            flag = true;
+            break;
+          }
+        }
+      }
+    }
+    if(flag){
+      break;
+    }
+    promises.push(sequelize.Promise.all([
+      Interface.find({attributes: [['dsid', 'datasource_id'], 'properties'], where: {id: datainterface_id}}),
+      Task.find({attributes: [['id', 'streamid']], where: {diid: AllEventData[i].diid}})
+    ]).then((data) => {
+      let tmp_interface = data[0].dataValues;
+      datasource_id = tmp_interface.datasource_id;
+      let properties = JSON.parse(tmp_interface.properties);
+      //判断datasource类型,若为kafka则将名字赋给topic,若为codis则赋给prefix
+      if (datasource_id === 1) {
+        topic = properties.props[0].pvalue;
+      }
+      if (datasource_id === 2) {
+        prefix = properties.props[0].pvalue;
+      }
+      streamid = data[1].dataValues.streamid;
+      let output = {
+        "datainterface_id": datainterface_id,
+        "datasource_id": datasource_id,
+        "topic": topic,
+        "prefix": prefix,
+        "interval": interval,
+        "delim": delim,
+        "subscribe": subscribe
+      };
+      eventData.streamid = streamid;
+      eventData.output = output;
+      delete eventData.PROPERTIES;
+      result.push(eventData);
+    }));
   }
-  //将查询task表与datainterface表装进promises
-  promises.push(Interface.find({
-    attributes: [['dsid', 'datasource_id'], 'properties'],
-    where: {id: datainterface_id}
-  }).then((data) => {
-    let tmp_interface = data.dataValues;
-    datasource_id = tmp_interface.datasource_id;
-    let properties = JSON.parse(tmp_interface.properties);
-    //判断datasource类型,若为kafka则将名字赋给topic,若为codis则赋给prefix
-    if (datasource_id === 1) {
-      topic = properties.props[0].pvalue;
-    }
-    if (datasource_id === 2) {
-      prefix = properties.props[0].pvalue;
-    }
-  }));
-  promises.push(Task.find({attributes: [['id', 'streamid']], where: {diid: AllEventData[i].diid}}).then((data) => {
-    streamid = data.dataValues.streamid;
-  }));
-  sequelize.Promise.all(promises).then(() => {
-    let output = {
-      "datainterface_id": datainterface_id,
-      "datasource_id": datasource_id,
-      "topic": topic,
-      "prefix": prefix,
-      "interval": interval,
-      "delim": delim,
-      "subscribe": subscribe
-    };
-
-    EventData.streamid = streamid;
-    EventData.output = output;
-    EventData.status = tmp_event.status;
-    EventData.description = tmp_event.description;
-    EventData.STREAM_EVENT_CEP = tmp_event.STREAM_EVENT_CEP;
-    AllEventResult.events.push(EventData);
-
-    if (parseInt(i) === (AllEventData.length - 1)) {
-      res.status(200).send(AllEventResult);
-    }
-  }, () => {
+  sequelize.Promise.all(promises).then(()=>{
+    AllEventResult.events = result;
+    res.status(200).send(AllEventResult);
+  }).catch(()=>{
     res.status(500).send(trans.databaseError);
   });
 }
@@ -420,28 +418,44 @@ router.get('/', function (req, res) {
   let page = parseInt(req.query.page);
   let limit = page_size;
   let offset = (page - 1) * page_size;
+  let searchObj = {}, searchCep = {};
+  if(req.query.name){
+    searchObj.name = req.query.name;
+  }
+  if(req.query.status){
+    searchObj.status = parseInt(req.query.status);
+  }
+  if(req.query.source){
+    searchCep.source = req.query.source;
+  }
+  if(req.query.badgeNumber){
+    searchCep.badge_number = req.query.badgeNumber;
+  }
+  if(req.query.type){
+    searchCep.type = req.query.type;
+  }
   Event_Model.findAll({
     attributes: [['id', 'eventid'], 'diid', 'name', 'select_expr', 'filter_expr', 'p_event_id', 'PROPERTIES', 'status', 'description'],
     limit: limit,
     offset: offset,
-    include: {
-      model: CEP
-    }
+    include: [{
+      model: CEP,
+      where: searchCep
+    }],
+    where: searchObj
   }).then((AllEventData) => {
     let AllEventResult = {"pageSize": "", "totalPageNumber": "", "currentPage": "", "events": []};
     AllEventResult.pageSize = page_size;
     AllEventResult.currentPage = page;
     AllEventResult.totalPageNumber = Math.ceil(AllEventData.length / page_size);
-    if (AllEventData.length !== 0) {
-      for (let i in AllEventData) {
-        //以下上是直接输出的字段EventData
-        //  let EventData;
-        QueryAllEventInfo(i, AllEventData, AllEventResult, res);
-
-      }
-    } else {
-      res.status(500).send(trans.databaseError);
+    let startDate = null, endDate = null;
+    if(req.query.startDate){
+      startDate = moment(req.query.startDate);
     }
+    if(req.query.endDate){
+      endDate = moment(req.query.endDate);
+    }
+    QueryAllEventInfo(AllEventData, AllEventResult, res, startDate, endDate);
   }).catch(function () {
     res.status(500).send(trans.databaseError);
   });
