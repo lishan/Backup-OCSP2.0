@@ -348,6 +348,18 @@ router.post('/', function (req, res) {
   });
 });
 
+function _upsert(values, condition) {
+  return CEP.findOne({where: condition})
+    .then(function (obj) {
+      if (obj) { // update
+        return CEP.update(values, {where: condition});
+      }
+      else { // insert
+        return CEP.create(values);
+      }
+    });
+}
+
 router.put('/:id', function (req, res) {
   let new_event = {};
   if (req.body.name !== null && req.body.name !== undefined) {
@@ -368,12 +380,12 @@ router.put('/:id', function (req, res) {
   if (req.body.description !== null && req.body.description !== undefined) {
     new_event.description = req.body.description;
   }
-  new_event.STREAM_EVENT_CEP = {
-    event_id: req.params.id
-  };
   if (req.body.STREAM_EVENT_CEP !== null && req.body.STREAM_EVENT_CEP !== undefined) {
     new_event.STREAM_EVENT_CEP = req.body.STREAM_EVENT_CEP;
+  }else{
+    new_event.STREAM_EVENT_CEP = {};
   }
+  new_event.STREAM_EVENT_CEP.event_id = req.params.id;
   if (req.body.owner !== null && req.body.owner !== undefined) {
     new_event.owner = req.body.owner;
   }
@@ -392,7 +404,7 @@ router.put('/:id', function (req, res) {
       new_event.diid = data.dataValues.diid;
       sequelize.Promise.all([
         Event_Model.update(new_event, {where: {id: req.params.id}}),
-        CEP.update(new_event.STREAM_EVENT_CEP, {where: {event_id: req.params.id}})
+        _upsert(new_event.STREAM_EVENT_CEP, {event_id: req.params.id})
       ]).then(function () {
         _addHistory(req, res);
       });
@@ -401,9 +413,10 @@ router.put('/:id', function (req, res) {
     });
   }
   else {
+    new_event.id = req.params.id;
     sequelize.Promise.all([
       Event_Model.update(new_event, {where: {id: req.params.id}}),
-      CEP.update(new_event.STREAM_EVENT_CEP, {where: {event_id: req.params.id}})
+      _upsert(new_event.STREAM_EVENT_CEP, {event_id: req.params.id})
     ]).then(function () {
       _addHistory(req, res);
     }).catch(function () {
