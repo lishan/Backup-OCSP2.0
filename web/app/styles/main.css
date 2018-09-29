@@ -74,9 +74,7 @@ html, body {
 }
 
 .flash {
-  -webkit-animation-name: flash;
   animation-name: flash;
-  -webkit-animation-duration: 4s;
   animation-duration: 4s;
 }
 
@@ -172,7 +170,6 @@ table a {
   overflow: hidden;
   position: absolute;
   top: 46px;
-  -webkit-transform: rotate(-45deg);
   transform: rotate(-45deg);
   webkit-box-shadow: 0 0 10px #888;
   webkit-transform: rotate(-45deg);
